@@ -61,10 +61,10 @@ def show_database():
 def show_num_rows():
     c = conn.cursor()
     c.execute("SELECT COUNT(*) Num FROM productos")
-    data = c.fetchone()
-    return data[0]
+    numero_columnas = c.fetchone()[0]
+    return numero_columnas
 
-def show_producto(producto): # Espera una coleccion de datos de tipo diccionario
+def show_producto(producto):
     print("\n  ======================\n  * Datos del Producto\n  ======================\n")
     [print(f"  * Atributo: {atributo}") for atributo in producto]
 
