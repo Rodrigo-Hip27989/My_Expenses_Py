@@ -10,7 +10,7 @@ def create_table():
     c.execute("CREATE TABLE if not exists productos (id integer PRIMARY KEY, nombre text, cantidad integer, medida text, precio_unitario real, precio_total real, fecha text)")
     conn.commit()
 
-def validate_option_num(minimo, maximo):
+def validate_data_is_integer(minimo, maximo):
     numero = 0
     while True:
         try: 
@@ -37,7 +37,7 @@ def delete_in_database():
         print("  2. Eliminar todos los productos con cierto NOMBRE")
         print("  3. Eliminar todos los productos en cierta FECHA")
         print("  4. Cancelar y regresar")
-        opcion = validate_option_num(1, 4)
+        opcion = validate_data_is_integer(1, 4)
         if(opcion == 1): 
             c = conn.cursor()
             id_producto = int(input("\n  Ingrese el ID del produto a eliminar: "))
@@ -122,7 +122,7 @@ def main():
         print("  3. Eliminar un elemento en la base de datos")
         print("  4. Limpiar pantalla")
         print("  5. Salir")
-        opcion = validate_option_num(1, 5)
+        opcion = validate_data_is_integer(1, 5)
         if(opcion == 1): 
             subprocess.run(["clear"])
             show_database()
@@ -132,7 +132,7 @@ def main():
             insert_in_database(pedir_lista_productos())
         elif(opcion == 3):
             subprocess.run(["clear"])
-            delete_in_database()
+            validate_and_delete_in_database()
         elif(opcion == 4):
             subprocess.run(["clear"])
         elif(opcion == 5): 
