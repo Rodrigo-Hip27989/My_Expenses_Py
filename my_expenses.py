@@ -25,11 +25,10 @@ def validate_data_is_integer(mostrar_mensaje, minimo, maximo):
 
 def validate_and_delete_in_database():    
     if(show_num_rows() > 0):
-        show_database()
         delete_in_database()
     else: 
         print("\n  ** La base de datos esta vacia, no hay nada que hacer...\n")
-        time.sleep(3)
+        input("\n  Presione ENTER para continuar...\n")
 
 def delete_in_database():
         print("\n  ** Elige una opción para continuar... **\n")
@@ -44,21 +43,25 @@ def delete_in_database():
             sqlite_statement = "DELETE FROM productos WHERE id=?"
             c.execute(sqlite_statement, (id_producto, ))
             conn.commit()
+            print(f"\n  El número de filas afectadas fue: {c.rowcount}\n")
         elif(opcion == 2): 
             c = conn.cursor()
             nombre = input("\n  Ingrese el nombre del producto: ")
             sqlite_statement = "DELETE FROM productos WHERE nombre=?"
             c.execute(sqlite_statement, (nombre, ))
             conn.commit()
+            print(f"\n   El número de filas afectadas fue: {c.rowcount}\n")
         elif(opcion == 3): 
             c = conn.cursor()
             fecha = input("\n  Ingrese una fecha: ")
             sqlite_statement = "DELETE FROM productos WHERE fecha=?"
             c.execute(sqlite_statement, (fecha, ))
             conn.commit()
+            print(f"\n  El número de filas afectadas fue: {c.rowcount}\n")
         elif(opcion == 4):
             print("\n  Cancelando operación...\n")
             time.sleep(1.5)
+        input("\n  Presione ENTER para continuar...\n")
 
 def insert_in_database(lista_productos):
     c = conn.cursor()
@@ -75,6 +78,7 @@ def show_database():
     for row in data:
         print(f"  {row}")
     print("\n  ************************************************")
+    input("\n  Presione ENTER para continuar...\n")
 
 def show_num_rows():
     c = conn.cursor()
@@ -126,7 +130,6 @@ def main():
         if(opcion == 1): 
             subprocess.run(["clear"])
             show_database()
-            time.sleep(5)
         elif(opcion == 2):
             subprocess.run(["clear"])
             insert_in_database(request_product_list())
@@ -138,7 +141,7 @@ def main():
         elif(opcion == 5): 
             subprocess.run(["clear"])
             print("\n  Saliendo del programa...\n")
-            time.sleep(1.5)
+            time.sleep(1)
             continuar = False
     conn.close()
 
