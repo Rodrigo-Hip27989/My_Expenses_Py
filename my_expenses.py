@@ -86,7 +86,7 @@ def show_producto(producto):
     print("\n  ======================\n  * Datos del Producto\n  ======================\n")
     [print(f"  * Atributo: {atributo}") for atributo in producto]
 
-def pedir_un_producto():
+def request_a_product():
     print("\n  =========================== * Ingresando Nuevos Datos  ===========================\n")
     producto = []
     nombre          = input("  * Nombre del producto: ")
@@ -97,12 +97,12 @@ def pedir_un_producto():
     fecha           = input("  * Ingrese la fecha (Dia-Mes-Año): ")
     return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
 
-def pedir_lista_productos(): 
+def request_product_list(): 
     lista_productos = []
 
     continuar = True
     while(continuar == True):
-        lista_productos.append(pedir_un_producto())
+        lista_productos.append(request_a_product())
 
         print("\n  * ¿Desea agregar un nuevo producto?")
         if(input("    (Y/N): ") == 'Y'):
@@ -129,7 +129,7 @@ def main():
             time.sleep(5)
         elif(opcion == 2):
             subprocess.run(["clear"])
-            insert_in_database(pedir_lista_productos())
+            insert_in_database(request_product_list())
         elif(opcion == 3):
             subprocess.run(["clear"])
             validate_and_delete_in_database()
