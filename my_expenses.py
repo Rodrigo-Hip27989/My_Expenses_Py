@@ -10,13 +10,34 @@ def create_table():
     c.execute("CREATE TABLE if not exists productos (id integer PRIMARY KEY, nombre text, cantidad integer, medida text, precio_unitario real, precio_total real, fecha text)")
     conn.commit()
 
+def validate_option_num(minimo, maximo):
+    numero = 0
+    while True:
+        try: 
+            numero = int(input("\n  * Opción >> "))
+        except ValueError:
+            print("\n  Usted debe ingresar una cantidad numerica !!!")
+            continue
+        if(numero >=minimo and numero <=maximo): 
+            return numero
+        else: 
+            print("\n  El número ingresado no es valido...")
+
+def validate_and_delete_in_database():    
+    if(show_num_rows() > 0):
+        show_database()
+        delete_in_database()
+    else: 
+        print("\n  ** La base de datos esta vacia, no hay nada que hacer...\n")
+        time.sleep(3)
+
 def delete_in_database():
         print("\n  ** Elige una opción para continuar... **\n")
         print("  1. Eliminar un producto por medio de su ID")
         print("  2. Eliminar todos los productos con cierto NOMBRE")
         print("  3. Eliminar todos los productos en cierta FECHA")
-        print("  4. Salir")
-        opcion = int(input("\n  Opción >> "))
+        print("  4. Cancelar y regresar")
+        opcion = validate_option_num(1, 4)
         if(opcion == 1): 
             c = conn.cursor()
             id_producto = int(input("\n  Ingrese el ID del produto a eliminar: "))
@@ -37,10 +58,7 @@ def delete_in_database():
             conn.commit()
         elif(opcion == 4):
             print("\n  Cancelando operación...\n")
-            time.sleep(3)
-        else: 
-            print("\n  La opcion ingresada no es valida...\n")
-            time.sleep(3)
+            time.sleep(1.5)
 
 def insert_in_database(lista_productos):
     c = conn.cursor()
@@ -104,7 +122,7 @@ def main():
         print("  3. Eliminar un elemento en la base de datos")
         print("  4. Limpiar pantalla")
         print("  5. Salir")
-        opcion = int(input("\n  Opción >> "))
+        opcion = validate_option_num(1, 5)
         if(opcion == 1): 
             subprocess.run(["clear"])
             show_database()
@@ -114,17 +132,14 @@ def main():
             insert_in_database(pedir_lista_productos())
         elif(opcion == 3):
             subprocess.run(["clear"])
-            show_database()
             delete_in_database()
         elif(opcion == 4):
             subprocess.run(["clear"])
         elif(opcion == 5): 
             subprocess.run(["clear"])
             print("\n  Saliendo del programa...\n")
+            time.sleep(1.5)
             continuar = False
-        else:
-            subprocess.run(["clear"])
-            print(" \n  Opción no valida...\n")
     conn.close()
 
 main()
