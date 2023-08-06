@@ -40,7 +40,7 @@ def delete_in_database():
         opcion = validate_data_is_integer("\n  * Opción >> ", 1, 4)
         if(opcion == 1): 
             c = conn.cursor()
-            id_producto = int(input("\n  Ingrese el ID del produto a eliminar: "))
+            id_producto = validate_data_is_integer("\n  Ingrese el ID del produto a eliminar: ", 1, 1000000000000)
             sqlite_statement = "DELETE FROM productos WHERE id=?"
             c.execute(sqlite_statement, (id_producto, ))
             conn.commit()
