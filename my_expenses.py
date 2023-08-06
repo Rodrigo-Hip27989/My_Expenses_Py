@@ -10,18 +10,18 @@ def create_table():
     c.execute("CREATE TABLE if not exists productos (id integer PRIMARY KEY, nombre text, cantidad integer, medida text, precio_unitario real, precio_total real, fecha text)")
     conn.commit()
 
-def validate_data_is_integer(minimo, maximo):
+def validate_data_is_integer(mostrar_mensaje, minimo, maximo):
     numero = 0
     while True:
         try: 
-            numero = int(input("\n  * Opción >> "))
+            numero = int(input(mostrar_mensaje))
         except ValueError:
-            print("\n  Usted debe ingresar una cantidad numerica !!!")
+            print("\n  Usted debe ingresar un numero !!!")
             continue
         if(numero >=minimo and numero <=maximo): 
             return numero
         else: 
-            print("\n  El número ingresado no es valido...")
+            print(f"\n  El número ingresado esta fuera del rango permitido [{minimo}-{maximo}] !!!")
 
 def validate_and_delete_in_database():    
     if(show_num_rows() > 0):
@@ -37,7 +37,7 @@ def delete_in_database():
         print("  2. Eliminar todos los productos con cierto NOMBRE")
         print("  3. Eliminar todos los productos en cierta FECHA")
         print("  4. Cancelar y regresar")
-        opcion = validate_data_is_integer(1, 4)
+        opcion = validate_data_is_integer("\n  * Opción >> ", 1, 4)
         if(opcion == 1): 
             c = conn.cursor()
             id_producto = int(input("\n  Ingrese el ID del produto a eliminar: "))
@@ -122,7 +122,7 @@ def main():
         print("  3. Eliminar un elemento en la base de datos")
         print("  4. Limpiar pantalla")
         print("  5. Salir")
-        opcion = validate_data_is_integer(1, 5)
+        opcion = validate_data_is_integer("\n  * Opción >> ", 1, 5)
         if(opcion == 1): 
             subprocess.run(["clear"])
             show_database()
