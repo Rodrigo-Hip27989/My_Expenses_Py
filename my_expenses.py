@@ -18,10 +18,13 @@ def validate_data_is_integer(mostrar_mensaje, minimo, maximo):
         except ValueError:
             print("\n  Usted debe ingresar un numero !!!")
             continue
-        if(numero >=minimo and numero <=maximo): 
-            return numero
-        else: 
-            print(f"\n  El número ingresado esta fuera del rango permitido [{minimo}-{maximo}] !!!")
+        if(numero >=minimo):
+            if(numero <= maximo):
+                return numero
+            else:
+                print("\n  La cantidad debe ser menor a (10^12) !!!\n")
+        elif(numero < minimo): 
+            print(f"\n  La cantidad no puede ser negativo !!!\n")
 
 def validate_and_delete_in_database():    
     if(show_num_rows() > 0):
@@ -91,22 +94,29 @@ def show_producto(producto):
     [print(f"  * Atributo: {atributo}") for atributo in producto]
 
 def request_a_product():
-    print("\n  =========================== * Ingresando Nuevos Datos  ===========================\n")
+    print("\n  =========================== * Registrando un nuevo producto  ===========================\n")
     producto = []
     nombre          = input("  * Nombre del producto: ")
-    cantidad        = int(input("  * Cantidad: "))
+    cantidad        = validate_data_is_integer("  * Cantidad: ", 1, 1000000000000)
     medida          = input("  * Medida: ")
     precio_unitario = float(input("  * Precio Unitario: "))
     precio_total    = cantidad*precio_unitario
     fecha           = input("  * Ingrese la fecha (Dia-Mes-Año): ")
-    return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
+
+    print("\n  * Desea continuar con la operación?")
+    if(input("    (Y/N): ") == 'Y'):
+        return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
+    else:
+        return []
 
 def request_product_list(): 
     lista_productos = []
 
     continuar = True
     while(continuar == True):
-        lista_productos.append(request_a_product())
+        nuevo_producto = request_a_product()
+        if(nuevo_producto != []):
+            lista_productos.append(nuevo_producto)
 
         print("\n  * ¿Desea agregar un nuevo producto?")
         if(input("    (Y/N): ") == 'Y'):
