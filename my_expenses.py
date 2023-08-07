@@ -16,7 +16,23 @@ def validate_data_is_integer(mostrar_mensaje, minimo, maximo):
         try: 
             numero = int(input(mostrar_mensaje))
         except ValueError:
-            print("\n  Usted debe ingresar un numero !!!")
+            print("\n  Usted debe ingresar un numero !!!\n")
+            continue
+        if(numero >=minimo):
+            if(numero <= maximo):
+                return numero
+            else:
+                print("\n  La cantidad debe ser menor a (10^12) !!!\n")
+        elif(numero < minimo): 
+            print(f"\n  La cantidad no puede ser negativo !!!\n")
+
+def validate_data_is_float(mostrar_mensaje, minimo, maximo):
+    numero = 0
+    while True:
+        try: 
+            numero = float(input(mostrar_mensaje))
+        except ValueError:
+            print("\n  Usted debe ingresar un numero decimal !!!\n")
             continue
         if(numero >=minimo):
             if(numero <= maximo):
@@ -99,7 +115,7 @@ def request_a_product():
     nombre          = input("  * Nombre del producto: ")
     cantidad        = validate_data_is_integer("  * Cantidad: ", 1, 1000000000000)
     medida          = input("  * Medida: ")
-    precio_unitario = float(input("  * Precio Unitario: "))
+    precio_unitario = validate_data_is_float("  * Precio Unitario: ", 0, 1000000000000)
     precio_total    = cantidad*precio_unitario
     fecha           = input("  * Ingrese la fecha (Dia-Mes-Año): ")
 
