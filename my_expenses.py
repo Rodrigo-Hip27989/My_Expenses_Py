@@ -1,4 +1,4 @@
-
+import re
 import time
 import sqlite3
 import subprocess
@@ -10,44 +10,60 @@ def create_table():
     c.execute("CREATE TABLE if not exists productos (id integer PRIMARY KEY, nombre text, cantidad integer, medida text, precio_unitario real, precio_total real, fecha text)")
     conn.commit()
 
-def validate_data_is_integer(mostrar_mensaje, minimo, maximo):
+def validate_data_match_regex(entrada, regex):
+    pattern = re.compile(regex)
+    match = pattern.findall(entrada)
+    if(len(match) > 0):
+        if(len(match[0]) == len(entrada)):
+            return True
+        else: 
+            return False
+
+def get_valid_data_varchar(mensaje, patron):
+    nombre = ""
+    while True:
+        try: 
+            input_varchar = input(mensaje)
+            input_varchar_valid = validate_data_match_regex(input_varchar, patron)
+            if(input_varchar_valid):
+                return input_varchar
+            else:
+                print(f"\n  * La entrada no es valida !!!\n  * Intente de nuevo")
+        except ValueError:
+            print("\n  * Error! El tipo de dato introducido no es valido !!!\n  * Intente de nuevo")
+            continue
+
+def get_valid_data_integer(mostrar_mensaje, minimo, maximo):
     numero = 0
     while True:
         try: 
             numero = int(input(mostrar_mensaje))
-        except ValueError:
-            print("\n  Usted debe ingresar un numero !!!\n")
-            continue
-        if(numero >=minimo):
-            if(numero <= maximo):
+            if(numero >=minimo and numero <= maximo):
                 return numero
             else:
-                print("\n  La cantidad debe ser menor a (10^12) !!!\n")
-        elif(numero < minimo): 
-            print(f"\n  La cantidad no puede ser negativo !!!\n")
+                print(f"\n  * El número debe estar en el rango [{minimo}-{maximo}]\n")
+        except ValueError:
+            print("\n  * Error! El tipo de dato introducido no es valido!!!\n  * Intente de nuevo\n")
+            continue
 
-def validate_data_is_float(mostrar_mensaje, minimo, maximo):
+def get_valid_data_float(mostrar_mensaje, minimo, maximo):
     numero = 0
     while True:
         try: 
             numero = float(input(mostrar_mensaje))
-        except ValueError:
-            print("\n  Usted debe ingresar un numero decimal !!!\n")
-            continue
-        if(numero >=minimo):
-            if(numero <= maximo):
+            if(numero >= minimo and numero <= maximo):
                 return numero
             else:
-                print("\n  La cantidad debe ser menor a (10^12) !!!\n")
-        elif(numero < minimo): 
-            print(f"\n  La cantidad no puede ser negativo !!!\n")
+                print(f"\n  * El número debe estar en el rango [{minimo}-{maximo}]\n")
+        except ValueError:
+            print("\n  * Error! El tipo de dato introducido no es valido!!!\n  * Intente de nuevo\n")
+            continue
 
 def validate_and_delete_in_database():    
     if(show_num_rows() > 0):
         delete_in_database()
-    else: 
-        print("\n  ** La base de datos esta vacia, no hay nada que hacer...\n")
-        input("\n  Presione ENTER para continuar...\n")
+    else:
+        input("\n  ** La base de datos esta vacia!!\nPresione ENTER para continuar...\n")
 
 def delete_in_database():
         print("\n  ** Elige una opción para continuar... **\n")
@@ -55,24 +71,24 @@ def delete_in_database():
         print("  2. Eliminar todos los productos con cierto NOMBRE")
         print("  3. Eliminar todos los productos en cierta FECHA")
         print("  4. Cancelar y regresar")
-        opcion = validate_data_is_integer("\n  * Opción >> ", 1, 4)
+        opcion = get_valid_data_integer("\n  * Opción >> ", 1, 4)
         if(opcion == 1): 
             c = conn.cursor()
-            id_producto = validate_data_is_integer("\n  Ingrese el ID del produto a eliminar: ", 1, 1000000000000)
+            id_producto = get_valid_data_integer("\n  Ingrese el ID: ", 1, 1000000000000)
             sqlite_statement = "DELETE FROM productos WHERE id=?"
             c.execute(sqlite_statement, (id_producto, ))
             conn.commit()
             print(f"\n  El número de filas afectadas fue: {c.rowcount}\n")
         elif(opcion == 2): 
             c = conn.cursor()
-            nombre = input("\n  Ingrese el nombre del producto: ")
+            nombre = input("\n  Ingrese el nombre: ")
             sqlite_statement = "DELETE FROM productos WHERE nombre=?"
             c.execute(sqlite_statement, (nombre, ))
             conn.commit()
             print(f"\n   El número de filas afectadas fue: {c.rowcount}\n")
         elif(opcion == 3): 
             c = conn.cursor()
-            fecha = input("\n  Ingrese una fecha: ")
+            fecha = input("\n  Ingrese la fecha: ")
             sqlite_statement = "DELETE FROM productos WHERE fecha=?"
             c.execute(sqlite_statement, (fecha, ))
             conn.commit()
@@ -110,14 +126,14 @@ def show_producto(producto):
     [print(f"  * Atributo: {atributo}") for atributo in producto]
 
 def request_a_product():
-    print("\n  =========================== * Registrando un nuevo producto  ===========================\n")
+    print("\n  =========================== * Registrando un nuevo producto - v3.0  ===========================\n")
     producto = []
-    nombre          = input("  * Nombre del producto: ")
-    cantidad        = validate_data_is_integer("  * Cantidad: ", 1, 1000000000000)
-    medida          = input("  * Medida: ")
-    precio_unitario = validate_data_is_float("  * Precio Unitario: ", 0, 1000000000000)
+    nombre          = get_valid_data_varchar("  * Nombre: ", '^[a-zA-Z]+[a-zA-Z0-9\.\-\_\ ]*')
+    cantidad        = get_valid_data_integer("  * Cantidad: ", 1, 1000000000000)
+    medida          = get_valid_data_varchar("  * Medida: ", '^[a-zA-Z]+[a-zA-Z0-9\.\-\_\ ]*')
+    precio_unitario = get_valid_data_float("  * Precio Unitario: ", 0, 1000000000000)
     precio_total    = cantidad*precio_unitario
-    fecha           = input("  * Ingrese la fecha (Dia-Mes-Año): ")
+    fecha           = get_valid_data_varchar("  * Fecha (Día/Mes/Año): ", '[0-3][0-9]\/[0-1][0-9]\/20[0-2][0-9]')
 
     print("\n  * Desea continuar con la operación?")
     if(input("    (Y/N): ") == 'Y'):
@@ -152,7 +168,7 @@ def main():
         print("  3. Eliminar un elemento en la base de datos")
         print("  4. Limpiar pantalla")
         print("  5. Salir")
-        opcion = validate_data_is_integer("\n  * Opción >> ", 1, 5)
+        opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
         if(opcion == 1): 
             subprocess.run(["clear"])
             show_database()
@@ -172,4 +188,3 @@ def main():
     conn.close()
 
 main()
-
