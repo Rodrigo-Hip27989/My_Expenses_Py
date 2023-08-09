@@ -102,12 +102,16 @@ def delete_in_database():
                 print("\n  Operación cancelada...")
         input("\n  Presione ENTER para continuar...\n")
 
-def insert_in_database(lista_productos):
+def insert_in_database(producto):
     c = conn.cursor()
-    for producto in lista_productos:
-        sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio_unitario, precio_total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
-        c.execute(sqlite_statement, producto)
-    conn.commit()
+    sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio_unitario, precio_total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
+    c.execute(sqlite_statement, producto)
+    if(get_valid_data_varchar("\n  >>> Desea continuar con la transacción? \n  * (Y/N): ", '(Y|N)') == 'Y'):            
+        conn.commit()
+        print(f"\n  >>> El número de filas afectadas fue: {c.rowcount}\n")            
+    else:
+        conn.rollback()
+        print("\n  Operación cancelada...")
 
 def show_database():
     c = conn.cursor()
@@ -143,21 +147,15 @@ def request_a_product():
     precio_unitario = get_valid_data_float("  * Precio Unitario: ", 0, 1000000000000)
     precio_total    = cantidad*precio_unitario
     fecha           = get_valid_data_varchar("  * Fecha (Día/Mes/Año): ", '[0-3][0-9]\/[0-1][0-9]\/20[0-2][0-9]')
+    return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
 
-    print("\n  >>> Desea continuar con la operación?")
-    if(input("    (Y/N): ") == 'Y'):
-        return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
-    else:
-        return []
-
-def request_product_list(): 
+def request_and_insert_product_list(): 
     lista_productos = []
 
     continuar = True
     while(continuar == True):
         nuevo_producto = request_a_product()
-        if(nuevo_producto != []):
-            lista_productos.append(nuevo_producto)
+        insert_in_database(nuevo_producto)
 
         print("\n  >>> ¿Desea agregar un nuevo producto?")
         if(input("    (Y/N): ") == 'Y'):
@@ -185,7 +183,7 @@ def main():
             show_database()
         elif(opcion == 2):
             subprocess.run(["clear"])
-            insert_in_database(request_product_list())
+            request_and_insert_product_list()
         elif(opcion == 3):
             subprocess.run(["clear"])
             validate_and_delete_in_database()
