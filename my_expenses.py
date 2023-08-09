@@ -28,9 +28,9 @@ def get_valid_data_varchar(mensaje, patron):
             if(input_varchar_valid):
                 return input_varchar
             else:
-                print(f"\n  * La entrada no es valida !!!\n  * Intente de nuevo")
+                print(f"\n  ==> La entrada no es valida <==\n")
         except ValueError:
-            print("\n  * Error! El tipo de dato introducido no es valido !!!\n  * Intente de nuevo")
+            print("\n  ==> Error! El tipo de dato introducido no es valido !!!\n")
             continue
 
 def get_valid_data_integer(mostrar_mensaje, minimo, maximo):
@@ -41,9 +41,9 @@ def get_valid_data_integer(mostrar_mensaje, minimo, maximo):
             if(numero >=minimo and numero <= maximo):
                 return numero
             else:
-                print(f"\n  * El número debe estar en el rango [{minimo}-{maximo}]\n")
+                print(f"\n  ==> El número debe estar en el rango [{minimo}-{maximo}] <==\n")
         except ValueError:
-            print("\n  * Error! El tipo de dato introducido no es valido!!!\n  * Intente de nuevo\n")
+            print("\n  ==> Error! El tipo de dato introducido no es valido !!!\n")
             continue
 
 def get_valid_data_float(mostrar_mensaje, minimo, maximo):
@@ -54,20 +54,22 @@ def get_valid_data_float(mostrar_mensaje, minimo, maximo):
             if(numero >= minimo and numero <= maximo):
                 return numero
             else:
-                print(f"\n  * El número debe estar en el rango [{minimo}-{maximo}]\n")
+                print(f"\n  ==> El número debe estar en el rango [{minimo}-{maximo}] <==\n")
         except ValueError:
-            print("\n  * Error! El tipo de dato introducido no es valido!!!\n  * Intente de nuevo\n")
+            print("\n  ==> Error! El tipo de dato introducido no es valido !!! <==\n")
             continue
 
 def validate_and_delete_in_database():    
     if(show_num_rows() > 0):
         delete_in_database()
     else:
-        input("\n  ** La base de datos esta vacia!!\nPresione ENTER para continuar...\n")
+        input("\n  >>> La base de datos esta vacia, ho hay nada que hacer...\n  Presione ENTER para continuar...\n")
 
 def delete_in_database():
-        print("\n  ** Elige una opción para continuar... **\n")
-        print("  1. Eliminar un producto por medio de su ID")
+        print("\n  =======================================", end='')
+        print("\n  |  Opciones Para Eliminar El Producto |", end='')
+        print("\n  =======================================", end='\n\n')
+        print("  1. Eliminar producto por medio del ID")
         print("  2. Eliminar todos los productos con cierto NOMBRE")
         print("  3. Eliminar todos los productos en cierta FECHA")
         print("  4. Cancelar y regresar")
@@ -109,10 +111,11 @@ def show_database():
     c = conn.cursor()
     c.execute("SELECT * FROM productos")
     data = c.fetchall()
-    print("\n  ** Mostrando el contenido de la base de datos **\n")
+    print("\n\n  >>> Mostrando el contenido de la base de datos...")
+    print("\n  --------------------------------------------------------\n")
     for row in data:
-        print(f"  {row}")
-    print("\n  ************************************************")
+        print(f"  |  {row}")
+    print("\n  --------------------------------------------------------\n")
     input("\n  Presione ENTER para continuar...\n")
 
 def show_num_rows():
@@ -122,11 +125,15 @@ def show_num_rows():
     return numero_columnas
 
 def show_producto(producto):
-    print("\n  ======================\n  * Datos del Producto\n  ======================\n")
+    print("\n  ========================", end='')
+    print("\n  |  Datos Del Producto  |", end='')
+    print("\n  ========================", end='\n\n')
     [print(f"  * Atributo: {atributo}") for atributo in producto]
 
 def request_a_product():
-    print("\n  =========================== * Registrando un nuevo producto - v3.0  ===========================\n")
+    print("\n  ================================", end='')
+    print("\n  |  Registrando Nuevo Producto  |", end='')
+    print("\n  ================================", end='\n\n')
     producto = []
     nombre          = get_valid_data_varchar("  * Nombre: ", '^[a-zA-Z]+[a-zA-Z0-9\.\-\_\ ]*')
     cantidad        = get_valid_data_integer("  * Cantidad: ", 1, 1000000000000)
@@ -135,7 +142,7 @@ def request_a_product():
     precio_total    = cantidad*precio_unitario
     fecha           = get_valid_data_varchar("  * Fecha (Día/Mes/Año): ", '[0-3][0-9]\/[0-1][0-9]\/20[0-2][0-9]')
 
-    print("\n  * Desea continuar con la operación?")
+    print("\n  >>> Desea continuar con la operación?")
     if(input("    (Y/N): ") == 'Y'):
         return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
     else:
@@ -150,7 +157,7 @@ def request_product_list():
         if(nuevo_producto != []):
             lista_productos.append(nuevo_producto)
 
-        print("\n  * ¿Desea agregar un nuevo producto?")
+        print("\n  >>> ¿Desea agregar un nuevo producto?")
         if(input("    (Y/N): ") == 'Y'):
             continuar = True
         else:
@@ -162,7 +169,9 @@ def main():
     continuar = True
     while(continuar): 
         subprocess.run(["clear"])
-        print("\n\n  ** Programa para realizar operaciones con base de datos (SQLite)\n")
+        print("\n  ====================================", end='')
+        print("\n  |  Programa Para Registrar Gastos  |", end='')
+        print("\n  ====================================", end='\n\n')
         print("  1. Mostrar contenido de la base de datos")
         print("  2. Insertar un elemento en la base de datos")
         print("  3. Eliminar un elemento en la base de datos")
