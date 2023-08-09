@@ -158,19 +158,14 @@ def request_a_product():
     return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
 
 def request_and_insert_product_list(): 
-    lista_productos = []
-
-    continuar = True
-    while(continuar == True):
+    while True:
         nuevo_producto = request_a_product()
         insert_in_database(nuevo_producto)
 
-        print("\n  >>> ¿Desea agregar un nuevo producto?")
-        if(input("    (Y/N): ") == 'Y'):
-            continuar = True
+        if(input("\n  >>> ¿Desea agregar otro producto?\n    (Y/N): ") == 'Y'):
+            continue
         else:
-            continuar = False
-    return lista_productos
+            break
 
 def main():
     create_table()
