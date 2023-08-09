@@ -121,14 +121,13 @@ def insert_in_database(producto):
     c.execute(sqlite_statement, producto)
     confirm_transaction_database(conn, c)
 
-def show_database():
+def show_database_product():
     c = conn.cursor()
     c.execute("SELECT * FROM productos")
     data = c.fetchall()
     print("\n\n  >>> Mostrando el contenido de la base de datos...")
     print("\n  --------------------------------------------------------\n")
-    for row in data:
-        print(f"  |  {row}")
+    [print(f"  |  {row}") for row in data]
     print("\n  --------------------------------------------------------\n")
     input("\n  Presione ENTER para continuar...\n")
 
@@ -183,7 +182,7 @@ def main():
         opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
         if(opcion == 1): 
             subprocess.run(["clear"])
-            show_database()
+            show_database_product()
         elif(opcion == 2):
             subprocess.run(["clear"])
             request_and_insert_product_list()
