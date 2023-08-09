@@ -63,7 +63,7 @@ def validate_and_delete_in_database():
     if(show_num_rows() > 0):
         delete_in_database()
     else:
-        input("\n  >>> La base de datos esta vacia, ho hay nada que hacer...\n  Presione ENTER para continuar...\n")
+        input("\n  >>> La base de datos esta vacia, ho hay nada que hacer...\n\n  Presione ENTER para continuar...\n")
 
 def delete_in_database():
         print("\n  =======================================", end='')
@@ -73,7 +73,7 @@ def delete_in_database():
         print("  2. Eliminar todos los productos con cierto NOMBRE")
         print("  3. Eliminar todos los productos en cierta FECHA")
         print("  4. Limpiar pantalla")
-        print("  5. Cancelar y regresar")
+        print("  5. Regresar")
         opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
         if(opcion == 1): 
             c = conn.cursor()
@@ -91,11 +91,15 @@ def delete_in_database():
             subprocess.run(["clear"])
             delete_in_database()
         elif(opcion == 5):
-            print("\n  Cancelando operación...")
+            print("\n  Regresando...")
             time.sleep(1)
         if((opcion == 1) or (opcion == 2) or (opcion == 3)):
-            conn.commit()
-            print(f"\n  >>> El número de filas afectadas fue: {c.rowcount}\n")            
+            if(get_valid_data_varchar("\n  >>> Desea continuar con la transacción? \n  * (Y/N): ", '(Y|N)') == 'Y'):
+                conn.commit()
+                print(f"\n  >>> El número de filas afectadas fue: {c.rowcount}\n")            
+            else:
+                conn.rollback()
+                print("\n  Operación cancelada...")
         input("\n  Presione ENTER para continuar...\n")
 
 def insert_in_database(lista_productos):
