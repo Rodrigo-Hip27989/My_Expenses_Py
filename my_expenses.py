@@ -83,14 +83,14 @@ def delete_in_database():
             print(f"\n  El número de filas afectadas fue: {c.rowcount}\n")
         elif(opcion == 2): 
             c = conn.cursor()
-            nombre = input("\n  Ingrese el nombre: ")
+            nombre = get_valid_data_varchar("\n  Ingrese el nombre: ", '^[a-zA-Z]+[a-zA-Z0-9\.\-\_\ ]*')
             sqlite_statement = "DELETE FROM productos WHERE nombre=?"
             c.execute(sqlite_statement, (nombre, ))
             conn.commit()
             print(f"\n   El número de filas afectadas fue: {c.rowcount}\n")
         elif(opcion == 3): 
             c = conn.cursor()
-            fecha = input("\n  Ingrese la fecha: ")
+            fecha = get_valid_data_varchar("\n  Ingrese la fecha (Día/Mes/Año):", '[0-3][0-9]\/[0-1][0-9]\/20[0-2][0-9]')
             sqlite_statement = "DELETE FROM productos WHERE fecha=?"
             c.execute(sqlite_statement, (fecha, ))
             conn.commit()
