@@ -59,11 +59,37 @@ def get_valid_data_float(mostrar_mensaje, minimo, maximo):
             print("\n  ==> Error! El tipo de dato introducido no es valido !!! <==\n")
             continue
 
+def confirm_transaction_database(conn, c):
+    if(get_valid_data_varchar("\n  >>> Desea continuar con la transacción? \n  * (Y/N): ", '(Y|N)') == 'Y'):
+        conn.commit()
+        print(f"\n  >>> El número de filas afectadas fue: {c.rowcount}\n")            
+    else:
+        conn.rollback()
+        print("\n  Operación cancelada...")
+
 def validate_and_delete_in_database():    
     if(show_num_rows() > 0):
         delete_in_database()
     else:
         input("\n  >>> La base de datos esta vacia, ho hay nada que hacer...\n\n  Presione ENTER para continuar...\n")
+
+def delete_product_using_id(): 
+    c = conn.cursor()
+    id_producto = get_valid_data_integer("\n  Ingrese el ID: ", 1, 1000000000000)
+    c.execute("DELETE FROM productos WHERE id=?", (id_producto, ))
+    confirm_transaction_database(conn, c)
+
+def delete_product_using_name(): 
+    c = conn.cursor()
+    nombre = get_valid_data_varchar("\n  Ingrese el nombre: ", '^[a-zA-Z]+[a-zA-Z0-9\.\-\_\ ]*')
+    c.execute("DELETE FROM productos WHERE nombre=?", (nombre, ))
+    confirm_transaction_database(conn, c)
+
+def delete_product_using_date(): 
+    c = conn.cursor()
+    fecha = get_valid_data_varchar("\n  Ingrese la fecha (Día/Mes/Año):", '[0-3][0-9]\/[0-1][0-9]\/20[0-2][0-9]')
+    c.execute("DELETE FROM productos WHERE fecha=?", (fecha, ))
+    confirm_transaction_database(conn, c)
 
 def delete_in_database():
         print("\n  =======================================", end='')
@@ -76,42 +102,24 @@ def delete_in_database():
         print("  5. Regresar")
         opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
         if(opcion == 1): 
-            c = conn.cursor()
-            id_producto = get_valid_data_integer("\n  Ingrese el ID: ", 1, 1000000000000)
-            c.execute("DELETE FROM productos WHERE id=?", (id_producto, ))
+            delete_product_using_id()
         elif(opcion == 2): 
-            c = conn.cursor()
-            nombre = get_valid_data_varchar("\n  Ingrese el nombre: ", '^[a-zA-Z]+[a-zA-Z0-9\.\-\_\ ]*')
-            c.execute("DELETE FROM productos WHERE nombre=?", (nombre, ))
+            delete_product_using_name()
         elif(opcion == 3): 
-            c = conn.cursor()
-            fecha = get_valid_data_varchar("\n  Ingrese la fecha (Día/Mes/Año):", '[0-3][0-9]\/[0-1][0-9]\/20[0-2][0-9]')
-            c.execute("DELETE FROM productos WHERE fecha=?", (fecha, ))
+            delete_product_using_date()
         elif(opcion == 4):
             subprocess.run(["clear"])
             delete_in_database()
         elif(opcion == 5):
             print("\n  Regresando...")
             time.sleep(1)
-        if((opcion == 1) or (opcion == 2) or (opcion == 3)):
-            if(get_valid_data_varchar("\n  >>> Desea continuar con la transacción? \n  * (Y/N): ", '(Y|N)') == 'Y'):
-                conn.commit()
-                print(f"\n  >>> El número de filas afectadas fue: {c.rowcount}\n")            
-            else:
-                conn.rollback()
-                print("\n  Operación cancelada...")
         input("\n  Presione ENTER para continuar...\n")
 
 def insert_in_database(producto):
     c = conn.cursor()
     sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio_unitario, precio_total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
     c.execute(sqlite_statement, producto)
-    if(get_valid_data_varchar("\n  >>> Desea continuar con la transacción? \n  * (Y/N): ", '(Y|N)') == 'Y'):            
-        conn.commit()
-        print(f"\n  >>> El número de filas afectadas fue: {c.rowcount}\n")            
-    else:
-        conn.rollback()
-        print("\n  Operación cancelada...")
+    confirm_transaction_database(conn, c)
 
 def show_database():
     c = conn.cursor()
