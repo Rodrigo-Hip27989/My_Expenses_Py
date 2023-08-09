@@ -72,32 +72,30 @@ def delete_in_database():
         print("  1. Eliminar producto por medio del ID")
         print("  2. Eliminar todos los productos con cierto NOMBRE")
         print("  3. Eliminar todos los productos en cierta FECHA")
-        print("  4. Cancelar y regresar")
-        opcion = get_valid_data_integer("\n  * Opción >> ", 1, 4)
+        print("  4. Limpiar pantalla")
+        print("  5. Cancelar y regresar")
+        opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
         if(opcion == 1): 
             c = conn.cursor()
             id_producto = get_valid_data_integer("\n  Ingrese el ID: ", 1, 1000000000000)
-            sqlite_statement = "DELETE FROM productos WHERE id=?"
-            c.execute(sqlite_statement, (id_producto, ))
-            conn.commit()
-            print(f"\n  El número de filas afectadas fue: {c.rowcount}\n")
+            c.execute("DELETE FROM productos WHERE id=?", (id_producto, ))
         elif(opcion == 2): 
             c = conn.cursor()
             nombre = get_valid_data_varchar("\n  Ingrese el nombre: ", '^[a-zA-Z]+[a-zA-Z0-9\.\-\_\ ]*')
-            sqlite_statement = "DELETE FROM productos WHERE nombre=?"
-            c.execute(sqlite_statement, (nombre, ))
-            conn.commit()
-            print(f"\n   El número de filas afectadas fue: {c.rowcount}\n")
+            c.execute("DELETE FROM productos WHERE nombre=?", (nombre, ))
         elif(opcion == 3): 
             c = conn.cursor()
             fecha = get_valid_data_varchar("\n  Ingrese la fecha (Día/Mes/Año):", '[0-3][0-9]\/[0-1][0-9]\/20[0-2][0-9]')
-            sqlite_statement = "DELETE FROM productos WHERE fecha=?"
-            c.execute(sqlite_statement, (fecha, ))
-            conn.commit()
-            print(f"\n  El número de filas afectadas fue: {c.rowcount}\n")
+            c.execute("DELETE FROM productos WHERE fecha=?", (fecha, ))
         elif(opcion == 4):
-            print("\n  Cancelando operación...\n")
-            time.sleep(1.5)
+            subprocess.run(["clear"])
+            delete_in_database()
+        elif(opcion == 5):
+            print("\n  Cancelando operación...")
+            time.sleep(1)
+        if((opcion == 1) or (opcion == 2) or (opcion == 3)):
+            conn.commit()
+            print(f"\n  >>> El número de filas afectadas fue: {c.rowcount}\n")            
         input("\n  Presione ENTER para continuar...\n")
 
 def insert_in_database(lista_productos):
