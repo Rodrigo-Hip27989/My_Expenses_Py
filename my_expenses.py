@@ -168,8 +168,7 @@ def request_and_insert_product_list():
 
 def main():
     create_table()
-    continuar = True
-    while(continuar): 
+    while True:
         subprocess.run(["clear"])
         print("\n  ====================================", end='')
         print("\n  |  Programa Para Registrar Gastos  |", end='')
@@ -180,7 +179,7 @@ def main():
         print("  4. Limpiar pantalla")
         print("  5. Salir")
         opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
-        if(opcion == 1): 
+        if(opcion == 1):
             subprocess.run(["clear"])
             show_database_product()
         elif(opcion == 2):
@@ -191,11 +190,11 @@ def main():
             validate_and_delete_in_database()
         elif(opcion == 4):
             subprocess.run(["clear"])
-        elif(opcion == 5): 
+        elif(opcion == 5):
             subprocess.run(["clear"])
             print("\n  Saliendo del programa...\n")
             time.sleep(1)
-            continuar = False
+            break
     conn.close()
 
 main()
