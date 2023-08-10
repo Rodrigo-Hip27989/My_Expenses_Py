@@ -68,7 +68,7 @@ def confirm_transaction_database(conn, c):
     else:
         conn.rollback()
         print("\n  *** Operación cancelada...***")
-    input("\n      Presione ENTER para continuar...\n      ")
+    input("\n  ==> Presione ENTER para continuar...")
 
 def delete_product_using_id(): 
     c = conn.cursor()
@@ -122,7 +122,7 @@ def validate_and_delete_in_database():
         delete_in_database()
     else:
         print("\n  >>> La base de datos esta vacia, ho hay nada que hacer...")
-        input("\n      Presione ENTER para continuar...\n     ")
+        input("\n      Presione ENTER para continuar...")
 
 def insert_in_database(producto):
     c = conn.cursor()
@@ -139,7 +139,7 @@ def show_database_product():
     print("\n  --------------------------------------------------------\n")
     [print(f"  |  {row}") for row in data]
     print("\n  --------------------------------------------------------\n")
-    input("\n  Presione ENTER para continuar...\n     ")
+    input("\n  Presione ENTER para continuar...")
 
 def request_a_product():
     print("\n  ================================", end='')
