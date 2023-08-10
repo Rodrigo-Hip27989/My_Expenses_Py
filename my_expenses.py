@@ -60,9 +60,11 @@ def get_valid_data_float(mostrar_mensaje, minimo, maximo):
             continue
 
 def confirm_transaction_database(conn, c):
-    if(get_valid_data_varchar("\n  >>> Desea continuar con la transacción? \n  * (Y/N): ", '(Y|N)') == 'Y'):
+    respuesta = get_valid_data_varchar("\n  >>> Desea continuar (Si/No)? ", '(Si|No|S|N|si|no|s|n)')
+    if((respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
         conn.commit()
-        print(f"\n  >>> El número de filas afectadas fue: {c.rowcount}\n")            
+        if(c.rowcount > 0): 
+            print("\n  *** Transacción Realizada Con Exito ***")
     else:
         conn.rollback()
         print("\n  Operación cancelada...")
@@ -157,7 +159,8 @@ def request_and_insert_product_list():
         nuevo_producto = request_a_product()
         insert_in_database(nuevo_producto)
 
-        if(input("\n  >>> ¿Desea agregar otro producto?\n    (Y/N): ") == 'Y'):
+        respuesta = get_valid_data_varchar("\n  >>> ¿Desea agregar otro producto (Si/No)?: ", '(Si|No|S|N|si|no|s|n)')
+        if((respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
             continue
         else:
             break
