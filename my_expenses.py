@@ -67,8 +67,8 @@ def confirm_transaction_database(conn, c):
             print("\n  *** Transacción Realizada Con Exito ***")
     else:
         conn.rollback()
-        print("\n  Operación cancelada...")
-    input("\n  Presione ENTER para continuar...")
+        print("\n  *** Operación cancelada...***")
+    input("\n      Presione ENTER para continuar...\n      ")
 
 def delete_product_using_id(): 
     c = conn.cursor()
@@ -121,7 +121,8 @@ def validate_and_delete_in_database():
     if(get_num_rows_table_products() > 0):
         delete_in_database()
     else:
-        input("\n  >>> La base de datos esta vacia, ho hay nada que hacer...\n\n  Presione ENTER para continuar...")
+        print("\n  >>> La base de datos esta vacia, ho hay nada que hacer...")
+        input("\n      Presione ENTER para continuar...\n     ")
 
 def insert_in_database(producto):
     c = conn.cursor()
@@ -138,16 +139,16 @@ def show_database_product():
     print("\n  --------------------------------------------------------\n")
     [print(f"  |  {row}") for row in data]
     print("\n  --------------------------------------------------------\n")
-    input("\n  Presione ENTER para continuar...")
+    input("\n  Presione ENTER para continuar...\n     ")
 
 def request_a_product():
     print("\n  ================================", end='')
     print("\n  |  Registrando Nuevo Producto  |", end='')
     print("\n  ================================", end='\n\n')
     producto = []
-    nombre          = get_valid_data_varchar("  * Nombre: ", '^[a-zA-Z]+[a-zA-Z0-9\.\-\_\ ]*')
-    cantidad        = get_valid_data_integer("  * Cantidad: ", 1, 1000000000000)
-    medida          = get_valid_data_varchar("  * Medida: ", '^[a-zA-Z]+[a-zA-Z0-9\.\-\_\ ]*')
+    nombre          = get_valid_data_varchar("  * Nombre: ", '^[a-zA-ZñÑ]+[a-zA-ZñÑ0-9\.\-\_\ ]*')
+    cantidad        = get_valid_data_float("  * Cantidad: ", 1, 1000000000000)
+    medida          = get_valid_data_varchar("  * Medida: ", '^[a-zA-ZñÑ]+[a-zA-ZñÑ0-9\.\-\_\ ]*')
     precio_unitario = get_valid_data_float("  * Precio Unitario: ", 0, 1000000000000)
     precio_total    = cantidad*precio_unitario
     fecha           = get_valid_data_varchar("  * Fecha (Día/Mes/Año): ", '[0-3][0-9]\/[0-1][0-9]\/20[0-2][0-9]')
