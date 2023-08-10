@@ -92,28 +92,28 @@ def delete_product_using_date():
     confirm_transaction_database(conn, c)
 
 def delete_in_database():
-        print("\n  =======================================", end='')
-        print("\n  |  Opciones Para Eliminar El Producto |", end='')
-        print("\n  =======================================", end='\n\n')
-        print("  1. Eliminar producto por medio del ID")
-        print("  2. Eliminar todos los productos con cierto NOMBRE")
-        print("  3. Eliminar todos los productos en cierta FECHA")
-        print("  4. Limpiar pantalla")
-        print("  5. Regresar")
-        opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
-        if(opcion == 1): 
-            delete_product_using_id()
-        elif(opcion == 2): 
-            delete_product_using_name()
-        elif(opcion == 3): 
-            delete_product_using_date()
-        elif(opcion == 4):
-            subprocess.run(["clear"])
-            delete_in_database()
-        elif(opcion == 5):
-            print("\n  Regresando...")
-            time.sleep(1)
-        input("\n  Presione ENTER para continuar...\n")
+    print("\n  =======================================", end='')
+    print("\n  |  Opciones Para Eliminar El Producto |", end='')
+    print("\n  =======================================", end='\n\n')
+    print("  1. Eliminar producto por medio del ID")
+    print("  2. Eliminar todos los productos con cierto NOMBRE")
+    print("  3. Eliminar todos los productos en cierta FECHA")
+    print("  4. Limpiar pantalla")
+    print("  5. Regresar")
+    opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
+    if(opcion == 1):
+        delete_product_using_id()
+    elif(opcion == 2):
+        delete_product_using_name()
+    elif(opcion == 3):
+        delete_product_using_date()
+    elif(opcion == 4):
+        subprocess.run(["clear"])
+        delete_in_database()
+    elif(opcion == 5):
+        print("\n  Regresando...")
+        time.sleep(1)
+    input("\n  Presione ENTER para continuar...\n")
 
 def insert_in_database(producto):
     c = conn.cursor()
