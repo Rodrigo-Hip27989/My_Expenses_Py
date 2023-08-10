@@ -67,12 +67,6 @@ def confirm_transaction_database(conn, c):
         conn.rollback()
         print("\n  Operación cancelada...")
 
-def validate_and_delete_in_database():    
-    if(show_num_rows() > 0):
-        delete_in_database()
-    else:
-        input("\n  >>> La base de datos esta vacia, ho hay nada que hacer...\n\n  Presione ENTER para continuar...\n")
-
 def delete_product_using_id(): 
     c = conn.cursor()
     id_producto = get_valid_data_integer("\n  Ingrese el ID: ", 1, 1000000000000)
@@ -115,6 +109,18 @@ def delete_in_database():
         time.sleep(1)
     input("\n  Presione ENTER para continuar...\n")
 
+def get_num_rows_table_products():
+    c = conn.cursor()
+    c.execute("SELECT COUNT(*) Num FROM productos")
+    numero_columnas = c.fetchone()[0]
+    return numero_columnas
+
+def validate_and_delete_in_database():
+    if(get_num_rows_table_products() > 0):
+        delete_in_database()
+    else:
+        input("\n  >>> La base de datos esta vacia, ho hay nada que hacer...\n\n  Presione ENTER para continuar...\n")
+
 def insert_in_database(producto):
     c = conn.cursor()
     sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio_unitario, precio_total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
@@ -130,12 +136,6 @@ def show_database_product():
     [print(f"  |  {row}") for row in data]
     print("\n  --------------------------------------------------------\n")
     input("\n  Presione ENTER para continuar...\n")
-
-def show_num_rows():
-    c = conn.cursor()
-    c.execute("SELECT COUNT(*) Num FROM productos")
-    numero_columnas = c.fetchone()[0]
-    return numero_columnas
 
 def show_producto(producto):
     print("\n  ========================", end='')
