@@ -142,6 +142,7 @@ def show_database_product():
     input("\n  Presione ENTER para continuar...")
 
 def request_a_product():
+    subprocess.run(["clear"])
     print("\n  ================================", end='')
     print("\n  |  Registrando Nuevo Producto  |", end='')
     print("\n  ================================", end='\n\n')
