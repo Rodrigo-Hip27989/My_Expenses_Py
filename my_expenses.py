@@ -66,6 +66,7 @@ def confirm_transaction_database(conn, c):
     else:
         conn.rollback()
         print("\n  Operación cancelada...")
+    input("\n  Presione ENTER para continuar...")
 
 def delete_product_using_id(): 
     c = conn.cursor()
@@ -86,6 +87,7 @@ def delete_product_using_date():
     confirm_transaction_database(conn, c)
 
 def delete_in_database():
+    subprocess.run(["clear"])
     print("\n  =======================================", end='')
     print("\n  |  Opciones Para Eliminar El Producto |", end='')
     print("\n  =======================================", end='\n\n')
@@ -102,12 +104,10 @@ def delete_in_database():
     elif(opcion == 3):
         delete_product_using_date()
     elif(opcion == 4):
-        subprocess.run(["clear"])
         delete_in_database()
     elif(opcion == 5):
         print("\n  Regresando...")
         time.sleep(1)
-    input("\n  Presione ENTER para continuar...\n")
 
 def get_num_rows_table_products():
     c = conn.cursor()
@@ -119,7 +119,7 @@ def validate_and_delete_in_database():
     if(get_num_rows_table_products() > 0):
         delete_in_database()
     else:
-        input("\n  >>> La base de datos esta vacia, ho hay nada que hacer...\n\n  Presione ENTER para continuar...\n")
+        input("\n  >>> La base de datos esta vacia, ho hay nada que hacer...\n\n  Presione ENTER para continuar...")
 
 def insert_in_database(producto):
     c = conn.cursor()
@@ -131,11 +131,12 @@ def show_database_product():
     c = conn.cursor()
     c.execute("SELECT * FROM productos")
     data = c.fetchall()
+    subprocess.run(["clear"])
     print("\n\n  >>> Mostrando el contenido de la base de datos...")
     print("\n  --------------------------------------------------------\n")
     [print(f"  |  {row}") for row in data]
     print("\n  --------------------------------------------------------\n")
-    input("\n  Presione ENTER para continuar...\n")
+    input("\n  Presione ENTER para continuar...")
 
 def request_a_product():
     print("\n  ================================", end='')
@@ -151,6 +152,7 @@ def request_a_product():
     return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
 
 def request_and_insert_product_list(): 
+    subprocess.run(["clear"])
     while True:
         nuevo_producto = request_a_product()
         insert_in_database(nuevo_producto)
@@ -174,18 +176,14 @@ def main():
         print("  5. Salir")
         opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
         if(opcion == 1):
-            subprocess.run(["clear"])
             show_database_product()
         elif(opcion == 2):
-            subprocess.run(["clear"])
             request_and_insert_product_list()
         elif(opcion == 3):
-            subprocess.run(["clear"])
             validate_and_delete_in_database()
         elif(opcion == 4):
             subprocess.run(["clear"])
         elif(opcion == 5):
-            subprocess.run(["clear"])
             print("\n  Saliendo del programa...\n")
             time.sleep(1)
             break
