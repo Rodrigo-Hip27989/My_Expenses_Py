@@ -137,12 +137,6 @@ def show_database_product():
     print("\n  --------------------------------------------------------\n")
     input("\n  Presione ENTER para continuar...\n")
 
-def show_producto(producto):
-    print("\n  ========================", end='')
-    print("\n  |  Datos Del Producto  |", end='')
-    print("\n  ========================", end='\n\n')
-    [print(f"  * Atributo: {atributo}") for atributo in producto]
-
 def request_a_product():
     print("\n  ================================", end='')
     print("\n  |  Registrando Nuevo Producto  |", end='')
