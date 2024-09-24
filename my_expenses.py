@@ -2,6 +2,7 @@ import re
 import time
 import sqlite3
 import subprocess
+from fractions import Fraction
 
 conn = sqlite3.connect("sqlite_db/my_expenses.db")
 
@@ -46,11 +47,19 @@ def get_valid_data_integer(mostrar_mensaje, minimo, maximo):
             print("\n  ==> Error! El tipo de dato introducido no es valido !!!\n")
             continue
 
+def convertir_a_flotante(input_string):
+    try:
+        # Intentar convertir la entrada como una fracción
+        return float(Fraction(input_string))
+    except ValueError:
+        # Si falla, intentar convertir como float directamente
+        return float(input_string)
+
 def get_valid_data_float(mostrar_mensaje, minimo, maximo):
     numero = 0
     while True:
         try: 
-            numero = float(input(mostrar_mensaje))
+            numero = convertir_a_flotante(input(mostrar_mensaje))
             if(numero >= minimo and numero <= maximo):
                 return numero
             else:
