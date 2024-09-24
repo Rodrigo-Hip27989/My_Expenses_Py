@@ -3,7 +3,11 @@ import time
 import sqlite3
 import subprocess
 from fractions import Fraction
+import os
 
+name_folder="sqlite_db"
+if not os.path.exists(name_folder):
+    os.makedirs(name_folder)
 conn = sqlite3.connect("sqlite_db/my_expenses.db")
 
 def create_table():
