@@ -7,7 +7,7 @@ conn = sqlite3.connect("sqlite_db/my_expenses.db")
 
 def create_table():
     c = conn.cursor()
-    c.execute("CREATE TABLE if not exists productos (id integer PRIMARY KEY, nombre text, cantidad integer, medida text, precio_unitario real, precio_total real, fecha text)")
+    c.execute("CREATE TABLE if not exists productos (id INTEGER PRIMARY KEY, nombre TEXT, cantidad REAL, medida TEXT, precio_unitario REAL, precio_total REAL, fecha TEXT)")
     conn.commit()
 
 def validate_data_match_regex(entrada, regex):
@@ -147,9 +147,9 @@ def request_a_product():
     print("\n  ================================", end='\n\n')
     producto = []
     nombre          = get_valid_data_varchar("  * Nombre: ", '^[a-zA-ZñÑ]+[a-zA-ZñÑ0-9\.\-\_\ ]*')
-    cantidad        = get_valid_data_float("  * Cantidad: ", 1, 1000000000000)
+    cantidad        = get_valid_data_float("  * Cantidad: ", 0.0001, 1000000)
     medida          = get_valid_data_varchar("  * Medida: ", '^[a-zA-ZñÑ]+[a-zA-ZñÑ0-9\.\-\_\ ]*')
-    precio_unitario = get_valid_data_float("  * Precio Unitario: ", 0, 1000000000000)
+    precio_unitario = get_valid_data_float("  * Precio Unitario: ", 0, 1000000)
     precio_total    = cantidad*precio_unitario
     fecha           = get_valid_data_varchar("  * Fecha (Día/Mes/Año): ", '[0-3][0-9]\/[0-1][0-9]\/20[0-2][0-9]')
     return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
