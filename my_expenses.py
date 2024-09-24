@@ -63,7 +63,7 @@ def get_valid_data_float(mostrar_mensaje, minimo, maximo):
     numero = 0
     while True:
         try: 
-            numero = convertir_a_flotante(input(mostrar_mensaje))
+            numero = round(convertir_a_flotante(input(mostrar_mensaje)), 3)
             if(numero >= minimo and numero <= maximo):
                 return numero
             else:
