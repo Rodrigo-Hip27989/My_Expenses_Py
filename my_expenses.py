@@ -155,9 +155,9 @@ def request_a_product():
     print("\n  |  Registrando Nuevo Producto  |", end='')
     print("\n  ================================", end='\n\n')
     producto = []
-    nombre          = get_valid_data_varchar("  * Nombre: ", '^[a-zA-ZñÑ]+[a-zA-ZñÑ0-9\.\-\_\ ]*')
+    nombre          = get_valid_data_varchar("  * Nombre: ", '^[a-zA-ZñÑ]+[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9()\.\-\_\ ]*')
     cantidad        = get_valid_data_float("  * Cantidad: ", 0.0001, 1000000)
-    medida          = get_valid_data_varchar("  * Medida: ", '^[a-zA-ZñÑ]+[a-zA-ZñÑ0-9\.\-\_\ ]*')
+    medida          = get_valid_data_varchar("  * Medida: ", '^[a-zA-ZñÑ]+[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9()\.\-\_\ ]*')
     precio_unitario = get_valid_data_float("  * Precio Unitario: ", 0, 1000000)
     precio_total    = cantidad*precio_unitario
     fecha           = get_valid_data_varchar("  * Fecha (Día/Mes/Año): ", '[0-3][0-9]\/[0-1][0-9]\/20[0-2][0-9]')
