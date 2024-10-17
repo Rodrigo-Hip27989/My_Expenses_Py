@@ -15,6 +15,14 @@ def create_table():
     c.execute("CREATE TABLE if not exists productos (id INTEGER PRIMARY KEY, nombre TEXT, cantidad REAL, medida TEXT, precio_unitario REAL, precio_total REAL, fecha TEXT)")
     conn.commit()
 
+def convertir_a_flotante(input_string):
+    try:
+        # Intentar convertir la entrada como una fracción
+        return float(Fraction(input_string))
+    except ValueError:
+        # Si falla, intentar convertir como float directamente
+        return float(input_string)
+
 def read_input_regex(patron, mensaje):
     input_varchar = input(mensaje)
     if(re.fullmatch(patron, input_varchar) is not None):
@@ -44,14 +52,6 @@ def get_valid_data_integer(mostrar_mensaje, minimo, maximo):
             print(f"\n  ==> El número debe estar en el rango [{minimo}-{maximo}] <==\n")
     return numero
 
-def convertir_a_flotante(input_string):
-    try:
-        # Intentar convertir la entrada como una fracción
-        return float(Fraction(input_string))
-    except ValueError:
-        # Si falla, intentar convertir como float directamente
-        return float(input_string)
-
 def get_valid_data_float(mostrar_mensaje, minimo, maximo):
     regex_numero_entero = r'^(-?\d+(\.\d+)?|-\d+/\d+|\d+/\d+)$'
     numero = minimo-1
@@ -64,8 +64,20 @@ def get_valid_data_float(mostrar_mensaje, minimo, maximo):
             print(f"\n  ==> El número debe estar en el rango [{minimo}-{maximo}] <==\n")
     return numero
 
+def get_valid_data_simple_text(mensaje):
+    patron = r'^[a-zA-ZñÑ]+[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9()\.\-\_\ ]*'
+    return get_valid_data_varchar(patron, mensaje)
+
+def get_valid_data_fecha(mensaje):
+    patron = r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$'
+    return get_valid_data_varchar(patron, mensaje)
+
+def get_valid_data_confirmacion(mensaje):
+    patron = r'^(SI|NO|Si|No|si|no|S|N|s|n)$'
+    return get_valid_data_varchar(patron, mensaje)
+
 def confirm_transaction_database(conn, c):
-    respuesta = get_valid_data_varchar(r'^(SI|NO|Si|No|si|no|S|N|s|n)$', "\n  >>> Desea continuar (Si/No)? ")
+    respuesta = get_valid_data_confirmacion("\n  >>> Desea continuar (Si/No)? ")
     if((respuesta == 'SI') or (respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
         conn.commit()
         if(c.rowcount > 0): 
@@ -83,13 +95,13 @@ def delete_product_using_id():
 
 def delete_product_using_name(): 
     c = conn.cursor()
-    nombre = get_valid_data_varchar(r'^[a-zA-ZñÑ]+[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9()\.\-\_\ ]*', "\n  Ingrese el nombre: ")
+    nombre = get_valid_data_simple_text("\n  Ingrese el nombre: ")
     c.execute("DELETE FROM productos WHERE nombre=?", (nombre, ))
     confirm_transaction_database(conn, c)
 
 def delete_product_using_date(): 
     c = conn.cursor()
-    fecha = get_valid_data_varchar(r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$', "\n  Ingrese la fecha (Día/Mes/Año):")
+    fecha = get_valid_data_fecha("\n  Ingrese la fecha (Día/Mes/Año):")
     c.execute("DELETE FROM productos WHERE fecha=?", (fecha, ))
     confirm_transaction_database(conn, c)
 
@@ -148,14 +160,12 @@ def show_database_product():
     input("\n  Presione ENTER para continuar...")
 
 def request_a_product():
-    regex_anystr = re.compile(r'^[a-zA-ZñÑ]+[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9()\.\-\_\ ]*')
-    regex_date = re.compile(r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$')
-    nombre          = get_valid_data_varchar(regex_anystr, "  * Nombre: ")
+    nombre          = get_valid_data_simple_text("  * Nombre: ")
     cantidad        = get_valid_data_float("  * Cantidad: ", 0.0001, 1000000)
-    medida          = get_valid_data_varchar(regex_anystr, "  * Medida: ")
+    medida          = get_valid_data_simple_text("  * Medida: ")
     precio_unitario = get_valid_data_float("  * Precio Unitario: ", 0, 1000000)
     precio_total    = cantidad*precio_unitario
-    fecha           = get_valid_data_varchar(regex_date, "  * Fecha (Día/Mes/Año): ")
+    fecha           = get_valid_data_fecha("  * Fecha (Día/Mes/Año): ")
     return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
 
 def request_and_insert_product_list(): 
@@ -165,7 +175,7 @@ def request_and_insert_product_list():
         print("\n  |  Registrando Nuevo Producto  |", end='')
         print("\n  ================================", end='\n\n')
         insert_in_database(request_a_product())
-        respuesta = get_valid_data_varchar(r'^(SI|NO|Si|No|si|no|S|N|s|n)$', "\n  >>> ¿Desea agregar otro producto (Si/No)?: ")
+        respuesta = get_valid_data_confirmacion("\n  >>> ¿Desea agregar otro producto (Si/No)?: ")
         if((respuesta == 'SI') or (respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
             continue
         else:
