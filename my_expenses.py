@@ -15,41 +15,34 @@ def create_table():
     c.execute("CREATE TABLE if not exists productos (id INTEGER PRIMARY KEY, nombre TEXT, cantidad REAL, medida TEXT, precio_unitario REAL, precio_total REAL, fecha TEXT)")
     conn.commit()
 
-def validate_data_match_regex(entrada, regex):
-    pattern = re.compile(regex)
-    match = pattern.findall(entrada)
-    if(len(match) > 0):
-        if(len(match[0]) == len(entrada)):
-            return True
-        else: 
-            return False
+def read_input_regex(patron, mensaje):
+    input_varchar = input(mensaje)
+    if(re.fullmatch(patron, input_varchar) is not None):
+        return input_varchar
+    else:
+        raise ValueError(f"El valor '{input_varchar}' no es valido!")
 
-def get_valid_data_varchar(mensaje, patron):
-    nombre = ""
-    while True:
+def get_valid_data_varchar(patron, mensaje):
+    input_varchar = ""
+    while len(input_varchar.strip()) == 0:
         try: 
-            input_varchar = input(mensaje)
-            input_varchar_valid = validate_data_match_regex(input_varchar, patron)
-            if(input_varchar_valid):
-                return input_varchar
-            else:
-                print(f"\n  ==> La entrada no es valida <==\n")
-        except ValueError:
-            print("\n  ==> Error! El tipo de dato introducido no es valido !!!\n")
-            continue
+            input_varchar = read_input_regex(patron, mensaje)
+        except ValueError as e:
+            input_varchar = ""
+            print(f"\n *** {e} ***\n");
+    return input_varchar
 
 def get_valid_data_integer(mostrar_mensaje, minimo, maximo):
-    numero = 0
-    while True:
-        try: 
-            numero = int(input(mostrar_mensaje))
-            if(numero >=minimo and numero <= maximo):
-                return numero
-            else:
-                print(f"\n  ==> El número debe estar en el rango [{minimo}-{maximo}] <==\n")
-        except ValueError:
-            print("\n  ==> Error! El tipo de dato introducido no es valido !!!\n")
-            continue
+    regex_numero_entero = r'^[1-9]\d*$'
+    numero = minimo-1
+    while (numero < minimo or numero > maximo):
+        numero = int(get_valid_data_varchar(regex_numero_entero, mostrar_mensaje))
+        if(numero >=minimo and numero <= maximo):
+            break
+        else:
+            numero = minimo-1
+            print(f"\n  ==> El número debe estar en el rango [{minimo}-{maximo}] <==\n")
+    return numero
 
 def convertir_a_flotante(input_string):
     try:
@@ -60,21 +53,20 @@ def convertir_a_flotante(input_string):
         return float(input_string)
 
 def get_valid_data_float(mostrar_mensaje, minimo, maximo):
-    numero = 0
-    while True:
-        try: 
-            numero = round(convertir_a_flotante(input(mostrar_mensaje)), 3)
-            if(numero >= minimo and numero <= maximo):
-                return numero
-            else:
-                print(f"\n  ==> El número debe estar en el rango [{minimo}-{maximo}] <==\n")
-        except ValueError:
-            print("\n  ==> Error! El tipo de dato introducido no es valido !!! <==\n")
-            continue
+    regex_numero_entero = r'^(-?\d+(\.\d+)?|-\d+/\d+|\d+/\d+)$'
+    numero = minimo-1
+    while (numero < minimo or numero > maximo):
+        numero = convertir_a_flotante(get_valid_data_varchar(regex_numero_entero, mostrar_mensaje))
+        if(numero >=minimo and numero <= maximo):
+            break
+        else:
+            numero = minimo-1
+            print(f"\n  ==> El número debe estar en el rango [{minimo}-{maximo}] <==\n")
+    return numero
 
 def confirm_transaction_database(conn, c):
-    respuesta = get_valid_data_varchar("\n  >>> Desea continuar (Si/No)? ", '(Si|No|S|N|si|no|s|n)')
-    if((respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
+    respuesta = get_valid_data_varchar(r'^(SI|NO|Si|No|si|no|S|N|s|n)$', "\n  >>> Desea continuar (Si/No)? ")
+    if((respuesta == 'SI') or (respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
         conn.commit()
         if(c.rowcount > 0): 
             print("\n  *** Transacción Realizada Con Exito ***")
@@ -85,24 +77,24 @@ def confirm_transaction_database(conn, c):
 
 def delete_product_using_id(): 
     c = conn.cursor()
-    id_producto = get_valid_data_integer("\n  Ingrese el ID: ", 1, 1000000000000)
+    id_producto = get_valid_data_integer("\n  Ingrese el ID: ", 1, 1000000)
     c.execute("DELETE FROM productos WHERE id=?", (id_producto, ))
     confirm_transaction_database(conn, c)
 
 def delete_product_using_name(): 
     c = conn.cursor()
-    nombre = get_valid_data_varchar("\n  Ingrese el nombre: ", '^[a-zA-Z]+[a-zA-Z0-9\.\-\_\ ]*')
+    nombre = get_valid_data_varchar(r'^[a-zA-ZñÑ]+[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9()\.\-\_\ ]*', "\n  Ingrese el nombre: ")
     c.execute("DELETE FROM productos WHERE nombre=?", (nombre, ))
     confirm_transaction_database(conn, c)
 
 def delete_product_using_date(): 
     c = conn.cursor()
-    fecha = get_valid_data_varchar("\n  Ingrese la fecha (Día/Mes/Año):", '[0-3][0-9]\/[0-1][0-9]\/20[0-2][0-9]')
+    fecha = get_valid_data_varchar(r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$', "\n  Ingrese la fecha (Día/Mes/Año):")
     c.execute("DELETE FROM productos WHERE fecha=?", (fecha, ))
     confirm_transaction_database(conn, c)
 
 def delete_in_database():
-    subprocess.run(["clear"])
+    show_database_product()
     print("\n  =======================================", end='')
     print("\n  |  Opciones Para Eliminar El Producto |", end='')
     print("\n  =======================================", end='\n\n')
@@ -119,6 +111,7 @@ def delete_in_database():
     elif(opcion == 3):
         delete_product_using_date()
     elif(opcion == 4):
+        subprocess.run(["clear"])
         delete_in_database()
     elif(opcion == 5):
         print("\n  Regresando...")
@@ -155,26 +148,25 @@ def show_database_product():
     input("\n  Presione ENTER para continuar...")
 
 def request_a_product():
-    print("\n  ================================", end='')
-    print("\n  |  Registrando Nuevo Producto  |", end='')
-    print("\n  ================================", end='\n\n')
-    producto = []
-    nombre          = get_valid_data_varchar("  * Nombre: ", '^[a-zA-ZñÑ]+[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9()\.\-\_\ ]*')
+    regex_anystr = re.compile(r'^[a-zA-ZñÑ]+[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9()\.\-\_\ ]*')
+    regex_date = re.compile(r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$')
+    nombre          = get_valid_data_varchar(regex_anystr, "  * Nombre: ")
     cantidad        = get_valid_data_float("  * Cantidad: ", 0.0001, 1000000)
-    medida          = get_valid_data_varchar("  * Medida: ", '^[a-zA-ZñÑ]+[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9()\.\-\_\ ]*')
+    medida          = get_valid_data_varchar(regex_anystr, "  * Medida: ")
     precio_unitario = get_valid_data_float("  * Precio Unitario: ", 0, 1000000)
     precio_total    = cantidad*precio_unitario
-    fecha           = get_valid_data_varchar("  * Fecha (Día/Mes/Año): ", '[0-3][0-9]\/[0-1][0-9]\/20[0-2][0-9]')
+    fecha           = get_valid_data_varchar(regex_date, "  * Fecha (Día/Mes/Año): ")
     return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
 
 def request_and_insert_product_list(): 
-    subprocess.run(["clear"])
     while True:
-        nuevo_producto = request_a_product()
-        insert_in_database(nuevo_producto)
-
-        respuesta = get_valid_data_varchar("\n  >>> ¿Desea agregar otro producto (Si/No)?: ", '(Si|No|S|N|si|no|s|n)')
-        if((respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
+        subprocess.run(["clear"])
+        print("\n  ================================", end='')
+        print("\n  |  Registrando Nuevo Producto  |", end='')
+        print("\n  ================================", end='\n\n')
+        insert_in_database(request_a_product())
+        respuesta = get_valid_data_varchar(r'^(SI|NO|Si|No|si|no|S|N|s|n)$', "\n  >>> ¿Desea agregar otro producto (Si/No)?: ")
+        if((respuesta == 'SI') or (respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
             continue
         else:
             break
