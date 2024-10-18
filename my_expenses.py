@@ -54,7 +54,7 @@ def get_valid_data_integer(mostrar_mensaje, minimo, maximo):
     return get_valid_data_numeric(mostrar_mensaje, minimo, maximo, regex_integer, int)
 
 def get_valid_data_float(mostrar_mensaje, minimo, maximo):
-    regex_float = r'^(-?\d+(\.\d+)?|-\d+/\d+|\d+/\d+)$'
+    regex_float = r'^(?!.*\/0)(-?\d+(\.\d+)?|-\d+/\d+|\d+/\d+)$'
     return get_valid_data_numeric(mostrar_mensaje, minimo, maximo, regex_float, convert_to_float)
 
 def get_valid_data_simple_text(mensaje):
