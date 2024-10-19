@@ -143,6 +143,36 @@ def insert_in_database(producto):
     c.execute(sqlite_statement, producto)
     confirm_transaction_database(conn, c)
 
+def get_header_sizes(terminal_size):
+    if(terminal_size >= 130):
+        return [4, 28, 16, 26, 17, 17]
+    elif((terminal_size >= 115) and (terminal_size < 130)):
+        return [4, 24, 13, 22, 15, 15]
+    elif((terminal_size >= 105) and (terminal_size < 115)):
+        return [3, 22, 11, 19, 13, 13]
+    elif((terminal_size >= 97) and (terminal_size < 105)):
+        return [3, 19, 9, 17, 11, 11]
+    elif((terminal_size >= 90) and (terminal_size < 97)):
+        return [3, 16, 8, 12, 10, 10]
+    else:
+        return []
+
+def draw_table_data(data, encabezados, headers_size):
+    # DESEÑO DE BORDE
+    borde = "   +" + "+".join(["-" * (hsize+2) for hsize in headers_size]) + "+"
+    # ENCABEZADOS
+    print(f"{borde}\n   | " + " | ".join(f"{nombre:<{hsize}}" for nombre, hsize in zip(encabezados, headers_size)) + f" |\n{borde}")
+    # IMPRESION DE DATOS
+    for row in data:
+        print("   | " + " | ".join(f"{str(item):<{hsize}}" for item, hsize in zip(row, headers_size)) + " |")
+    print(f"{borde}")
+
+def show_unformated_data(data):
+    border = '*' * (75)
+    print(f"\n  {border}\n")
+    [print(f"  |  {row}") for row in data]
+    print(f"\n  {border}\n")
+
 def show_database_product():
     c = conn.cursor()
     c.execute("SELECT * FROM productos")
@@ -151,36 +181,12 @@ def show_database_product():
     print("\n")
 
     terminal_size = os.get_terminal_size().columns
-    if(terminal_size >= 131):
-        headers_size = [5, 28, 16, 26, 17, 17]
-    elif((terminal_size >= 116) and (terminal_size < 131)):
-        headers_size = [4, 24, 13, 21, 16, 16]
-    elif((terminal_size >= 105) and (terminal_size < 116)):
-        headers_size = [3, 21, 11, 18, 15, 15]
-    elif((terminal_size >= 95) and (terminal_size < 105)):
-        headers_size = [3, 19, 8, 15, 13, 13]
-    elif((terminal_size >= 85) and (terminal_size < 95)):
-        headers_size = [3, 17, 8, 14, 9, 11]
-    else:
-        headers_size = []
-
-    if(len(headers_size)>0):
+    if(terminal_size>=90):
         encabezados = [desc[0] for desc in c.description]
-        borde = "   +" + "+".join(["-" * (hsize+2) for hsize in headers_size]) + "+"
-        print(f"{borde}")
-        # BORDE DE ENCABEZADOS
-        print("   | " + " | ".join(f"{nombre:<{hsize}}" for nombre, hsize in zip(encabezados, headers_size)) + " |")
-        print(f"{borde}")
-        # IMPRESION DE DATOS
-        for row in data:
-            print("   | " + " | ".join(f"{str(item):<{hsize}}" for item, hsize in zip(row, headers_size)) + " |")
-        print(f"{borde}")
+        headers_size = get_header_sizes(terminal_size)
+        draw_table_data(data, encabezados, headers_size)
     else:
-        border = '*' * (3**4)
-        print(f"\n  {border}\n")
-        [print(f"  |  {row}") for row in data]
-        print(f"\n  {border}\n")
-
+        show_unformated_data(data)
     input("\n   >>> Presione ENTER para continuar <<<")
 
 def request_a_product():
