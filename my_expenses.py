@@ -78,7 +78,7 @@ def confirm_transaction_database(conn, c):
     else:
         conn.rollback()
         print("\n  *** Operación cancelada...***")
-    input("\n  ==> Presione ENTER para continuar...")
+    input("\n  >>> Presione ENTER para continuar <<<")
 
 def delete_product_using_id(): 
     c = conn.cursor()
@@ -98,14 +98,16 @@ def delete_product_using_date():
     c.execute("DELETE FROM productos WHERE fecha=?", (fecha, ))
     confirm_transaction_database(conn, c)
 
+def draw_tittle_border(titulo):
+    border = '=' * (len(titulo) + 7)
+    print(f"\n  {border}\n  |  {titulo}  |\n  {border}\n")
+
 def delete_in_database():
     show_database_product()
-    print("\n  =======================================", end='')
-    print("\n  |  Opciones Para Eliminar El Producto |", end='')
-    print("\n  =======================================", end='\n\n')
-    print("  1. Eliminar producto por medio del ID")
-    print("  2. Eliminar todos los productos con cierto NOMBRE")
-    print("  3. Eliminar todos los productos en cierta FECHA")
+    draw_tittle_border("ELIMINAR UN PRODUCTO")
+    print("  1. Usando su ID")
+    print("  2. Todos los que coincidan con el NOMBRE")
+    print("  3. Todos los que coincidan en cierta FECHA")
     print("  4. Limpiar pantalla")
     print("  5. Regresar")
     opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
@@ -132,8 +134,8 @@ def validate_and_delete_in_database():
     if(get_num_rows_table_products() > 0):
         delete_in_database()
     else:
-        print("\n  >>> La base de datos esta vacia, ho hay nada que hacer...")
-        input("\n      Presione ENTER para continuar...")
+        print("\n       No hay datos para mostrar...")
+        input("\n   >>> Presione ENTER para continuar <<<")
 
 def insert_in_database(producto):
     c = conn.cursor()
@@ -146,10 +148,10 @@ def show_database_product():
     c.execute("SELECT * FROM productos")
     data = c.fetchall()
     subprocess.run(["clear"])
-    print("\n\n  >>> Mostrando el contenido de la base de datos...")
-    print("\n  --------------------------------------------------------\n")
-    [print(f"  |  {row}") for row in data]
-    print("\n  --------------------------------------------------------\n")
+    border = '=' * (3**4)
+    print(f"\n  {border}\n")
+    [print(f"  ||  {row}") for row in data]
+    print(f"\n  {border}\n")
     input("\n  Presione ENTER para continuar...")
 
 def request_a_product():
@@ -164,9 +166,7 @@ def request_a_product():
 def request_and_insert_product_list(): 
     while True:
         subprocess.run(["clear"])
-        print("\n  ================================", end='')
-        print("\n  |  Registrando Nuevo Producto  |", end='')
-        print("\n  ================================", end='\n\n')
+        draw_tittle_border("REGISTRAR NUEVO PRODUCTO")
         insert_in_database(request_a_product())
         respuesta = get_valid_data_option_yes_no("\n  >>> ¿Desea agregar otro producto (Si/No)?: ")
         if((respuesta == 'SI') or (respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
@@ -178,12 +178,10 @@ def main():
     create_table()
     while True:
         subprocess.run(["clear"])
-        print("\n  ====================================", end='')
-        print("\n  |  Programa Para Registrar Gastos  |", end='')
-        print("\n  ====================================", end='\n\n')
-        print("  1. Mostrar contenido de la base de datos")
-        print("  2. Insertar un elemento en la base de datos")
-        print("  3. Eliminar un elemento en la base de datos")
+        draw_tittle_border("REGISTRAR GASTOS DE PRODUCTOS")
+        print("  1. Mostrar lista completa")
+        print("  2. Registrar un producto")
+        print("  3. Eliminar un producto")
         print("  4. Limpiar pantalla")
         print("  5. Salir")
         opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
@@ -197,7 +195,8 @@ def main():
             subprocess.run(["clear"])
         elif(opcion == 5):
             print("\n  Saliendo del programa...\n")
-            time.sleep(1)
+            time.sleep(0.5)
+            subprocess.run(["clear"])
             break
     conn.close()
 
