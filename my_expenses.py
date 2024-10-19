@@ -5,13 +5,21 @@ import subprocess
 from fractions import Fraction
 import os
 
-name_folder="sqlite_db"
-if not os.path.exists(name_folder):
-    os.makedirs(name_folder)
-conn = sqlite3.connect("sqlite_db/my_expenses.db")
+name_folder = None
+name_file_db = None
+conn = None
+c = None
+
+def inicializar_db():
+    global name_folder, name_file_db, conn, c
+    name_folder="sqlite_db"
+    name_file_db="my_expenses.db"
+    if not os.path.exists(name_folder):
+        os.makedirs(name_folder)
+    conn = sqlite3.connect(f"{name_folder}/{name_file_db}")
+    c = conn.cursor()
 
 def create_table():
-    c = conn.cursor()
     c.execute("CREATE TABLE if not exists productos (id INTEGER PRIMARY KEY, nombre TEXT, cantidad REAL, medida TEXT, precio_unitario REAL, precio_total REAL, fecha TEXT)")
     conn.commit()
 
@@ -81,19 +89,16 @@ def confirm_transaction_database(conn, c):
     input("\n  >>> Presione ENTER para continuar <<<")
 
 def delete_product_using_id(): 
-    c = conn.cursor()
     id_producto = get_valid_data_integer("\n  Ingrese el ID: ", 1, 1000000)
     c.execute("DELETE FROM productos WHERE id=?", (id_producto, ))
     confirm_transaction_database(conn, c)
 
 def delete_product_using_name(): 
-    c = conn.cursor()
     nombre = get_valid_data_simple_text("\n  Ingrese el nombre: ")
     c.execute("DELETE FROM productos WHERE nombre=?", (nombre, ))
     confirm_transaction_database(conn, c)
 
 def delete_product_using_date(): 
-    c = conn.cursor()
     fecha = get_valid_data_date("\n  Ingrese la fecha (Día/Mes/Año):")
     c.execute("DELETE FROM productos WHERE fecha=?", (fecha, ))
     confirm_transaction_database(conn, c)
@@ -125,7 +130,6 @@ def delete_in_database():
         time.sleep(1)
 
 def get_num_rows_table_products():
-    c = conn.cursor()
     c.execute("SELECT COUNT(*) Num FROM productos")
     numero_columnas = c.fetchone()[0]
     return numero_columnas
@@ -138,7 +142,6 @@ def validate_and_delete_in_database():
         input("\n   >>> Presione ENTER para continuar <<<")
 
 def insert_in_database(producto):
-    c = conn.cursor()
     sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio_unitario, precio_total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
     c.execute(sqlite_statement, producto)
     confirm_transaction_database(conn, c)
@@ -174,7 +177,6 @@ def show_unformated_data(data):
     print(f"\n  {border}\n")
 
 def show_database_product():
-    c = conn.cursor()
     c.execute("SELECT * FROM productos")
     data = c.fetchall()
     subprocess.run(["clear"])
@@ -210,6 +212,7 @@ def request_and_insert_product_list():
             break
 
 def main():
+    inicializar_db()
     create_table()
     while True:
         subprocess.run(["clear"])
