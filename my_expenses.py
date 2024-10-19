@@ -148,11 +148,40 @@ def show_database_product():
     c.execute("SELECT * FROM productos")
     data = c.fetchall()
     subprocess.run(["clear"])
-    border = '=' * (3**4)
-    print(f"\n  {border}\n")
-    [print(f"  ||  {row}") for row in data]
-    print(f"\n  {border}\n")
-    input("\n  Presione ENTER para continuar...")
+    print("\n")
+
+    terminal_size = os.get_terminal_size().columns
+    if(terminal_size >= 131):
+        headers_size = [5, 28, 16, 26, 17, 17]
+    elif((terminal_size >= 116) and (terminal_size < 131)):
+        headers_size = [4, 24, 13, 21, 16, 16]
+    elif((terminal_size >= 105) and (terminal_size < 116)):
+        headers_size = [3, 21, 11, 18, 15, 15]
+    elif((terminal_size >= 95) and (terminal_size < 105)):
+        headers_size = [3, 19, 8, 15, 13, 13]
+    elif((terminal_size >= 85) and (terminal_size < 95)):
+        headers_size = [3, 17, 8, 14, 9, 11]
+    else:
+        headers_size = []
+
+    if(len(headers_size)>0):
+        encabezados = [desc[0] for desc in c.description]
+        borde = "   +" + "+".join(["-" * (hsize+2) for hsize in headers_size]) + "+"
+        print(f"{borde}")
+        # BORDE DE ENCABEZADOS
+        print("   | " + " | ".join(f"{nombre:<{hsize}}" for nombre, hsize in zip(encabezados, headers_size)) + " |")
+        print(f"{borde}")
+        # IMPRESION DE DATOS
+        for row in data:
+            print("   | " + " | ".join(f"{str(item):<{hsize}}" for item, hsize in zip(row, headers_size)) + " |")
+        print(f"{borde}")
+    else:
+        border = '*' * (3**4)
+        print(f"\n  {border}\n")
+        [print(f"  |  {row}") for row in data]
+        print(f"\n  {border}\n")
+
+    input("\n   >>> Presione ENTER para continuar <<<")
 
 def request_a_product():
     nombre          = get_valid_data_simple_text("  * Nombre: ")
