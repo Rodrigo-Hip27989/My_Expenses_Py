@@ -1,9 +1,10 @@
+import os
 import re
 import time
 import sqlite3
 import subprocess
+import csv
 from fractions import Fraction
-import os
 
 def create_folder(name_folder):
     if not os.path.exists(name_folder):
@@ -221,6 +222,21 @@ def request_and_insert_product_list(conn):
         else:
             break
 
+def export_to_csv(conn):
+    c = conn.cursor()
+    c.execute("SELECT * FROM productos")
+    filas = c.fetchall()
+    # Obtener los nombres de las columnas
+    columnas = [desc[0] for desc in c.description]
+    # Escribir los datos en un archivo CSV
+    with open('My_List.csv', mode='w', newline='', encoding='utf-8') as archivo_csv:
+        escritor_csv = csv.writer(archivo_csv)
+        # Escribir los encabezados
+        escritor_csv.writerow(columnas)
+        # Escribir los datos
+        escritor_csv.writerows(filas)
+    input("\n   >>> Presione ENTER para continuar <<<")
+
 def main():
     name_folder="sqlite_db"
     name_file_db="my_expenses.db"
@@ -233,9 +249,10 @@ def main():
         print("  1. Mostrar lista completa")
         print("  2. Registrar un producto")
         print("  3. Eliminar un producto")
-        print("  4. Limpiar pantalla")
-        print("  5. Salir")
-        opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
+        print("  4. Exportar a CSV")
+        print("  5. Limpiar pantalla")
+        print("  6. Salir")
+        opcion = get_valid_data_integer("\n  * Opción >> ", 1, 6)
         if(opcion == 1):
             show_database_product(conn)
         elif(opcion == 2):
@@ -243,8 +260,10 @@ def main():
         elif(opcion == 3):
             validate_and_delete_in_database(conn)
         elif(opcion == 4):
-            subprocess.run(["clear"])
+            export_to_csv(conn)
         elif(opcion == 5):
+            subprocess.run(["clear"])
+        elif(opcion == 6):
             print("\n  Saliendo del programa...\n")
             time.sleep(0.5)
             subprocess.run(["clear"])
