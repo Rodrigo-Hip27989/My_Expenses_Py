@@ -5,23 +5,20 @@ import subprocess
 from fractions import Fraction
 import os
 
-name_folder = None
-name_file_db = None
-conn = None
-c = None
-
-def inicializar_db():
-    global name_folder, name_file_db, conn, c
-    name_folder="sqlite_db"
-    name_file_db="my_expenses.db"
+def create_folder(name_folder):
     if not os.path.exists(name_folder):
         os.makedirs(name_folder)
-    conn = sqlite3.connect(f"{name_folder}/{name_file_db}")
-    c = conn.cursor()
 
-def create_table():
+def create_db(name_folder, name_file_db):
+    conn = sqlite3.connect(f"{name_folder}/{name_file_db}")
+    create_table(conn)
+    return conn
+
+def create_table(conn):
+    c = conn.cursor()
     c.execute("CREATE TABLE if not exists productos (id INTEGER PRIMARY KEY, nombre TEXT, cantidad REAL, medida TEXT, precio_unitario REAL, precio_total REAL, fecha TEXT)")
     conn.commit()
+    c.close()
 
 def convert_to_float(input_string):
     try:
@@ -77,8 +74,9 @@ def get_valid_data_option_yes_no(mensaje):
     regex_options = r'^(SI|NO|Si|No|si|no|S|N|s|n)$'
     return get_valid_data_varchar(regex_options, mensaje)
 
-def confirm_transaction_database(conn, c):
+def confirm_transaction_database(conn):
     respuesta = get_valid_data_option_yes_no("\n  >>> Desea continuar (Si/No)? ")
+    c = conn.cursor()
     if((respuesta == 'SI') or (respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
         conn.commit()
         if(c.rowcount > 0): 
@@ -87,28 +85,35 @@ def confirm_transaction_database(conn, c):
         conn.rollback()
         print("\n  *** Operación cancelada...***")
     input("\n  >>> Presione ENTER para continuar <<<")
+    c.close()
 
-def delete_product_using_id(): 
+def delete_product_using_id(conn):
     id_producto = get_valid_data_integer("\n  Ingrese el ID: ", 1, 1000000)
+    c = conn.cursor()
     c.execute("DELETE FROM productos WHERE id=?", (id_producto, ))
-    confirm_transaction_database(conn, c)
+    confirm_transaction_database(conn)
+    c.close()
 
-def delete_product_using_name(): 
+def delete_product_using_name(conn):
     nombre = get_valid_data_simple_text("\n  Ingrese el nombre: ")
+    c = conn.cursor()
     c.execute("DELETE FROM productos WHERE nombre=?", (nombre, ))
-    confirm_transaction_database(conn, c)
+    confirm_transaction_database(conn)
+    c.close()
 
-def delete_product_using_date(): 
+def delete_product_using_date(conn):
     fecha = get_valid_data_date("\n  Ingrese la fecha (Día/Mes/Año):")
+    c = conn.cursor()
     c.execute("DELETE FROM productos WHERE fecha=?", (fecha, ))
-    confirm_transaction_database(conn, c)
+    confirm_transaction_database(conn)
+    c.close()
 
 def draw_tittle_border(titulo):
     border = '=' * (len(titulo) + 7)
     print(f"\n  {border}\n  |  {titulo}  |\n  {border}\n")
 
-def delete_in_database():
-    show_database_product()
+def delete_in_database(conn):
+    show_database_product(conn)
     draw_tittle_border("ELIMINAR UN PRODUCTO")
     print("  1. Usando su ID")
     print("  2. Todos los que coincidan con el NOMBRE")
@@ -117,34 +122,38 @@ def delete_in_database():
     print("  5. Regresar")
     opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
     if(opcion == 1):
-        delete_product_using_id()
+        delete_product_using_id(conn)
     elif(opcion == 2):
-        delete_product_using_name()
+        delete_product_using_name(conn)
     elif(opcion == 3):
-        delete_product_using_date()
+        delete_product_using_date(conn)
     elif(opcion == 4):
         subprocess.run(["clear"])
-        delete_in_database()
+        delete_in_database(conn)
     elif(opcion == 5):
         print("\n  Regresando...")
         time.sleep(1)
 
-def get_num_rows_table_products():
+def get_num_rows_table_products(conn):
+    c = conn.cursor()
     c.execute("SELECT COUNT(*) Num FROM productos")
     numero_columnas = c.fetchone()[0]
+    c.close()
     return numero_columnas
 
-def validate_and_delete_in_database():
-    if(get_num_rows_table_products() > 0):
-        delete_in_database()
+def validate_and_delete_in_database(conn):
+    if(get_num_rows_table_products(conn) > 0):
+        delete_in_database(conn)
     else:
         print("\n       No hay datos para mostrar...")
         input("\n   >>> Presione ENTER para continuar <<<")
 
-def insert_in_database(producto):
+def insert_in_database(conn, producto):
+    c = conn.cursor()
     sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio_unitario, precio_total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
     c.execute(sqlite_statement, producto)
-    confirm_transaction_database(conn, c)
+    confirm_transaction_database(conn)
+    c.close()
 
 def get_header_sizes(terminal_size):
     if(terminal_size >= 130):
@@ -176,12 +185,13 @@ def show_unformated_data(data):
     [print(f"  |  {row}") for row in data]
     print(f"\n  {border}\n")
 
-def show_database_product():
+def show_database_product(conn):
+    c = conn.cursor()
     c.execute("SELECT * FROM productos")
     data = c.fetchall()
+    c.close()
     subprocess.run(["clear"])
     print("\n")
-
     terminal_size = os.get_terminal_size().columns
     if(terminal_size>=90):
         encabezados = [desc[0] for desc in c.description]
@@ -200,11 +210,11 @@ def request_a_product():
     fecha           = get_valid_data_date("  * Fecha (Día/Mes/Año): ")
     return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
 
-def request_and_insert_product_list(): 
+def request_and_insert_product_list(conn):
     while True:
         subprocess.run(["clear"])
         draw_tittle_border("REGISTRAR NUEVO PRODUCTO")
-        insert_in_database(request_a_product())
+        insert_in_database(conn, request_a_product())
         respuesta = get_valid_data_option_yes_no("\n  >>> ¿Desea agregar otro producto (Si/No)?: ")
         if((respuesta == 'SI') or (respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
             continue
@@ -212,8 +222,11 @@ def request_and_insert_product_list():
             break
 
 def main():
-    inicializar_db()
-    create_table()
+    name_folder="sqlite_db"
+    name_file_db="my_expenses.db"
+    create_folder(name_folder)
+    conn = create_db(name_folder, name_file_db)
+    create_table(conn)
     while True:
         subprocess.run(["clear"])
         draw_tittle_border("REGISTRAR GASTOS DE PRODUCTOS")
@@ -224,11 +237,11 @@ def main():
         print("  5. Salir")
         opcion = get_valid_data_integer("\n  * Opción >> ", 1, 5)
         if(opcion == 1):
-            show_database_product()
+            show_database_product(conn)
         elif(opcion == 2):
-            request_and_insert_product_list()
+            request_and_insert_product_list(conn)
         elif(opcion == 3):
-            validate_and_delete_in_database()
+            validate_and_delete_in_database(conn)
         elif(opcion == 4):
             subprocess.run(["clear"])
         elif(opcion == 5):
