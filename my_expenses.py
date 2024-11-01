@@ -141,7 +141,7 @@ def get_header_sizes(terminal_size):
     elif((terminal_size >= 97) and (terminal_size < 107)):
         return [2, 19, 8, 15, 9, 9, 10]
     elif((terminal_size >= 87) and (terminal_size < 97)):
-        return [2, 16, 6, 14, 7, 7, 9]
+        return [2, 17, 8, 13, 6, 6, 10]
     else:
         return []
 
