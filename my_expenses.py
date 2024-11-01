@@ -132,16 +132,17 @@ def insert_in_database(conn, producto):
     c.close()
 
 def get_header_sizes(terminal_size):
-    if(terminal_size >= 130):
-        return [4, 28, 16, 26, 17, 17]
-    elif((terminal_size >= 115) and (terminal_size < 130)):
-        return [4, 24, 13, 22, 15, 15]
-    elif((terminal_size >= 105) and (terminal_size < 115)):
-        return [3, 22, 11, 19, 13, 13]
-    elif((terminal_size >= 97) and (terminal_size < 105)):
-        return [3, 19, 9, 17, 11, 11]
-    elif((terminal_size >= 90) and (terminal_size < 97)):
-        return [3, 16, 8, 12, 10, 10]
+    print(f"{terminal_size}")
+    if(terminal_size >= 127):
+        return [4, 28, 11, 18, 15, 15, 11]
+    elif((terminal_size >= 117) and (terminal_size < 127)):
+        return [3, 25, 10, 17, 13, 13, 11]
+    elif((terminal_size >= 107) and (terminal_size < 117)):
+        return [3, 22, 9, 16, 11, 11, 10]
+    elif((terminal_size >= 97) and (terminal_size < 107)):
+        return [2, 19, 8, 15, 9, 9, 10]
+    elif((terminal_size >= 87) and (terminal_size < 97)):
+        return [2, 16, 6, 14, 7, 7, 9]
     else:
         return []
 
@@ -167,7 +168,7 @@ def show_database_product(conn):
     subprocess.run(["clear"])
     print("\n")
     terminal_size = os.get_terminal_size().columns
-    if(terminal_size>=90):
+    if(terminal_size>=87):
         encabezados = conn.get_headers(sql_query)
         headers_size = get_header_sizes(terminal_size)
         draw_table_data(data, encabezados, headers_size)
