@@ -49,7 +49,7 @@ def get_valid_data_float(mostrar_mensaje, minimo, maximo):
     return get_valid_data_numeric(mostrar_mensaje, minimo, maximo, regex_float, convert_to_float)
 
 def get_valid_data_simple_text(mensaje):
-    regex_simple_text = r'^[a-zA-ZñÑ]+[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9()\.\-\_\ ]*'
+    regex_simple_text = r'^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ]+[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ()\.\-\_\ ]*'
     return get_valid_data_varchar(regex_simple_text, mensaje)
 
 def get_valid_data_date(mensaje):
