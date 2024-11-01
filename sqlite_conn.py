@@ -31,7 +31,7 @@ class Database:
 
     def create_table(self):
         c = self.conn.cursor()
-        c.execute("CREATE TABLE if not exists productos (id INTEGER PRIMARY KEY, nombre TEXT, cantidad REAL, medida TEXT, precio_unitario REAL, precio_total REAL, fecha TEXT)")
+        c.execute("CREATE TABLE if not exists productos (id INTEGER PRIMARY KEY, nombre TEXT, cantidad REAL, medida TEXT, precio REAL, total REAL, fecha TEXT)")
         self.conn.commit()
         c.close()
 

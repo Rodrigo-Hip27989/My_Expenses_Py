@@ -126,7 +126,7 @@ def validate_and_delete_in_database(conn):
         input("\n   >>> Presione ENTER para continuar <<<")
 
 def insert_in_database(conn, producto):
-    sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio_unitario, precio_total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
+    sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio, total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
     c = conn.execute_query(sqlite_statement, producto)
     confirm_transaction_database(conn, c)
     c.close()
