@@ -1,4 +1,4 @@
 
 #.gitignore
-Todo_my_expenses.py
-sqlite_db/my_expenses.db
+__pycache__/
+sqlite_db/
