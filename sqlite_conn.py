@@ -11,14 +11,12 @@ class Database:
     def connect(self):
         try:
             self.conn = sqlite3.connect(f"{self.db_path}/{self.db_file}")
-            #print("Conexión exitosa a la base de datos.")
         except sqlite3.Error as e:
             print(f"Error al conectar a la base de datos: {e}")
 
     def disconnect(self):
         if self.conn:
             self.conn.close()
-            #print("Conexión cerrada.")
 
     def commit(self, c):
         if self.conn:
@@ -45,7 +43,6 @@ class Database:
         cursor = self.conn.cursor()
         try:
             cursor.execute(query, params)
-            #self.conn.commit()
             return cursor
         except sqlite3.Error as e:
             print(f"Error al ejecutar la consulta: {e}")

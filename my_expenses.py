@@ -132,7 +132,6 @@ def insert_in_database(conn, producto):
     c.close()
 
 def get_header_sizes(terminal_size):
-    print(f"{terminal_size}")
     if(terminal_size >= 127):
         return [4, 28, 11, 18, 15, 15, 11]
     elif((terminal_size >= 117) and (terminal_size < 127)):
