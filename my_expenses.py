@@ -1,25 +1,10 @@
 import os
 import re
 import time
-import sqlite3
 import subprocess
 import csv
+import sqlite_conn
 from fractions import Fraction
-
-def create_folder(name_folder):
-    if not os.path.exists(name_folder):
-        os.makedirs(name_folder)
-
-def create_db(name_folder, name_file_db):
-    conn = sqlite3.connect(f"{name_folder}/{name_file_db}")
-    create_table(conn)
-    return conn
-
-def create_table(conn):
-    c = conn.cursor()
-    c.execute("CREATE TABLE if not exists productos (id INTEGER PRIMARY KEY, nombre TEXT, cantidad REAL, medida TEXT, precio_unitario REAL, precio_total REAL, fecha TEXT)")
-    conn.commit()
-    c.close()
 
 def convert_to_float(input_string):
     try:
@@ -75,38 +60,30 @@ def get_valid_data_option_yes_no(mensaje):
     regex_options = r'^(SI|NO|Si|No|si|no|S|N|s|n)$'
     return get_valid_data_varchar(regex_options, mensaje)
 
-def confirm_transaction_database(conn):
+def confirm_transaction_database(conn, c):
     respuesta = get_valid_data_option_yes_no("\n  >>> Desea continuar (Si/No)? ")
-    c = conn.cursor()
     if((respuesta == 'SI') or (respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
-        conn.commit()
-        if(c.rowcount > 0): 
-            print("\n  *** Transacción Realizada Con Exito ***")
+        conn.commit(c)
     else:
         conn.rollback()
-        print("\n  *** Operación cancelada...***")
     input("\n  >>> Presione ENTER para continuar <<<")
-    c.close()
 
 def delete_product_using_id(conn):
     id_producto = get_valid_data_integer("\n  Ingrese el ID: ", 1, 1000000)
-    c = conn.cursor()
-    c.execute("DELETE FROM productos WHERE id=?", (id_producto, ))
-    confirm_transaction_database(conn)
+    c = conn.execute_query("DELETE FROM productos WHERE id=?", (id_producto, ))
+    confirm_transaction_database(conn, c)
     c.close()
 
 def delete_product_using_name(conn):
     nombre = get_valid_data_simple_text("\n  Ingrese el nombre: ")
-    c = conn.cursor()
-    c.execute("DELETE FROM productos WHERE nombre=?", (nombre, ))
-    confirm_transaction_database(conn)
+    c = conn.execute_query("DELETE FROM productos WHERE nombre=?", (nombre, ))
+    confirm_transaction_database(conn, c)
     c.close()
 
 def delete_product_using_date(conn):
     fecha = get_valid_data_date("\n  Ingrese la fecha (Día/Mes/Año):")
-    c = conn.cursor()
-    c.execute("DELETE FROM productos WHERE fecha=?", (fecha, ))
-    confirm_transaction_database(conn)
+    c = conn.execute_query("DELETE FROM productos WHERE fecha=?", (fecha, ))
+    confirm_transaction_database(conn, c)
     c.close()
 
 def draw_tittle_border(titulo):
@@ -136,8 +113,7 @@ def delete_in_database(conn):
         time.sleep(1)
 
 def get_num_rows_table_products(conn):
-    c = conn.cursor()
-    c.execute("SELECT COUNT(*) Num FROM productos")
+    c = conn.execute_query("SELECT COUNT(*) Num FROM productos")
     numero_columnas = c.fetchone()[0]
     c.close()
     return numero_columnas
@@ -150,10 +126,9 @@ def validate_and_delete_in_database(conn):
         input("\n   >>> Presione ENTER para continuar <<<")
 
 def insert_in_database(conn, producto):
-    c = conn.cursor()
     sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio_unitario, precio_total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
-    c.execute(sqlite_statement, producto)
-    confirm_transaction_database(conn)
+    c = conn.execute_query(sqlite_statement, producto)
+    confirm_transaction_database(conn, c)
     c.close()
 
 def get_header_sizes(terminal_size):
@@ -187,15 +162,13 @@ def show_unformated_data(data):
     print(f"\n  {border}\n")
 
 def show_database_product(conn):
-    c = conn.cursor()
-    c.execute("SELECT * FROM productos")
-    data = c.fetchall()
-    c.close()
+    sql_query = "SELECT * FROM productos"
+    data = conn.fetch_all(sql_query)
     subprocess.run(["clear"])
     print("\n")
     terminal_size = os.get_terminal_size().columns
     if(terminal_size>=90):
-        encabezados = [desc[0] for desc in c.description]
+        encabezados = conn.get_headers(sql_query)
         headers_size = get_header_sizes(terminal_size)
         draw_table_data(data, encabezados, headers_size)
     else:
@@ -223,11 +196,10 @@ def request_and_insert_product_list(conn):
             break
 
 def export_to_csv(conn):
-    c = conn.cursor()
-    c.execute("SELECT * FROM productos")
-    filas = c.fetchall()
+    sql_query = "SELECT * FROM productos"
+    filas = conn.fetch_all(sql_query)
     # Obtener los nombres de las columnas
-    columnas = [desc[0] for desc in c.description]
+    columnas = conn.get_headers(sql_query)
     # Escribir los datos en un archivo CSV
     with open('My_List.csv', mode='w', newline='', encoding='utf-8') as archivo_csv:
         escritor_csv = csv.writer(archivo_csv)
@@ -238,11 +210,12 @@ def export_to_csv(conn):
     input("\n   >>> Presione ENTER para continuar <<<")
 
 def main():
-    name_folder="sqlite_db"
-    name_file_db="my_expenses.db"
-    create_folder(name_folder)
-    conn = create_db(name_folder, name_file_db)
-    create_table(conn)
+    db_path="sqlite_db"
+    db_file="my_expenses.db"
+    conn = sqlite_conn.Database(db_path, db_file)
+    conn.connect()
+    conn.create_table()
+
     while True:
         subprocess.run(["clear"])
         draw_tittle_border("REGISTRAR GASTOS DE PRODUCTOS")
@@ -268,6 +241,7 @@ def main():
             time.sleep(0.5)
             subprocess.run(["clear"])
             break
-    conn.close()
+    conn.disconnect()
 
-main()
+if __name__ == "__main__":
+    main()
