@@ -164,12 +164,13 @@ def show_simple_data(data, encabezados):
     print(f"  {border}\n")
 
 def show_database_product(conn):
-    sql_query = "SELECT * FROM productos"
+    table_name = "productos"
+    sql_query = f"SELECT * FROM {table_name}"
     data = conn.fetch_all(sql_query)
     subprocess.run(["clear"])
     print("\n")
     terminal_size = os.get_terminal_size().columns
-    encabezados = conn.get_headers(sql_query)
+    encabezados = conn.get_headers(f"{table_name}")
     if(terminal_size>=77):
         headers_size = get_header_sizes(terminal_size)
         draw_table_data(data, encabezados, headers_size)
@@ -198,17 +199,15 @@ def request_and_insert_product_list(conn):
             break
 
 def export_to_csv(conn):
-    sql_query = "SELECT * FROM productos"
-    filas = conn.fetch_all(sql_query)
-    # Obtener los nombres de las columnas
-    columnas = conn.get_headers(sql_query)
-    # Escribir los datos en un archivo CSV
-    with open('My_List.csv', mode='w', newline='', encoding='utf-8') as archivo_csv:
+    table_name = "productos"
+    file_name = "MyList.csv"
+    query_select = f"SELECT * FROM {table_name}"
+    headers = conn.get_headers(f"{table_name}")
+    rows = conn.fetch_all(query_select)
+    with open(file_name, mode='w', newline='', encoding='utf-8') as archivo_csv:
         escritor_csv = csv.writer(archivo_csv)
-        # Escribir los encabezados
-        escritor_csv.writerow(columnas)
-        # Escribir los datos
-        escritor_csv.writerows(filas)
+        escritor_csv.writerow(headers)
+        escritor_csv.writerows(rows)
     input("\n   >>> Presione ENTER para continuar <<<")
 
 def main():

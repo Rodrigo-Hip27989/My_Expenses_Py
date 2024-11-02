@@ -54,9 +54,10 @@ class Database:
             return cursor.fetchall()
         return []
 
-    def get_headers(self, query, params=()):
-        cursor = self.execute_query(query, params)
+    def get_headers(self, table_name):
+        query = f"PRAGMA table_info({table_name})"
+        cursor = self.execute_query(query)
         if cursor:
-            return [desc[0] for desc in cursor.description]
+            return [desc[1] for desc in cursor.fetchall()]
         return []
 
