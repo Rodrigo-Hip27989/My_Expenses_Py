@@ -5,6 +5,7 @@ import subprocess
 import csv
 import sqlite_conn
 from fractions import Fraction
+from datetime import datetime
 
 def convert_to_float(input_string):
     try:
@@ -198,16 +199,20 @@ def request_and_insert_product_list(conn):
         else:
             break
 
-def export_to_csv(conn):
-    table_name = "productos"
-    file_name = "MyList.csv"
-    query_select = f"SELECT * FROM {table_name}"
-    headers = conn.get_headers(f"{table_name}")
-    rows = conn.fetch_all(query_select)
-    with open(file_name, mode='w', newline='', encoding='utf-8') as archivo_csv:
-        escritor_csv = csv.writer(archivo_csv)
-        escritor_csv.writerow(headers)
-        escritor_csv.writerows(rows)
+def export_to_csv(conn, table_name):
+    try:
+        timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
+        file_name = f"{table_name.capitalize()}_{timestamp}.csv"
+        query_select = f"SELECT * FROM {table_name}"
+        headers = conn.get_headers(f"{table_name}")
+        rows = conn.fetch_all(query_select)
+        with open(file_name, mode='w', newline='', encoding='utf-8') as archivo_csv:
+            escritor_csv = csv.writer(archivo_csv)
+            escritor_csv.writerow(headers)
+            escritor_csv.writerows(rows)
+        print(f"\n   >>> Exportación '{file_name}' exitosa!! <<<")
+    except Exception as e:
+        print(f"\n   >>> Error durante la exportación!! <<<\n   *** {e} ***")
     input("\n   >>> Presione ENTER para continuar <<<")
 
 def main():
@@ -234,7 +239,7 @@ def main():
         elif(opcion == 3):
             validate_and_delete_in_database(conn)
         elif(opcion == 4):
-            export_to_csv(conn)
+            export_to_csv(conn, "productos")
         elif(opcion == 5):
             subprocess.run(["clear"])
         elif(opcion == 6):
