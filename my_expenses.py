@@ -142,24 +142,26 @@ def get_header_sizes(terminal_size):
         return [2, 19, 8, 15, 9, 9, 10]
     elif((terminal_size >= 87) and (terminal_size < 97)):
         return [2, 17, 8, 13, 6, 6, 10]
+    elif((terminal_size >= 77) and (terminal_size < 87)):
+        return [2, 12, 8, 8, 6, 6, 10]
     else:
         return []
 
 def draw_table_data(data, encabezados, headers_size):
-    # DESEÑO DE BORDE
-    borde = "   +" + "+".join(["-" * (hsize+2) for hsize in headers_size]) + "+"
-    # ENCABEZADOS
-    print(f"{borde}\n   | " + " | ".join(f"{nombre:<{hsize}}" for nombre, hsize in zip(encabezados, headers_size)) + f" |\n{borde}")
-    # IMPRESION DE DATOS
+    border = "   +" + "+".join(["-" * (hsize+2) for hsize in headers_size]) + "+"
+    print(f"{border}\n   | " + " | ".join(f"{nombre.upper():<{hsize}}" for nombre, hsize in zip(encabezados, headers_size)) + f" |\n{border}")
     for row in data:
         print("   | " + " | ".join(f"{str(item):<{hsize}}" for item, hsize in zip(row, headers_size)) + " |")
-    print(f"{borde}")
+    print(f"{border}")
 
-def show_unformated_data(data):
-    border = '*' * (75)
-    print(f"\n  {border}\n")
-    [print(f"  |  {row}") for row in data]
-    print(f"\n  {border}\n")
+def show_simple_data(data, encabezados):
+    max_len = max(len(f"{row}") for row in data)
+    border = '-' * (max_len+4)
+    print(f"\n  {border}\n  | " + " | ".join(f"{str(nombre).upper()}" for nombre in encabezados) + f"  |\n  {border}")
+    for row in data:
+        simple_row = " | ".join(str(item) for item in row)
+        print(f"  |  {simple_row}  |")
+    print(f"  {border}\n")
 
 def show_database_product(conn):
     sql_query = "SELECT * FROM productos"
@@ -167,12 +169,12 @@ def show_database_product(conn):
     subprocess.run(["clear"])
     print("\n")
     terminal_size = os.get_terminal_size().columns
-    if(terminal_size>=87):
-        encabezados = conn.get_headers(sql_query)
+    encabezados = conn.get_headers(sql_query)
+    if(terminal_size>=77):
         headers_size = get_header_sizes(terminal_size)
         draw_table_data(data, encabezados, headers_size)
     else:
-        show_unformated_data(data)
+        show_simple_data(data, encabezados)
     input("\n   >>> Presione ENTER para continuar <<<")
 
 def request_a_product():
