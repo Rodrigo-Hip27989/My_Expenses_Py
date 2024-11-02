@@ -12,21 +12,10 @@ def confirm_transaction_database(conn, c):
         conn.rollback()
     input("\n  >>> Presione ENTER para continuar <<<")
 
-def delete_product_using_id(conn):
-    id_producto = my_utils.get_valid_data_integer("\n  Ingrese el ID: ", 1, 1000000)
-    c = conn.execute_query("DELETE FROM productos WHERE id=?", (id_producto, ))
-    confirm_transaction_database(conn, c)
-    c.close()
-
-def delete_product_using_name(conn):
-    nombre = my_utils.get_valid_data_simple_text("\n  Ingrese el nombre: ")
-    c = conn.execute_query("DELETE FROM productos WHERE nombre=?", (nombre, ))
-    confirm_transaction_database(conn, c)
-    c.close()
-
-def delete_product_using_date(conn):
-    fecha = my_utils.get_valid_data_date("\n  Ingrese la fecha (Día/Mes/Año):")
-    c = conn.execute_query("DELETE FROM productos WHERE fecha=?", (fecha, ))
+def delete_product(conn, get_value_func, field_name, *args):
+    value = get_value_func(f"\n  Ingrese el {field_name}: ", *args)
+    query = f"DELETE FROM productos WHERE {field_name}=?"
+    c = conn.execute_query(query, (value,))
     confirm_transaction_database(conn, c)
     c.close()
 
@@ -44,11 +33,11 @@ def delete_in_database(conn):
     print("  5. Regresar")
     opcion = my_utils.get_valid_data_integer("\n  * Opción >> ", 1, 5)
     if(opcion == 1):
-        delete_product_using_id(conn)
+        delete_product(conn, my_utils.get_valid_data_integer, "ID", 1, 1000000)
     elif(opcion == 2):
-        delete_product_using_name(conn)
+        delete_product(conn, my_utils.get_valid_data_simple_text, "nombre")
     elif(opcion == 3):
-        delete_product_using_date(conn)
+        delete_product(conn, my_utils.get_valid_data_date, "fecha")
     elif(opcion == 4):
         subprocess.run(["clear"])
         delete_in_database(conn)
