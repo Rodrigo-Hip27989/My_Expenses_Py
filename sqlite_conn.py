@@ -1,5 +1,7 @@
 import sqlite3
 import os
+import csv
+from datetime import datetime
 
 class Database:
     def __init__(self, path, file):
@@ -61,3 +63,18 @@ class Database:
             return [desc[1] for desc in cursor.fetchall()]
         return []
 
+    def export_to_csv(self, table_name):
+        try:
+            timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
+            file_name = f"{table_name.capitalize()}_{timestamp}.csv"
+            query_select = f"SELECT * FROM {table_name}"
+            headers = self.get_headers(f"{table_name}")
+            rows = self.fetch_all(query_select)
+            with open(file_name, mode='w', newline='', encoding='utf-8') as archivo_csv:
+                escritor_csv = csv.writer(archivo_csv)
+                escritor_csv.writerow(headers)
+                escritor_csv.writerows(rows)
+            print(f"\n   >>> Exportación '{file_name}' exitosa!! <<<")
+        except Exception as e:
+            print(f"\n   >>> Error durante la exportación!! <<<\n   *** {e} ***")
+        input("\n   >>> Presione ENTER para continuar <<<")
