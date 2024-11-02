@@ -63,6 +63,12 @@ class Database:
             return [desc[1] for desc in cursor.fetchall()]
         return []
 
+    def get_num_rows_table(self, table_name):
+        c = self.execute_query(f"SELECT COUNT(*) Num FROM {table_name}")
+        numero_columnas = c.fetchone()[0]
+        c.close()
+        return numero_columnas
+
     def export_to_csv(self, table_name):
         try:
             timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")

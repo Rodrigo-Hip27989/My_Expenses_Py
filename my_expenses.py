@@ -23,8 +23,8 @@ def draw_tittle_border(titulo):
     border = '=' * (len(titulo) + 7)
     print(f"\n  {border}\n  |  {titulo}  |\n  {border}\n")
 
-def delete_in_database(conn):
-    show_database_product(conn)
+def delete_in_table(conn):
+    show_table_product(conn)
     draw_tittle_border("ELIMINAR UN PRODUCTO")
     print("  1. Usando su ID")
     print("  2. Todos los que coincidan con el NOMBRE")
@@ -40,23 +40,17 @@ def delete_in_database(conn):
         delete_product(conn, my_utils.get_valid_data_date, "fecha")
     elif(opcion == 4):
         subprocess.run(["clear"])
-        delete_in_database(conn)
+        delete_in_table(conn)
     elif(opcion == 5):
         print("\n  Regresando...")
         time.sleep(1)
 
-def get_num_rows_table_products(conn):
-    c = conn.execute_query("SELECT COUNT(*) Num FROM productos")
-    numero_columnas = c.fetchone()[0]
-    c.close()
-    return numero_columnas
-
-def validate_and_delete_in_database(conn):
-    if(get_num_rows_table_products(conn) > 0):
-        delete_in_database(conn)
+def validate_table_not_empty(conn, operation, table_name, message_if_empty):
+    if conn.get_num_rows_table(table_name) > 0:
+        operation(conn)
     else:
-        print("\n       No hay datos para mostrar...")
-        input("\n   >>> Presione ENTER para continuar <<<")
+        print(f"\n      {message_if_empty}")
+    input("\n   >>> Presione ENTER para continuar <<<")
 
 def insert_in_database(conn, producto):
     sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio, total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
@@ -80,14 +74,14 @@ def get_header_sizes(terminal_size):
     else:
         return []
 
-def draw_table_data(data, encabezados, headers_size):
+def draw_table(data, encabezados, headers_size):
     border = "   +" + "+".join(["-" * (hsize+2) for hsize in headers_size]) + "+"
     print(f"{border}\n   | " + " | ".join(f"{nombre.upper():<{hsize}}" for nombre, hsize in zip(encabezados, headers_size)) + f" |\n{border}")
     for row in data:
         print("   | " + " | ".join(f"{str(item):<{hsize}}" for item, hsize in zip(row, headers_size)) + " |")
     print(f"{border}")
 
-def show_simple_data(data, encabezados):
+def draw_simple_borders(data, encabezados):
     max_len = max(len(f"{row}") for row in data)
     border = '-' * (max_len+4)
     print(f"\n  {border}\n  | " + " | ".join(f"{str(nombre).upper()}" for nombre in encabezados) + f"  |\n  {border}")
@@ -96,7 +90,7 @@ def show_simple_data(data, encabezados):
         print(f"  |  {simple_row}  |")
     print(f"  {border}\n")
 
-def show_database_product(conn):
+def show_table_product(conn):
     table_name = "productos"
     sql_query = f"SELECT * FROM {table_name}"
     data = conn.fetch_all(sql_query)
@@ -106,10 +100,9 @@ def show_database_product(conn):
     encabezados = conn.get_headers(f"{table_name}")
     if(terminal_size>=77):
         headers_size = get_header_sizes(terminal_size)
-        draw_table_data(data, encabezados, headers_size)
+        draw_table(data, encabezados, headers_size)
     else:
-        show_simple_data(data, encabezados)
-    input("\n   >>> Presione ENTER para continuar <<<")
+        draw_simple_borders(data, encabezados)
 
 def request_a_product():
     nombre          = my_utils.get_valid_data_simple_text("  * Nombre: ")
@@ -149,11 +142,11 @@ def main():
         print("  6. Salir")
         opcion = my_utils.get_valid_data_integer("\n  * Opción >> ", 1, 6)
         if(opcion == 1):
-            show_database_product(conn)
+            validate_table_not_empty(conn, show_table_product, "productos", "No hay datos para mostrar...")
         elif(opcion == 2):
             request_and_insert_product_list(conn)
         elif(opcion == 3):
-            validate_and_delete_in_database(conn)
+            validate_table_not_empty(conn, delete_in_table, "productos", "No hay datos para eliminar...")
         elif(opcion == 4):
             conn.export_to_csv("productos")
         elif(opcion == 5):
