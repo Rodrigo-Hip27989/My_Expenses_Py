@@ -2,28 +2,13 @@ import os
 import time
 import subprocess
 import sqlite_conn
-import my_utils
-
-def confirm_transaction_database(conn, c):
-    respuesta = my_utils.get_valid_data_option_yes_no("\n  >>> Desea continuar (Si/No)? ")
-    if((respuesta == 'SI') or (respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
-        conn.commit(c)
-    else:
-        conn.rollback()
-    input("\n  >>> Presione ENTER para continuar <<<")
-
-def delete_product(conn, get_value_func, field_name, *args):
-    value = get_value_func(f"\n  Ingrese el {field_name}: ", *args)
-    query = f"DELETE FROM productos WHERE {field_name}=?"
-    c = conn.execute_query(query, (value,))
-    confirm_transaction_database(conn, c)
-    c.close()
+import my_utils as utils
 
 def draw_tittle_border(titulo):
     border = '=' * (len(titulo) + 7)
     print(f"\n  {border}\n  |  {titulo}  |\n  {border}\n")
 
-def delete_in_table(conn):
+def show_product_deletion_menu(conn):
     show_table_product(conn)
     draw_tittle_border("ELIMINAR UN PRODUCTO")
     print("  1. Usando su ID")
@@ -31,32 +16,19 @@ def delete_in_table(conn):
     print("  3. Todos los que coincidan en cierta FECHA")
     print("  4. Limpiar pantalla")
     print("  5. Regresar")
-    opcion = my_utils.get_valid_data_integer("\n  * Opción >> ", 1, 5)
+    opcion = utils.read_input_integer("\n  * Opción >> ", 1, 5)
     if(opcion == 1):
-        delete_product(conn, my_utils.get_valid_data_integer, "ID", 1, 1000000)
+        conn.delete_product(utils.read_input_integer, "ID", 1, 1000000)
     elif(opcion == 2):
-        delete_product(conn, my_utils.get_valid_data_simple_text, "nombre")
+        conn.delete_product(utils.read_input_simple_text, "nombre")
     elif(opcion == 3):
-        delete_product(conn, my_utils.get_valid_data_date, "fecha")
+        conn.delete_product(utils.read_input_date, "fecha")
     elif(opcion == 4):
         subprocess.run(["clear"])
-        delete_in_table(conn)
+        show_product_deletion_menu(conn)
     elif(opcion == 5):
         print("\n  Regresando...")
-        time.sleep(1)
-
-def validate_table_not_empty(conn, operation, table_name, message_if_empty):
-    if conn.get_num_rows_table(table_name) > 0:
-        operation(conn)
-    else:
-        print(f"\n      {message_if_empty}")
-    input("\n   >>> Presione ENTER para continuar <<<")
-
-def insert_in_database(conn, producto):
-    sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio, total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
-    c = conn.execute_query(sqlite_statement, producto)
-    confirm_transaction_database(conn, c)
-    c.close()
+        time.sleep(0.25)
 
 def get_header_sizes(terminal_size):
     if(terminal_size >= 127):
@@ -104,22 +76,22 @@ def show_table_product(conn):
     else:
         draw_simple_borders(data, encabezados)
 
-def request_a_product():
-    nombre          = my_utils.get_valid_data_simple_text("  * Nombre: ")
-    cantidad        = my_utils.get_valid_data_float("  * Cantidad: ", 0.0001, 1000000)
-    medida          = my_utils.get_valid_data_simple_text("  * Medida: ")
-    precio_unitario = my_utils.get_valid_data_float("  * Precio Unitario: ", 0, 1000000)
+def request_product():
+    nombre          = utils.read_input_simple_text("  * Nombre: ")
+    cantidad        = utils.read_input_float("  * Cantidad: ", 0.0001, 1000000)
+    medida          = utils.read_input_simple_text("  * Medida: ")
+    precio_unitario = utils.read_input_float("  * Precio Unitario: ", 0, 1000000)
     precio_total    = cantidad*precio_unitario
-    fecha           = my_utils.get_valid_data_date("  * Fecha (Día/Mes/Año): ")
+    fecha           = utils.read_input_date("  * Fecha (Día/Mes/Año): ")
     return [nombre, cantidad, medida, precio_unitario, precio_total, fecha]
 
-def request_and_insert_product_list(conn):
+def request_and_insert_product(conn):
     while True:
         subprocess.run(["clear"])
         draw_tittle_border("REGISTRAR NUEVO PRODUCTO")
-        insert_in_database(conn, request_a_product())
-        respuesta = my_utils.get_valid_data_option_yes_no("\n  >>> ¿Desea agregar otro producto (Si/No)?: ")
-        if((respuesta == 'SI') or (respuesta == 'Si') or (respuesta == 'si') or (respuesta == 'S') or (respuesta == 's')):
+        conn.insert_product(request_product())
+        respuesta = utils.read_input_yes_no("\n  >>> ¿Desea agregar otro producto (Si/No)?: ")
+        if(respuesta.lower() in ['si', 's']):
             continue
         else:
             break
@@ -129,7 +101,7 @@ def main():
     db_file="my_expenses.db"
     conn = sqlite_conn.Database(db_path, db_file)
     conn.connect()
-    conn.create_table()
+    conn.create_products_table()
 
     while True:
         subprocess.run(["clear"])
@@ -140,22 +112,23 @@ def main():
         print("  4. Exportar a CSV")
         print("  5. Limpiar pantalla")
         print("  6. Salir")
-        opcion = my_utils.get_valid_data_integer("\n  * Opción >> ", 1, 6)
+        opcion = utils.read_input_integer("\n  * Opción >> ", 1, 6)
         if(opcion == 1):
-            validate_table_not_empty(conn, show_table_product, "productos", "No hay datos para mostrar...")
+            conn.validate_table_not_empty(show_table_product, "productos", "No hay datos para mostrar...")
         elif(opcion == 2):
-            request_and_insert_product_list(conn)
+            request_and_insert_product(conn)
         elif(opcion == 3):
-            validate_table_not_empty(conn, delete_in_table, "productos", "No hay datos para eliminar...")
+            conn.validate_table_not_empty(show_product_deletion_menu, "productos", "No hay datos para eliminar...")
         elif(opcion == 4):
             conn.export_to_csv("productos")
         elif(opcion == 5):
             subprocess.run(["clear"])
         elif(opcion == 6):
             print("\n  Saliendo del programa...\n")
-            time.sleep(0.5)
+            time.sleep(0.25)
             subprocess.run(["clear"])
             break
+        input("\n  >>> Presione ENTER para continuar <<<")
     conn.disconnect()
 
 if __name__ == "__main__":

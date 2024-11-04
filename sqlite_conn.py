@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import csv
+import my_utils as utils
 from datetime import datetime
 
 class Database:
@@ -31,7 +32,7 @@ class Database:
             self.conn.rollback()
             print("\n *** Operación cancelada ***")
 
-    def create_table(self):
+    def create_products_table(self):
         c = self.conn.cursor()
         c.execute("CREATE TABLE if not exists productos (id INTEGER PRIMARY KEY, nombre TEXT, cantidad REAL, medida TEXT, precio REAL, total REAL, fecha TEXT)")
         self.conn.commit()
@@ -69,6 +70,32 @@ class Database:
         c.close()
         return numero_columnas
 
+    def validate_table_not_empty(self, operation, table_name, message_if_empty):
+        if self.get_num_rows_table(table_name) > 0:
+            operation(self)
+        else:
+            print(f"\n      {message_if_empty}")
+
+    def confirm_transaction_database(self, c):
+        continuar = utils.read_input_continue_confirmation()
+        if(continuar.lower() in ['si', 's']):
+            self.commit(c)
+        else:
+            self.rollback()
+
+    def delete_product(self, get_value_func, field_name, *args):
+        value = get_value_func(f"\n  Ingrese el {field_name}: ", *args)
+        query = f"DELETE FROM productos WHERE {field_name}=?"
+        c = self.execute_query(query, (value,))
+        self.confirm_transaction_database(c)
+        c.close()
+
+    def insert_product(self, producto):
+        sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio, total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
+        c = self.execute_query(sqlite_statement, producto)
+        self.confirm_transaction_database(c)
+        c.close()
+
     def export_to_csv(self, table_name):
         try:
             timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
@@ -83,4 +110,3 @@ class Database:
             print(f"\n   >>> Exportación '{file_name}' exitosa!! <<<")
         except Exception as e:
             print(f"\n   >>> Error durante la exportación!! <<<\n   *** {e} ***")
-        input("\n   >>> Presione ENTER para continuar <<<")

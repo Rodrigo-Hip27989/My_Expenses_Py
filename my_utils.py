@@ -14,7 +14,7 @@ def read_input_regex(patron, mensaje):
     else:
         raise ValueError(f"El valor '{input_varchar}' no es valido!")
 
-def get_valid_data_varchar(patron, mensaje):
+def read_valid_varchar(patron, mensaje):
     input_varchar = ""
     while len(input_varchar.strip()) == 0:
         try: 
@@ -24,34 +24,37 @@ def get_valid_data_varchar(patron, mensaje):
             print(f"\n *** {e} ***\n")
     return input_varchar
 
-def get_valid_data_numeric(mostrar_mensaje, minimo, maximo, patron, convert_func):
+def read_valid_number(mostrar_mensaje, minimo, maximo, patron, convert_func):
     numero = minimo - 1
     while not (minimo <= numero <= maximo):
         try:
-            numero = convert_func(get_valid_data_varchar(patron, mostrar_mensaje))
+            numero = convert_func(read_valid_varchar(patron, mostrar_mensaje))
         except ValueError:
             numero = minimo - 1
         if not (minimo <= numero <= maximo):
             print(f"\n  >>> El número debe estar en el rango [{minimo}-{maximo}] <<<\n")
     return numero
 
-def get_valid_data_integer(mostrar_mensaje, minimo, maximo):
+def read_input_integer(mostrar_mensaje, minimo, maximo):
     regex_integer = r'^[1-9]\d*$'
-    return get_valid_data_numeric(mostrar_mensaje, minimo, maximo, regex_integer, int)
+    return read_valid_number(mostrar_mensaje, minimo, maximo, regex_integer, int)
 
-def get_valid_data_float(mostrar_mensaje, minimo, maximo):
+def read_input_float(mostrar_mensaje, minimo, maximo):
     regex_float = r'^(?!.*\/0)(-?\d+(\.\d+)?|-\d+/\d+|\d+/\d+)$'
-    return get_valid_data_numeric(mostrar_mensaje, minimo, maximo, regex_float, convert_to_float)
+    return read_valid_number(mostrar_mensaje, minimo, maximo, regex_float, convert_to_float)
 
-def get_valid_data_simple_text(mensaje):
+def read_input_simple_text(mensaje):
     regex_simple_text = r'^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ]+[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ()\.\-\_\ ]*'
-    return get_valid_data_varchar(regex_simple_text, mensaje)
+    return read_valid_varchar(regex_simple_text, mensaje)
 
-def get_valid_data_date(mensaje):
+def read_input_date(mensaje):
     regex_date = r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$'
-    return get_valid_data_varchar(regex_date, mensaje)
+    return read_valid_varchar(regex_date, mensaje)
 
-def get_valid_data_option_yes_no(mensaje):
+def read_input_yes_no(mensaje):
     regex_options = r'^(SI|NO|Si|No|si|no|S|N|s|n)$'
-    return get_valid_data_varchar(regex_options, mensaje)
+    return read_valid_varchar(regex_options, mensaje)
+
+def read_input_continue_confirmation():
+    return read_input_yes_no("\n  >>> ¿Desea continuar (Si/No)? ")
 
