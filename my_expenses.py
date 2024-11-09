@@ -65,22 +65,13 @@ def register_multiple_paths(conn, table_name):
         if(stop.lower() in ['no', 'n']):
             break
 
-def ask_for_path_to_update(conn, table_name):
-    id_path = utils.read_input_integer("\n  * Ingrese  ID: ", 1, 10000000)
-    query_select = f"SELECT * FROM {table_name} WHERE id=?"
-    path_found = conn.execute_query(query_select, (id_path,)).fetchone()
-    if(path_found != None):
-        is_export, is_import = ask_for_path_details()
-        return [id_path, is_export, is_import]
-    else:
-        print("\n   *** El ID ingresado no existe!! ***")
-    return []
-
 def update_multiple_paths(conn, table_paths):
     while True:
         render_table_with_csv_memory(conn, table_paths)
         utils.draw_tittle_border("MODIFICAR UNA RUTA")
-        conn.update_path(table_paths, ask_for_path_to_update(conn, table_paths))
+        path_found = conn.find_item(table_paths, "ID", utils.read_input_integer, 1, 10000000)
+        if(path_found != []):
+            conn.update_path(table_paths, path_found[0], ask_for_path_details)
         stop = utils.read_input_yes_no("\n  >>> ¿Desea modificar otra ruta (Si/No)?: ")
         if(stop.lower() in ['no', 'n']):
             break
@@ -89,7 +80,9 @@ def delete_multiple_paths(conn, table_paths):
     while True:
         render_table_with_csv_memory(conn, table_paths)
         utils.draw_tittle_border("ELIMINAR UNA RUTA")
-        conn.delete_path(table_paths, "ID", utils.read_input_integer, 1, 10000000)
+        path_found = conn.find_item(table_paths, "ID", utils.read_input_integer, 1, 10000000)
+        if(path_found != []):
+            conn.delete_path(table_paths, path_found)
         if conn.get_num_rows_table(table_paths) > 0:
             stop = utils.read_input_yes_no("\n  >>> ¿Desea eliminar otra ruta (Si/No)?: ")
             if(stop.lower() in ['no', 'n']):
