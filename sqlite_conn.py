@@ -2,7 +2,6 @@ import sqlite3
 import os
 import csv
 import my_utils as utils
-from datetime import datetime
 
 class Database:
     def __init__(self, path, file):
@@ -21,20 +20,30 @@ class Database:
         if self.conn:
             self.conn.close()
 
+    def cursor(self):
+        if self.conn:
+            return self.conn.cursor()
+
     def commit(self, c):
         if self.conn:
             self.conn.commit()
-            print(f"\n  >>> Filas modificadas: {c.rowcount} <<<")
             c.close()
 
     def rollback(self):
         if self.conn:
             self.conn.rollback()
-            print("\n *** Operación cancelada ***")
+            print("\n  *** Operación cancelada ***")
 
-    def create_products_table(self):
+    def create_products_tbl(self):
         c = self.conn.cursor()
-        c.execute("CREATE TABLE if not exists productos (id INTEGER PRIMARY KEY, nombre TEXT, cantidad REAL, medida TEXT, precio REAL, total REAL, fecha TEXT)")
+        c.execute("CREATE TABLE IF NOT EXISTS productos (id INTEGER PRIMARY KEY, nombre TEXT, cantidad REAL, medida TEXT, precio REAL, total REAL, fecha TEXT)")
+        self.conn.commit()
+        c.close()
+
+
+    def paths_tbl(self):
+        c = self.conn.cursor()
+        c.execute("CREATE TABLE IF NOT EXISTS paths (id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL, is_export BOOLEAN NOT NULL DEFAULT 0, is_import BOOLEAN NOT NULL DEFAULT 0)")
         self.conn.commit()
         c.close()
 
@@ -70,9 +79,9 @@ class Database:
         c.close()
         return numero_columnas
 
-    def validate_table_not_empty(self, operation, table_name, message_if_empty):
+    def validate_table_not_empty(self, operation, table_name, message_if_empty, *args):
         if self.get_num_rows_table(table_name) > 0:
-            operation(self)
+            operation(self, table_name, *args)
         else:
             print(f"\n      {message_if_empty}")
 
@@ -80,12 +89,13 @@ class Database:
         continuar = utils.read_input_continue_confirmation()
         if(continuar.lower() in ['si', 's']):
             self.commit(c)
+            print(f"\n  >>> Filas modificadas: {c.rowcount} <<<")
         else:
             self.rollback()
 
-    def delete_product(self, get_value_func, field_name, *args):
-        value = get_value_func(f"\n  Ingrese el {field_name}: ", *args)
-        query = f"DELETE FROM productos WHERE {field_name}=?"
+    def delete_item(self, table_name, field_name, get_value_func, *args):
+        value = get_value_func(f"\n  * Ingrese el {field_name}: ", *args)
+        query = f"DELETE FROM {table_name} WHERE {field_name}=?"
         c = self.execute_query(query, (value,))
         self.confirm_transaction_database(c)
         c.close()
@@ -96,17 +106,47 @@ class Database:
         self.confirm_transaction_database(c)
         c.close()
 
-    def export_to_csv(self, table_name):
+    def delete_path(self, table_name, field_name, get_value_func, *args):
+        input_id = get_value_func(f"\n  * Ingrese el {field_name}: ", *args)
+        query_select = f"SELECT * FROM {table_name} WHERE {field_name}=?"
+        c = self.execute_query(query_select, (input_id,))
+        path_found = c.fetchone()
+        if(path_found != None):
+            if(path_found[2] == 1 or path_found[3] == 1):
+                print(f"\n  *** No es posible eliminar una ruta csv en uso***")
+            else:
+                query_delete = f"DELETE FROM {table_name} WHERE {field_name}=?"
+                c2 = self.execute_query(query_delete, (input_id,))
+                self.confirm_transaction_database(c2)
+                c2.close()
+        else:
+            print(f"\n  *** No se encontro el ID ingresado ***")
+        c.close()
+
+    def insert_path(self, table_name, request_path):
+        num_rows = self.get_num_rows_table(f"{table_name}")
+        is_first_entry = (num_rows == 0)
+        path = request_path(is_first_entry)
+        if(num_rows > 0):
+            if(path[1] == 1):
+                self.execute_query(f"UPDATE {table_name} SET is_export = 0")
+            if(path[2] == 1):
+                self.execute_query(f"UPDATE {table_name} SET is_import = 0")
+        c = self.execute_query(f"INSERT INTO {table_name} (path, is_export, is_import) VALUES (?, ?, ?)", path)
+        self.confirm_transaction_database(c)
+        c.close()
+
+    def export_csv(self, table_name, file_name, path):
         try:
-            timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
-            file_name = f"{table_name.capitalize()}_{timestamp}.csv"
             query_select = f"SELECT * FROM {table_name}"
             headers = self.get_headers(f"{table_name}")
             rows = self.fetch_all(query_select)
-            with open(file_name, mode='w', newline='', encoding='utf-8') as archivo_csv:
+            with open(f"{path}/{file_name}", mode='w', newline='', encoding='utf-8') as archivo_csv:
                 escritor_csv = csv.writer(archivo_csv)
                 escritor_csv.writerow(headers)
                 escritor_csv.writerows(rows)
-            print(f"\n   >>> Exportación '{file_name}' exitosa!! <<<")
+            print(f"\n   >>> Exportación exitosa!!\n")
+            print(f"   * Nombre: {file_name}")
+            print(f"   * Ruta:   {path}")
         except Exception as e:
             print(f"\n   >>> Error durante la exportación!! <<<\n   *** {e} ***")
