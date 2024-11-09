@@ -123,18 +123,28 @@ class Database:
             print(f"\n  *** No se encontro el ID ingresado ***")
         c.close()
 
-    def insert_path(self, table_name, request_path):
+    def insert_path(self, table_name, ask_for_path_to_insert):
         num_rows = self.get_num_rows_table(f"{table_name}")
-        is_first_entry = (num_rows == 0)
-        path = request_path(is_first_entry)
+        path, is_export, is_import = ask_for_path_to_insert(num_rows == 0)
         if(num_rows > 0):
-            if(path[1] == 1):
+            if(is_export):
                 self.execute_query(f"UPDATE {table_name} SET is_export = 0")
-            if(path[2] == 1):
+            if(is_import):
                 self.execute_query(f"UPDATE {table_name} SET is_import = 0")
-        c = self.execute_query(f"INSERT INTO {table_name} (path, is_export, is_import) VALUES (?, ?, ?)", path)
+        c = self.execute_query(f"INSERT INTO {table_name} (path, is_export, is_import) VALUES (?, ?, ?)", [path, is_export, is_import])
         self.confirm_transaction_database(c)
         c.close()
+
+    def update_path(self, table_name, path_details):
+        if(path_details != []):
+            id_path, is_export, is_import = path_details
+            if(is_export):
+                self.execute_query(f"UPDATE {table_name} SET is_export = 0")
+            if(is_import):
+                self.execute_query(f"UPDATE {table_name} SET is_import = 0")
+            if(is_export or is_import):
+                c = self.execute_query(f"UPDATE {table_name} SET is_export = {is_export}, is_import = {is_import} WHERE id = {id_path}")
+                self.confirm_transaction_database(c)
 
     def export_csv(self, table_name, file_name, path):
         try:

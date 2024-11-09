@@ -43,27 +43,50 @@ def register_multiple_products(conn):
         if(stop.lower() in ['no', 'n']):
             break
 
-def ask_for_path_details(is_first_entry):
+def ask_for_path_details():
+    is_export = utils.read_input_yes_no("\n  * Establecer como ruta de exportación (Si/No): ")
+    is_import = utils.read_input_yes_no("\n  * Establecer como ruta de importación (Si/No): ")
+    return [is_export.lower() in ['si', 's'], is_import.lower() in ['si', 's']]
+
+def ask_for_path_to_insert(is_first_entry):
     new_path = utils.read_input_paths_linux("  * Ruta: ")
     if(is_first_entry):
         return [new_path, 1, 1]
     else:
-        is_export = utils.read_input_yes_no("\n  * Establecer como ruta de exportación (Si/No): ")
-        is_import = utils.read_input_yes_no("\n  * Establecer como ruta de importación (Si/No): ")
-        return [new_path, is_export.lower() in ['si', 's'], is_import.lower() in ['si', 's']]
+        is_export, is_import = ask_for_path_details()
+        return [new_path, is_export, is_import]
 
 def register_multiple_paths(conn, table_name):
     while True:
         subprocess.run(["clear"])
         utils.draw_tittle_border("REGISTRAR NUEVA RUTA")
-        conn.insert_path(table_name, ask_for_path_details)
+        conn.insert_path(table_name, ask_for_path_to_insert)
         stop = utils.read_input_yes_no("\n  >>> ¿Desea agregar otra ruta (Si/No)?: ")
+        if(stop.lower() in ['no', 'n']):
+            break
+
+def ask_for_path_to_update(conn, table_name):
+    id_path = utils.read_input_integer("\n  * Ingrese  ID: ", 1, 10000000)
+    query_select = f"SELECT * FROM {table_name} WHERE id=?"
+    path_found = conn.execute_query(query_select, (id_path,)).fetchone()
+    if(path_found != None):
+        is_export, is_import = ask_for_path_details()
+        return [id_path, is_export, is_import]
+    else:
+        print("\n   *** El ID ingresado no existe!! ***")
+    return []
+
+def update_multiple_paths(conn, table_paths):
+    while True:
+        render_table_with_csv_memory(conn, table_paths)
+        utils.draw_tittle_border("MODIFICAR UNA RUTA")
+        conn.update_path(table_paths, ask_for_path_to_update(conn, table_paths))
+        stop = utils.read_input_yes_no("\n  >>> ¿Desea modificar otra ruta (Si/No)?: ")
         if(stop.lower() in ['no', 'n']):
             break
 
 def delete_multiple_paths(conn, table_paths):
     while True:
-        subprocess.run(["clear"])
         render_table_with_csv_memory(conn, table_paths)
         utils.draw_tittle_border("ELIMINAR UNA RUTA")
         conn.delete_path(table_paths, "ID", utils.read_input_integer, 1, 10000000)
@@ -85,7 +108,6 @@ def export_csv_with_default_name(conn, table_name, table_csv):
         print("\n   >>> Por favor configure una ruta de exportación!")
 
 def show_product_deletion_menu(conn, table_products):
-    subprocess.run(["clear"])
     while True:
         render_table_with_csv_memory(conn, table_products)
         utils.draw_tittle_border("ELIMINAR UN PRODUCTO")
@@ -122,7 +144,7 @@ def show_manager_paths_menu(conn, table_paths):
         print("  2. Visualizar rutas guardadas")
         print("  3. Registrar nueva ruta")
         print("  4. Eliminar una ruta")
-        print("  5. Modificar valores de una ruta")
+        print("  5. Modificar rutas de exportación o importación")
         opcion = utils.read_input_integer("\n  * Opción >> ", 0, 5)
         if(opcion == 0):
             print("\n  Saliendo del programa...\n")
@@ -139,7 +161,7 @@ def show_manager_paths_menu(conn, table_paths):
             conn.validate_table_not_empty(delete_multiple_paths, table_paths, "No hay datos para eliminar...")
             input("\n  >>> Presione ENTER para continuar <<<")
         elif(opcion == 5):
-            print("\n   En proceso de creación...")
+            conn.validate_table_not_empty(update_multiple_paths, table_paths, "No hay datos para actualizar...")
             time.sleep(1.5)
 
 def main(conn):
