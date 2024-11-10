@@ -68,8 +68,11 @@ def read_input_simple_text(mensaje):
     return read_valid_varchar(regex_simple_text, mensaje)
 
 def read_input_paths_linux(mensaje):
-    regex_path = r'^(/([a-zA-Z0-9_-]+(?:/[a-zA-Z0-9_-]+)*))?$|^([a-zA-Z0-9_-]+(?:/[a-zA-Z0-9_-]+)*)$|^~/?([a-zA-Z0-9_-]+(?:/[a-zA-Z0-9_-]+)*)$'
-    #regex_path =  r'^(\/(\$[a-zA-Z0-9_-]+|[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_-]+|(\.\.)|(\.)|([a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_-]+\/))*)$'
+    env_var_path = r'^(?:/[\w\.áéíóúÁÉÍÓÚñÑ_-]+|\$\w+)(?:/[\w\.áéíóúÁÉÍÓÚñÑ_-]*|\$\w*)*(?<!/)$'
+    absolute_path = r'^(?:/([\$\w+]|[\w\.áéíóúÁÉÍÓÚñÑ_-]+(?:/[\w\.-áéíóúÁÉÍÓÚñÑ_-]+)*))(?<!/)$'
+    relative_path = r'^[\w\.áéíóúÁÉÍÓÚñÑ_-]+(?:/[\w\.-áéíóúÁÉÍÓÚñÑ_-]+)*(?<!/)$'
+    home_path = r'^~/?([\w\.áéíóúÁÉÍÓÚñÑ_-]+(?:/[\w\.-áéíóúÁÉÍÓÚñÑ_-]+)*)(?<!/)$'
+    regex_path = f'({env_var_path}|{absolute_path}|{relative_path}|{home_path})'
     return read_valid_varchar_no_full(regex_path, mensaje)
 
 def read_input_date(mensaje):

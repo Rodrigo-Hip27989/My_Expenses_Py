@@ -90,13 +90,33 @@ def delete_multiple_paths(conn, table_paths):
         else:
             break
 
+def create_directory_and_get_expanded_path(path):
+    try:
+        expanded_path = os.path.expandvars(path)
+        expanded_path = os.path.expanduser(expanded_path)
+        final_expanded_path = os.path.abspath(expanded_path)
+        os.makedirs(expanded_path, exist_ok=True)
+        return final_expanded_path
+    except KeyError as e:
+        print(f"\n   >>> Error: Variable de entorno no encontrada en la ruta. \n   >>>Detalles: {e}")
+        return None
+    except PermissionError as e:
+        print(f"\n   >>> Error: No tienes permisos suficientes para crear el directorio. \n   >>> Detalles: {e}")
+        return None
+    except OSError as e:
+        print(f"\n   >>> Error: Ha ocurrido un error con el sistema operativo. \n   >>>Detalles: {e}")
+        return None
+    except Exception as e:
+        print(f"\n   >>> Ha ocurrido un error inesperado: {e}")
+        return None
+
 def export_csv_with_default_name(conn, table_name, table_csv):
     default_path = conn.execute_query(f"SELECT * FROM {table_csv} WHERE is_export = 1").fetchone()
     if(default_path != None and default_path[1] != ""):
         timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
         file_name = f"{table_name.capitalize()}_{timestamp}.csv"
-        os.makedirs(default_path[1], exist_ok=True)
-        conn.export_csv(table_name, file_name, default_path[1])
+        expanded_path = create_directory_and_get_expanded_path(default_path[1])
+        conn.export_csv(table_name, file_name, expanded_path)
     else:
         print("\n   >>> Por favor configure una ruta de exportación!")
 
