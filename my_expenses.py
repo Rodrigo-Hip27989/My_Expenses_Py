@@ -237,10 +237,10 @@ def main(conn):
                 else:
                     print("\n   >>> Operacion cancelada")
                 time.sleep(1.3)
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, EOFError):
             subprocess.run(["clear"])
             print("\n\n\n\n    Interrupción detectada !!!\n\n    Volviendo al menú principal ...\n\n")
-            time.sleep(2.4)
+            time.sleep(2)
     conn.disconnect()
 
 if __name__ == "__main__":
