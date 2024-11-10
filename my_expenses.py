@@ -31,7 +31,11 @@ def ask_for_product_details():
     measurement_unit = utils.read_input_simple_text("  * Medida: ")
     price = utils.read_input_float("  * Precio Unitario: ", 0, 1000000)
     total = quantity*price
-    date = utils.read_input_date("  * Fecha (Día/Mes/Año): ")
+    date = datetime.now().strftime("%d/%m/%Y")
+    print(f"  * Fecha (Día/Mes/Año): {date}")
+    change_date = utils.read_input_yes_no("\n  >>> ¿Desea cambiar la fecha (Si/No)?: ")
+    if(change_date.lower() in ['si', 's']):
+        date = utils.read_input_date("  * Fecha (Día/Mes/Año): ")
     return [name, quantity, measurement_unit, price, total, date]
 
 def register_multiple_products(conn):
