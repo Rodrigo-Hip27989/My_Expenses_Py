@@ -1,9 +1,11 @@
 import os
-import time
 import subprocess
+import signal
+import sys
+import time
+from datetime import datetime
 import sqlite_conn
 import my_utils as utils
-from datetime import datetime
 
 def initialize_db():
     db_path="sqlite_db"
@@ -13,6 +15,9 @@ def initialize_db():
     conn.create_products_tbl()
     conn.paths_tbl()
     return conn
+
+def handle_interrupt(sig, frame):
+    raise KeyboardInterrupt
 
 def render_table_with_csv_memory(conn, table_name):
     subprocess.run(["clear"])
@@ -184,6 +189,7 @@ def show_manager_paths_menu(conn, table_paths):
 def main(conn):
     table_products = "productos"
     table_paths = "paths"
+    signal.signal(signal.SIGINT, handle_interrupt)
     while True:
         subprocess.run(["clear"])
         utils.draw_tittle_border("REGISTRAR GASTOS DE PRODUCTOS")
@@ -197,39 +203,44 @@ def main(conn):
         print("  7. Configurar rutas")
         print("  8. Configurar listas de productos")
         print("  9. Vaciar la base de datos")
-        opcion = utils.read_input_integer("\n  * Opción >> ", 0, 9)
-        if(opcion == 0):
-            break
-        elif(opcion == 1):
+        try:
+            opcion = utils.read_input_integer("\n  * Opción >> ", 0, 9)
+            if(opcion == 0):
+                break
+            elif(opcion == 1):
+                subprocess.run(["clear"])
+            elif(opcion == 2):
+                conn.validate_table_not_empty(render_table_with_csv_memory, table_products, "No hay datos para mostrar...")
+                input("\n   >>> Presione ENTER para continuar <<<")
+            elif(opcion == 3):
+                register_multiple_products(conn)
+            elif(opcion == 4):
+                conn.validate_table_not_empty(show_product_deletion_menu, table_products, "No hay datos para eliminar...")
+                time.sleep(1.7)
+            elif(opcion== 5):
+                conn.validate_table_not_empty(export_csv_with_default_name, table_products, "Aun no hay datos para exportar!", table_paths)
+                time.sleep(1.7)
+            elif(opcion == 6):
+                print("\n    En proceso de creación...")
+                time.sleep(1.3)
+            elif(opcion == 7):
+                show_manager_paths_menu(conn, table_paths)
+            elif(opcion == 8):
+                print("\n   En proceso de creación...")
+                time.sleep(1.3)
+            elif(opcion == 9):
+                delete_db = utils.read_input_yes_no("\n   ¿Esta seguro de borrar todos sus datos? (Si/No): ")
+                if(delete_db.lower() in ['si', 's']):
+                    conn.disconnect()
+                    conn.delete_database()
+                    conn = initialize_db()
+                else:
+                    print("\n   >>> Operacion cancelada")
+                time.sleep(1.3)
+        except KeyboardInterrupt:
             subprocess.run(["clear"])
-        elif(opcion == 2):
-            conn.validate_table_not_empty(render_table_with_csv_memory, table_products, "No hay datos para mostrar...")
-            input("\n   >>> Presione ENTER para continuar <<<")
-        elif(opcion == 3):
-            register_multiple_products(conn)
-        elif(opcion == 4):
-            conn.validate_table_not_empty(show_product_deletion_menu, table_products, "No hay datos para eliminar...")
-            time.sleep(1.7)
-        elif(opcion == 5):
-            conn.validate_table_not_empty(export_csv_with_default_name, table_products, "Aun no hay datos para exportar!", table_paths)
-            time.sleep(1.7)
-        elif(opcion == 6):
-            print("\n    En proceso de creación...")
-            time.sleep(1.3)
-        elif(opcion == 7):
-            show_manager_paths_menu(conn, table_paths)
-        elif(opcion == 8):
-            print("\n   En proceso de creación...")
-            time.sleep(1.3)
-        elif(opcion == 9):
-            delete_db = utils.read_input_yes_no("\n   ¿Esta seguro de borrar todos sus datos? (Si/No): ")
-            if(delete_db.lower() in ['si', 's']):
-                conn.disconnect()
-                conn.delete_database()
-                conn = initialize_db()
-            else:
-                print("\n   >>> Operacion cancelada")
-            time.sleep(1.3)
+            print("\n\n\n\n    Interrupción detectada !!!\n\n    Volviendo al menú principal ...\n\n")
+            time.sleep(2.4)
     conn.disconnect()
 
 if __name__ == "__main__":
