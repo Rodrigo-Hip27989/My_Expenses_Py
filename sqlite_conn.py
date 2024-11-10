@@ -149,6 +149,20 @@ class Database:
             c = self.execute_query(f"UPDATE {table_name} SET is_export = {is_export_temp}, is_import = {is_import_temp} WHERE id = {id_path}")
             self.confirm_transaction_database(c)
 
+    def delete_database(self):
+        try:
+            db_full_path = os.path.join(self.db_path, self.db_file)
+            if os.path.exists(db_full_path):
+                if os.path.isfile(db_full_path):
+                    os.remove(db_full_path)
+                    print(f"\n   >>> La base de datos ha sido eliminada!")
+                else:
+                    print("\n   >>> La ruta proporcionada no es un archivo válido!")
+            else:
+                print(f"\n   >>> No se encontró el archivo de base de datos en la ruta: {self.db_path}")
+        except Exception as e:
+            print(f"\n   >>> Hubo un error al eliminar la base de datos: {e}")
+
     def export_csv(self, table_name, file_name, path):
         try:
             query_select = f"SELECT * FROM {table_name}"

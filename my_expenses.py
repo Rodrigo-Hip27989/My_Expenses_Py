@@ -196,7 +196,8 @@ def main(conn):
         print("  6. Importar CSV")
         print("  7. Configurar rutas")
         print("  8. Configurar listas de productos")
-        opcion = utils.read_input_integer("\n  * Opción >> ", 0, 8)
+        print("  9. Vaciar la base de datos")
+        opcion = utils.read_input_integer("\n  * Opción >> ", 0, 9)
         if(opcion == 0):
             print("\n   Saliendo del programa...\n")
             time.sleep(0.3)
@@ -222,6 +223,15 @@ def main(conn):
         elif(opcion == 8):
             print("\n   En proceso de creación...")
             time.sleep(1.5)
+        elif(opcion == 9):
+            delete_db = utils.read_input_yes_no("\n   ¿Esta seguro de borrar todos sus datos? (Si/No): ")
+            if(delete_db.lower() in ['si', 's']):
+                conn.disconnect()
+                conn.delete_database()
+                conn = initialize_db()
+            else:
+                print("\n   >>> Operacion cancelada")
+            time.sleep(1.3)
     conn.disconnect()
 
 if __name__ == "__main__":
