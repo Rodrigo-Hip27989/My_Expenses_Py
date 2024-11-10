@@ -176,10 +176,10 @@ def show_manager_paths_menu(conn, table_paths):
             register_multiple_paths(conn, table_paths)
         elif(opcion == 4):
             conn.validate_table_not_empty(delete_multiple_paths, table_paths, "No hay datos para eliminar...")
-            input("\n  >>> Presione ENTER para continuar <<<")
+            time.sleep(1.3)
         elif(opcion == 5):
             conn.validate_table_not_empty(update_multiple_paths, table_paths, "No hay datos para actualizar...")
-            time.sleep(1.5)
+            time.sleep(1.3)
 
 def main(conn):
     table_products = "productos"
@@ -199,8 +199,6 @@ def main(conn):
         print("  9. Vaciar la base de datos")
         opcion = utils.read_input_integer("\n  * Opción >> ", 0, 9)
         if(opcion == 0):
-            print("\n   Saliendo del programa...\n")
-            time.sleep(0.3)
             break
         elif(opcion == 1):
             subprocess.run(["clear"])
@@ -211,18 +209,18 @@ def main(conn):
             register_multiple_products(conn)
         elif(opcion == 4):
             conn.validate_table_not_empty(show_product_deletion_menu, table_products, "No hay datos para eliminar...")
-            input("\n   >>> Presione ENTER para continuar <<<")
+            time.sleep(1.7)
         elif(opcion == 5):
             conn.validate_table_not_empty(export_csv_with_default_name, table_products, "Aun no hay datos para exportar!", table_paths)
-            input("\n   >>> Presione ENTER para continuar <<<")
+            time.sleep(1.7)
         elif(opcion == 6):
             print("\n    En proceso de creación...")
-            time.sleep(1.5)
+            time.sleep(1.3)
         elif(opcion == 7):
             show_manager_paths_menu(conn, table_paths)
         elif(opcion == 8):
             print("\n   En proceso de creación...")
-            time.sleep(1.5)
+            time.sleep(1.3)
         elif(opcion == 9):
             delete_db = utils.read_input_yes_no("\n   ¿Esta seguro de borrar todos sus datos? (Si/No): ")
             if(delete_db.lower() in ['si', 's']):
