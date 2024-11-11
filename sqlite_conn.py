@@ -177,3 +177,20 @@ class Database:
             print(f"   * Ruta:   {path}")
         except Exception as e:
             print(f"\n   >>> Error durante la exportación!! <<<\n   *** {e} ***")
+
+    def import_from_csv(self, table_name, file_name, file_path):
+        try:
+            headers_tbl = self.get_headers(f"{table_name}")
+            with open(f"{file_path}/{file_name}", mode='r', encoding='utf-8') as archivo_csv:
+                lector_csv = csv.reader(archivo_csv)
+                headers_csv = next(lector_csv)
+                if(len(headers_csv) != len(headers_tbl)):
+                    raise ValueError("Las cabeceras del archivo y la tabla no coinciden !!!")
+                for fila in lector_csv:
+                    placeholders = ', '.join(['?' for _ in headers_csv])
+                    query_insert = f"INSERT INTO {table_name} ({', '.join(headers_csv)}) VALUES ({placeholders})"
+                    c = self.execute_query(query_insert, fila)
+                    self.commit(c)
+            print("\n   >>> Importación exitosa!!")
+        except Exception as e:
+            print(f"\n   >>> Error durante la importación!!\n   >>> {e}")

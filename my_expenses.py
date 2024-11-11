@@ -1,7 +1,7 @@
 import os
 import subprocess
 import signal
-import sys
+import glob
 import time
 from datetime import datetime
 import sqlite_conn
@@ -18,6 +18,30 @@ def initialize_db():
 
 def handle_interrupt(sig, frame):
     raise KeyboardInterrupt
+
+def find_files_by_extension(path, extension):
+    expanded_path = os.path.expandvars(path)
+    expanded_path = os.path.expanduser(expanded_path)
+    final_expanded_path = os.path.abspath(expanded_path)
+    if not os.path.exists(final_expanded_path):
+        print(f"Error: La ruta '{path}' no existe.")
+        return []
+    if not os.path.isdir(final_expanded_path):
+        print(f"Error: '{path}' no es un directorio válido.")
+        return []
+    pattern = os.path.join(final_expanded_path, f"*.{extension}")
+    file_list = glob.glob(pattern)
+    file_list_sorted = sorted(file_list, key=lambda x: os.path.getctime(x))
+    return file_list_sorted
+
+def select_file_from_list(file_list):
+    subprocess.run(["clear"])
+    utils.draw_tittle_border("SELECCIONE UN ARCHIVO PARA IMPORTAR")
+    for i, file in enumerate(file_list, start=1):
+        name_file = os.path.basename(file)
+        print(f"   {i}. {name_file}")
+    option = utils.read_input_integer("\n  * Opción >> ", 1, (len(file_list)))
+    return option
 
 def render_table_with_csv_memory(conn, table_name):
     subprocess.run(["clear"])
@@ -99,16 +123,24 @@ def delete_multiple_paths(conn, table_paths):
         else:
             break
 
-def create_directory_and_get_expanded_path(path):
+def get_expanded_path(path):
     try:
         expanded_path = os.path.expandvars(path)
         expanded_path = os.path.expanduser(expanded_path)
         final_expanded_path = os.path.abspath(expanded_path)
-        os.makedirs(expanded_path, exist_ok=True)
         return final_expanded_path
     except KeyError as e:
         print(f"\n   >>> Error: Variable de entorno no encontrada en la ruta. \n   >>>Detalles: {e}")
         return None
+    except Exception as e:
+        print(f"\n   >>> Ha ocurrido un error inesperado: {e}")
+        return None
+
+def create_directory_and_get_expanded_path(path):
+    try:
+        expanded_path = get_expanded_path(path)
+        os.makedirs(expanded_path, exist_ok=True)
+        return expanded_path
     except PermissionError as e:
         print(f"\n   >>> Error: No tienes permisos suficientes para crear el directorio. \n   >>> Detalles: {e}")
         return None
@@ -128,6 +160,29 @@ def export_csv_with_default_name(conn, table_name, table_csv):
         conn.export_csv(table_name, file_name, expanded_path)
     else:
         print("\n   >>> Por favor configure una ruta de exportación!")
+
+def import_products_from_csv(conn, table_paths, table_products, extension):
+    found_path = conn.execute_query(f"SELECT * FROM {table_paths} WHERE is_import = 1 LIMIT 1").fetchone()
+    if(found_path == None or found_path[1] == ""):
+        input("\n   >>> No hay rutas de importación configuradas\n\n")
+        return 0
+
+    file_path = get_expanded_path(found_path[1])
+    file_list = find_files_by_extension(file_path, extension)
+
+    if len(file_list) < 1:
+        input(f"\n   >>> No se encontraron archivos con extension: {extension}\n\n")
+        return 0
+
+    option = select_file_from_list(file_list)
+    selected_file = os.path.basename(file_list[option-1])
+    print(f"\n   [ Ruta de Importación ] \n   > {file_path}")
+    print(f"\n   [ Archivo seleccionado ] \n   > {selected_file}")
+
+    if(conn.get_num_rows_table(table_products) > 0):
+        print("\n   >>> Error la tabla no esta vacia!!")
+    else:
+        conn.import_from_csv(table_products, selected_file, file_path)
 
 def show_product_deletion_menu(conn, table_products):
     while True:
@@ -219,10 +274,10 @@ def main(conn):
                 time.sleep(1.7)
             elif(opcion== 5):
                 conn.validate_table_not_empty(export_csv_with_default_name, table_products, "Aun no hay datos para exportar!", table_paths)
-                time.sleep(1.7)
+                input("\n   >>> Presione ENTER para continuar <<<")
             elif(opcion == 6):
-                print("\n    En proceso de creación...")
-                time.sleep(1.3)
+                conn.validate_table_not_empty(import_products_from_csv, table_paths, "Aún no hay rutas guardadas", table_products, "csv")
+                input("\n   >>> Presione ENTER para continuar <<<")
             elif(opcion == 7):
                 show_manager_paths_menu(conn, table_paths)
             elif(opcion == 8):
