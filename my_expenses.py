@@ -164,14 +164,14 @@ def export_csv_with_default_name(conn, table_name, table_csv):
 def import_products_from_csv(conn, table_paths, table_products, extension):
     found_path = conn.execute_query(f"SELECT * FROM {table_paths} WHERE is_import = 1 LIMIT 1").fetchone()
     if(found_path == None or found_path[1] == ""):
-        input("\n   >>> No hay rutas de importación configuradas\n\n")
+        print("\n   >>> No hay rutas de importación configuradas")
         return 0
 
     file_path = get_expanded_path(found_path[1])
     file_list = find_files_by_extension(file_path, extension)
 
     if len(file_list) < 1:
-        input(f"\n   >>> No se encontraron archivos con extension: {extension}\n\n")
+        print(f"\n   >>> No se encontraron archivos: *.{extension}")
         return 0
 
     option = select_file_from_list(file_list)
@@ -195,22 +195,18 @@ def show_product_deletion_menu(conn, table_products):
         print("  4. Todos los que coincidan en cierta FECHA")
         opcion = utils.read_input_integer("\n  * Opción >> ", 0, 4)
         if(opcion == 0):
-            print("\n  Regresando...")
-            time.sleep(0.3)
             break
         elif(opcion == 1):
             subprocess.run(["clear"])
         elif(opcion == 2):
             conn.delete_item(table_products, "ID", utils.read_input_integer, 1, 1000000)
-            time.sleep(1)
         elif(opcion == 3):
             conn.delete_item(table_products, "NOMBRE", utils.read_input_simple_text)
-            time.sleep(1)
         elif(opcion == 4):
             conn.delete_item(table_products, "FECHA", utils.read_input_date)
-            time.sleep(1)
         if conn.get_num_rows_table(table_products) < 1:
             break
+        time.sleep(0.5)
 
 def show_manager_paths_menu(conn, table_paths):
     while True:
@@ -224,8 +220,6 @@ def show_manager_paths_menu(conn, table_paths):
         print("  5. Modificar rutas de exportación o importación")
         opcion = utils.read_input_integer("\n  * Opción >> ", 0, 5)
         if(opcion == 0):
-            print("\n  Saliendo del programa...\n")
-            time.sleep(0.3)
             break
         elif(opcion == 1):
             subprocess.run(["clear"])
@@ -236,10 +230,9 @@ def show_manager_paths_menu(conn, table_paths):
             register_multiple_paths(conn, table_paths)
         elif(opcion == 4):
             conn.validate_table_not_empty(delete_multiple_paths, table_paths, "No hay datos para eliminar...")
-            time.sleep(1.3)
         elif(opcion == 5):
             conn.validate_table_not_empty(update_multiple_paths, table_paths, "No hay datos para actualizar...")
-            time.sleep(1.3)
+        time.sleep(0.5)
 
 def main(conn):
     table_products = "productos"
@@ -271,7 +264,7 @@ def main(conn):
                 register_multiple_products(conn)
             elif(opcion == 4):
                 conn.validate_table_not_empty(show_product_deletion_menu, table_products, "No hay datos para eliminar...")
-                time.sleep(1.7)
+                time.sleep(0.7)
             elif(opcion== 5):
                 conn.validate_table_not_empty(export_csv_with_default_name, table_products, "Aun no hay datos para exportar!", table_paths)
                 input("\n   >>> Presione ENTER para continuar <<<")
@@ -282,7 +275,7 @@ def main(conn):
                 show_manager_paths_menu(conn, table_paths)
             elif(opcion == 8):
                 print("\n   En proceso de creación...")
-                time.sleep(1.3)
+                time.sleep(0.7)
             elif(opcion == 9):
                 delete_db = utils.read_input_yes_no("\n   ¿Esta seguro de borrar todos sus datos? (Si/No): ")
                 if(delete_db.lower() in ['si', 's']):
@@ -291,11 +284,11 @@ def main(conn):
                     conn = initialize_db()
                 else:
                     print("\n   >>> Operacion cancelada")
-                time.sleep(1.3)
+                time.sleep(0.7)
         except (KeyboardInterrupt, EOFError):
             subprocess.run(["clear"])
             print("\n\n\n\n    Interrupción detectada !!!\n\n    Volviendo al menú principal ...\n\n")
-            time.sleep(2)
+            time.sleep(1.3)
     conn.disconnect()
 
 if __name__ == "__main__":

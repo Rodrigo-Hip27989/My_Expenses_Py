@@ -14,7 +14,7 @@ class Database:
         try:
             self.conn = sqlite3.connect(f"{self.db_path}/{self.db_file}")
         except sqlite3.Error as e:
-            print(f"Error al conectar a la base de datos: {e}")
+            print(f"\n   >>> Error al conectar a la base de datos: {e}")
 
     def disconnect(self):
         if self.conn:
@@ -49,7 +49,7 @@ class Database:
 
     def execute_query(self, query, params=()):
         if self.conn is None:
-            print("Error: No hay conexión a la base de datos.")
+            print("\n   >>> Error: No hay conexión a la base de datos.")
             return None
 
         cursor = self.conn.cursor()
@@ -57,7 +57,7 @@ class Database:
             cursor.execute(query, params)
             return cursor
         except sqlite3.Error as e:
-            print(f"Error al ejecutar la consulta: {e}")
+            print(f"\n   >>> Error al ejecutar la consulta: \n   >>> {e}")
             return None
 
     def fetch_all(self, query, params=()):
@@ -176,7 +176,7 @@ class Database:
             print(f"   * Nombre: {file_name}")
             print(f"   * Ruta:   {path}")
         except Exception as e:
-            print(f"\n   >>> Error durante la exportación!! <<<\n   *** {e} ***")
+            print(f"\n   >>> Error durante la exportación!! <<<\n   >>> {e}\n")
 
     def import_from_csv(self, table_name, file_name, file_path):
         try:
@@ -191,6 +191,6 @@ class Database:
                     query_insert = f"INSERT INTO {table_name} ({', '.join(headers_csv)}) VALUES ({placeholders})"
                     c = self.execute_query(query_insert, fila)
                     self.commit(c)
-            print("\n   >>> Importación exitosa!!")
+            print("\n   >>> Importación exitosa!!\n")
         except Exception as e:
-            print(f"\n   >>> Error durante la importación!!\n   >>> {e}")
+            print(f"\n   >>> Error durante la importación!!\n   >>> {e}\n")
