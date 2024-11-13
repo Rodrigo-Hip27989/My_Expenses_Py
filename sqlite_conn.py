@@ -126,15 +126,10 @@ class Database:
         self.confirm_transaction_database(c)
         c.close()
 
-    def update_path(self, table_name, id_path, ask_for_path_details):
-        is_export_temp, is_import_temp = ask_for_path_details()
-        if(is_export_temp):
-            self.execute_query(f"UPDATE {table_name} SET is_export = 0")
-        if(is_import_temp):
-            self.execute_query(f"UPDATE {table_name} SET is_import = 0")
-        if(is_export_temp or is_import_temp):
-            c = self.execute_query(f"UPDATE {table_name} SET is_export = {is_export_temp}, is_import = {is_import_temp} WHERE id = {id_path}")
-            self.confirm_transaction_database(c)
+    def update_path(self, table_name, id_path, field):
+        self.execute_query(f"UPDATE {table_name} SET {field} = 0")
+        c = self.execute_query(f"UPDATE {table_name} SET {field} = 1 WHERE id = {id_path}")
+        self.confirm_transaction_database(c)
 
     def delete_database(self):
         try:
