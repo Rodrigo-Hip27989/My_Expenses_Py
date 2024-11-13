@@ -102,9 +102,10 @@ def update_multiple_paths(conn, table_paths):
     while True:
         render_table_with_csv_memory(conn, table_paths)
         utils.draw_tittle_border("MODIFICAR UNA RUTA")
-        path_found = conn.find_item(table_paths, "ID", utils.read_input_integer, 1, 10000000)
-        if(path_found != []):
-            conn.update_path(table_paths, path_found[0], ask_for_path_details)
+        id_path = utils.read_input_integer(f"\n  * Ingrese el ID: ", 1, 1000000)
+        found_path = conn.find_item(table_paths, "ID", id_path)
+        if(found_path != None):
+            conn.update_path(table_paths, id_path, ask_for_path_details)
         stop = utils.read_input_yes_no("\n  >>> ¿Desea modificar otra ruta (Si/No)?: ")
         if(stop.lower() in ['no', 'n']):
             break
@@ -113,9 +114,13 @@ def delete_multiple_paths(conn, table_paths):
     while True:
         render_table_with_csv_memory(conn, table_paths)
         utils.draw_tittle_border("ELIMINAR UNA RUTA")
-        path_found = conn.find_item(table_paths, "ID", utils.read_input_integer, 1, 10000000)
-        if(path_found != []):
-            conn.delete_path(table_paths, path_found)
+        id_path = utils.read_input_integer(f"\n  * Ingrese el ID: ", 1, 1000000)
+        found_path = conn.find_item(table_paths, "ID", id_path)
+        if(found_path != None):
+            if(found_path[2] == 1 or found_path[3] == 1):
+                print(f"\n  *** No es posible eliminar una ruta csv en uso***")
+            else:
+                conn.delete_item(table_paths, "ID", found_path[0])
         if conn.get_num_rows_table(table_paths) > 0:
             stop = utils.read_input_yes_no("\n  >>> ¿Desea eliminar otra ruta (Si/No)?: ")
             if(stop.lower() in ['no', 'n']):
@@ -151,19 +156,19 @@ def create_directory_and_get_expanded_path(path):
         print(f"\n   >>> Ha ocurrido un error inesperado: {e}")
         return None
 
-def export_csv_with_default_name(conn, table_name, table_csv):
-    default_path = conn.execute_query(f"SELECT * FROM {table_csv} WHERE is_export = 1").fetchone()
-    if(default_path != None and default_path[1] != ""):
+def export_csv_with_default_name(conn, table_products, table_paths):
+    found_path = conn.find_item(table_paths, "is_export", True)
+    if(found_path != None):
         timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
-        file_name = f"{table_name.capitalize()}_{timestamp}.csv"
-        expanded_path = create_directory_and_get_expanded_path(default_path[1])
-        conn.export_csv(table_name, file_name, expanded_path)
+        file_name = f"{table_products.capitalize()}_{timestamp}.csv"
+        expanded_path = create_directory_and_get_expanded_path(found_path[1])
+        conn.export_csv(table_products, file_name, expanded_path)
     else:
         print("\n   >>> Por favor configure una ruta de exportación!")
 
 def import_products_from_csv(conn, table_paths, table_products, extension):
-    found_path = conn.execute_query(f"SELECT * FROM {table_paths} WHERE is_import = 1 LIMIT 1").fetchone()
-    if(found_path == None or found_path[1] == ""):
+    found_path = conn.find_item(table_paths, "is_import", True)
+    if(found_path == None):
         print("\n   >>> No hay rutas de importación configuradas")
         return 0
 
@@ -199,11 +204,14 @@ def show_product_deletion_menu(conn, table_products):
         elif(opcion == 1):
             subprocess.run(["clear"])
         elif(opcion == 2):
-            conn.delete_item(table_products, "ID", utils.read_input_integer, 1, 1000000)
+            id_product = utils.read_input_integer(f"\n  * Ingrese el ID: ", 1, 10000000)
+            conn.delete_item(table_products, "ID", id_product)
         elif(opcion == 3):
-            conn.delete_item(table_products, "NOMBRE", utils.read_input_simple_text)
+            name_product = utils.read_input_simple_text(f"\n  * Ingrese el NOMBRE: ")
+            conn.delete_item(table_products, "NOMBRE", name_product)
         elif(opcion == 4):
-            conn.delete_item(table_products, "FECHA", utils.read_input_date)
+            date_product = utils.read_input_date(f"\n  * Ingrese el FECHA: ")
+            conn.delete_item(table_products, "FECHA", date_product)
         if conn.get_num_rows_table(table_products) < 1:
             break
         time.sleep(0.5)

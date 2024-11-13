@@ -93,22 +93,20 @@ class Database:
         else:
             self.rollback()
 
-    def delete_item(self, table_name, field, get_value_func, *args):
-        value = get_value_func(f"\n  * Ingrese el {field}: ", *args)
+    def delete_item(self, table_name, field, value):
         query_delete = f"DELETE FROM {table_name} WHERE {field}=?"
         c = self.execute_query(query_delete, (value,))
         self.confirm_transaction_database(c)
         c.close()
 
-    def find_item(self, table_name, field, get_value_func, *args):
-        value = get_value_func(f"\n  * Ingrese el {field}: ", *args)
-        query_select = f"SELECT * FROM {table_name} WHERE {field}=?"
-        path_found = self.execute_query(query_select, (value,)).fetchone()
-        if(path_found != None):
-            return path_found
+    def find_item(self, table_name, field, value):
+        query_select = f"SELECT * FROM {table_name} WHERE {field}=? LIMIT 1"
+        found_item = self.execute_query(query_select, (value,)).fetchone()
+        if(found_item != None and found_item != []):
+            return found_item
         else:
             print(f"\n   *** Ningun elemento con el {field} = {value} fue encontrado ***")
-        return []
+        return None
 
     def insert_product(self, producto):
         sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio, total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
@@ -127,17 +125,6 @@ class Database:
         c = self.execute_query(f"INSERT INTO {table_name} (path, is_export, is_import) VALUES (?, ?, ?)", [path, is_export, is_import])
         self.confirm_transaction_database(c)
         c.close()
-
-    def delete_path(self, table_name, path_obj):
-        if(path_obj != None and path_obj != []):
-            id_path, path, is_export, is_import = path_obj
-            if(is_export == 1 or is_import == 1):
-                print(f"\n  *** No es posible eliminar una ruta csv en uso***")
-            else:
-                query_delete = f"DELETE FROM {table_name} WHERE id=?"
-                c = self.execute_query(query_delete, (id_path,))
-                self.confirm_transaction_database(c)
-                c.close()
 
     def update_path(self, table_name, id_path, ask_for_path_details):
         is_export_temp, is_import_temp = ask_for_path_details()
