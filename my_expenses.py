@@ -4,13 +4,13 @@ import signal
 import glob
 import time
 from datetime import datetime
-import sqlite_conn
+import my_sqlconn as sqlc
 import my_utils as utils
 
 def initialize_db():
     db_path="sqlite_db"
     db_file="my_expenses.db"
-    conn = sqlite_conn.Database(db_path, db_file)
+    conn = sqlc.Database(db_path, db_file)
     conn.connect()
     conn.create_products_tbl()
     conn.create_paths_tbl()
