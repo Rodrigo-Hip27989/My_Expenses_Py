@@ -41,7 +41,7 @@ class Database:
         c.close()
 
 
-    def paths_tbl(self):
+    def create_paths_tbl(self):
         c = self.conn.cursor()
         c.execute("CREATE TABLE IF NOT EXISTS paths (id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL, is_export BOOLEAN NOT NULL DEFAULT 0, is_import BOOLEAN NOT NULL DEFAULT 0)")
         self.conn.commit()

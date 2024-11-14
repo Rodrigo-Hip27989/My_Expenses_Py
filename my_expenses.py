@@ -13,7 +13,7 @@ def initialize_db():
     conn = sqlite_conn.Database(db_path, db_file)
     conn.connect()
     conn.create_products_tbl()
-    conn.paths_tbl()
+    conn.create_paths_tbl()
     return conn
 
 def handle_interrupt(sig, frame):
@@ -186,6 +186,29 @@ def import_products_from_csv(conn, table_paths, table_products, extension):
     else:
         conn.import_from_csv(table_products, selected_file, file_path)
 
+def drop_tables(conn, table_products, table_paths):
+    subprocess.run(["clear"])
+    utils.draw_tittle_border("ELIMINANDO DATOS DE TABLAS")
+    print("   0. Regresar")
+    print("   1. Eliminar datos de productos")
+    print("   2. Eliminar datos de rutas")
+    print("   3. Eliminar datos de todas las tablas")
+    option = utils.read_input_integer("\n   * Opción >> ", 0, 3)
+    if(option != 0):
+        drop_db = utils.read_input_yes_no("\n    >>> Esta acción no puede deshacerse <<< \n\n    ¿Esta seguro de continuar? (Si/No): ")
+        if(drop_db.lower() in ['si', 's']):
+            if(option == 1):
+                conn.execute_query(f"DELETE FROM {table_products}")
+            elif(option == 2):
+                conn.execute_query(f"DELETE FROM {table_paths}")
+            elif(option == 3):
+                conn.disconnect()
+                conn.delete_database()
+                conn = initialize_db()
+        else:
+            print("\n   >>> Operacion cancelada")
+    return conn
+
 def show_product_deletion_menu(conn, table_products):
     while True:
         render_table_with_csv_memory(conn, table_products)
@@ -258,7 +281,7 @@ def main(conn):
         print("  6. Importar CSV")
         print("  7. Configurar rutas")
         print("  8. Configurar listas de productos")
-        print("  9. Vaciar la base de datos")
+        print("  9. Eliminar datos")
         try:
             opcion = utils.read_input_integer("\n  * Opción >> ", 0, 9)
             if(opcion == 0):
@@ -285,14 +308,7 @@ def main(conn):
                 print("\n   En proceso de creación...")
                 time.sleep(0.7)
             elif(opcion == 9):
-                delete_db = utils.read_input_yes_no("\n   ¿Esta seguro de borrar todos sus datos? (Si/No): ")
-                if(delete_db.lower() in ['si', 's']):
-                    conn.disconnect()
-                    conn.delete_database()
-                    conn = initialize_db()
-                else:
-                    print("\n   >>> Operacion cancelada")
-                time.sleep(0.7)
+                conn = drop_tables(conn, table_products, table_paths)
         except (KeyboardInterrupt, EOFError):
             subprocess.run(["clear"])
             print("\n\n\n\n    Interrupción detectada !!!\n\n    Volviendo al menú principal ...\n\n")
