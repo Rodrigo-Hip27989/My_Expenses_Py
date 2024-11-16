@@ -197,18 +197,20 @@ def drop_tables(conn, table_products, table_paths):
     print("   3. Eliminar datos de todas las tablas")
     option = utils.read_input_integer("\n   * Opción >> ", 0, 3)
     if(option != 0):
-        drop_db = utils.read_input_yes_no("\n    >>> Esta acción no puede deshacerse <<< \n\n    ¿Esta seguro de continuar? (Si/No): ")
-        if(drop_db.lower() in ['si', 's']):
-            if(option == 1):
-                conn.execute_query(f"DELETE FROM {table_products}")
-            elif(option == 2):
-                conn.execute_query(f"DELETE FROM {table_paths}")
-            elif(option == 3):
+        if(option == 1):
+            c = conn.execute_query(f"DELETE FROM {table_products}")
+            conn.confirm_transaction_database(c)
+        elif(option == 2):
+            c = conn.execute_query(f"DELETE FROM {table_paths}")
+            conn.confirm_transaction_database(c)
+        elif(option == 3):
+            drop_db = utils.read_input_yes_no("\n    >>> Esta acción no puede deshacerse <<< \n\n    ¿Esta seguro de continuar? (Si/No): ")
+            if(drop_db.lower() in ['si', 's']):
                 conn.disconnect()
                 conn.delete_database()
                 conn = initialize_db()
-        else:
-            print("\n   >>> Operacion cancelada")
+            else:
+                print("\n   >>> Operacion cancelada")
     return conn
 
 def show_product_deletion_menu(conn, table_products):
