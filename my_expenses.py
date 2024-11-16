@@ -6,6 +6,8 @@ import time
 from datetime import datetime
 import my_sqlconn as sqlc
 import my_utils as utils
+from classes.product import Product
+from classes.path import Path
 
 def initialize_db():
     db_path="sqlite_db"
@@ -57,15 +59,14 @@ def render_table_with_csv_memory(conn, table_name):
 def ask_for_product_details():
     name = utils.read_input_simple_text("  * Nombre: ")
     quantity = utils.read_input_float("  * Cantidad: ", 0.0001, 1000000)
-    measurement_unit = utils.read_input_simple_text("  * Medida: ")
-    price = utils.read_input_float("  * Precio Unitario: ", 0, 1000000)
-    total = quantity*price
+    unit = utils.read_input_simple_text("  * Medida: ")
+    total = utils.read_input_float("  * Total: ", 0, 1000000)
     date = datetime.now().strftime("%d/%m/%Y")
     print(f"  * Fecha (Día/Mes/Año): {date}")
     change_date = utils.read_input_yes_no("\n  >>> ¿Desea cambiar la fecha (Si/No)?: ")
     if(change_date.lower() in ['si', 's']):
         date = utils.read_input_date("  * Fecha (Día/Mes/Año): ")
-    return [name, quantity, measurement_unit, price, total, date]
+    return Product(name=name, quantity=quantity, unit=unit, total=total, date=date)
 
 def register_multiple_products(conn):
     while True:
@@ -79,17 +80,18 @@ def register_multiple_products(conn):
 def ask_for_path_to_insert(is_first_entry):
     new_path = utils.read_input_paths_linux("  * Ruta: ")
     if(is_first_entry):
-        return [new_path, 1, 1]
+        return Path(path=new_path, is_export=1, is_import=1)
     else:
         is_export = utils.read_input_yes_no("\n  * Establecer como ruta de exportación (Si/No): ")
         is_import = utils.read_input_yes_no("\n  * Establecer como ruta de importación (Si/No): ")
-        return [new_path, is_export.lower() in ['si', 's'], is_import.lower() in ['si', 's']]
+        return Path(new_path, is_export.lower() in ['si', 's'], is_import.lower() in ['si', 's'])
 
-def register_multiple_paths(conn, table_name):
+def register_multiple_paths(conn, table_paths):
     while True:
         subprocess.run(["clear"])
         utils.draw_tittle_border("REGISTRAR NUEVA RUTA")
-        conn.insert_path(table_name, ask_for_path_to_insert)
+        is_first_entry = conn.get_num_rows_table(table_paths) == 0
+        conn.insert_path(table_paths, ask_for_path_to_insert(is_first_entry), is_first_entry)
         stop = utils.read_input_yes_no("\n  >>> ¿Desea agregar otra ruta (Si/No)?: ")
         if(stop.lower() in ['no', 'n']):
             break

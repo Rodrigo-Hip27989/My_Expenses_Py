@@ -108,21 +108,19 @@ class Database:
             print(f"\n   *** Ningun elemento con el {field} = {value} fue encontrado ***")
         return None
 
-    def insert_product(self, producto):
+    def insert_product(self, product):
         sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio, total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
-        c = self.execute_query(sqlite_statement, producto)
+        c = self.execute_query(sqlite_statement, product.get_db_values())
         self.confirm_transaction_database(c)
         c.close()
 
-    def insert_path(self, table_name, ask_for_path_to_insert):
-        num_rows = self.get_num_rows_table(f"{table_name}")
-        path, is_export, is_import = ask_for_path_to_insert(num_rows == 0)
-        if(num_rows > 0):
-            if(is_export):
-                self.execute_query(f"UPDATE {table_name} SET is_export = 0")
-            if(is_import):
-                self.execute_query(f"UPDATE {table_name} SET is_import = 0")
-        c = self.execute_query(f"INSERT INTO {table_name} (path, is_export, is_import) VALUES (?, ?, ?)", [path, is_export, is_import])
+    def insert_path(self, table_paths, path, is_first_entry):
+        if not is_first_entry:
+            if(path.get_is_export()):
+                self.execute_query(f"UPDATE {table_paths} SET is_export = 0")
+            if(path.get_is_import()):
+                self.execute_query(f"UPDATE {table_paths} SET is_import = 0")
+        c = self.execute_query(f"INSERT INTO {table_paths} (path, is_export, is_import) VALUES (?, ?, ?)", path.get_db_values())
         self.confirm_transaction_database(c)
         c.close()
 
