@@ -184,7 +184,13 @@ def import_products_from_csv(conn, table_paths, table_products, extension):
     print(f"\n   [ Archivo seleccionado ] \n   > {selected_file}")
 
     if(conn.get_num_rows_table(table_products) > 0):
-        print("\n   >>> Error la tabla no esta vacia!!")
+        confirm_clear_table = utils.read_input_yes_no("\n   *** SU TABLA NO ESTA VACIA ***\n\n   ¿Desea reemplazar los datos existentes? (Si/No) ")
+        if(confirm_clear_table.lower() in ['si', 's']):
+            c = conn.execute_query(f"DELETE FROM {table_products}")
+            conn.commit(c)
+            conn.import_from_csv(table_products, selected_file, file_path)
+        else:
+            print("\n   >>> Operacion cancelada")
     else:
         conn.import_from_csv(table_products, selected_file, file_path)
 
