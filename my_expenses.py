@@ -230,22 +230,19 @@ def show_product_deletion_menu(conn, table_products):
         render_table_with_csv_memory(conn, table_products)
         utils.draw_tittle_border("Eliminar un producto")
         print("  0. Regresar")
-        print("  1. Limpiar pantalla")
-        print("  2. Usando su ID")
-        print("  3. Todos los que coincidan con el NOMBRE")
-        print("  4. Todos los que coincidan en cierta FECHA")
-        option = utils.read_input_integer("\n  * Opción >> ", 0, 4)
+        print("  1. Usando su ID")
+        print("  2. Todos los que coincidan con el NOMBRE")
+        print("  3. Todos los que coincidan en cierta FECHA")
+        option = utils.read_input_integer("\n  * Opción >> ", 0, 3)
         if(option == 0):
             break
         elif(option == 1):
-            subprocess.run(["clear"])
-        elif(option == 2):
             id_product = utils.read_input_integer(f"\n  * Ingrese el ID: ", 1, 10000000)
             conn.delete_item(table_products, "ID", id_product)
-        elif(option == 3):
+        elif(option == 2):
             name_product = utils.read_input_simple_text(f"\n  * Ingrese el NOMBRE: ")
             conn.delete_item(table_products, "NOMBRE", name_product)
-        elif(option == 4):
+        elif(option == 3):
             date_product = utils.read_input_date(f"\n  * Ingrese el FECHA: ")
             conn.delete_item(table_products, "FECHA", date_product)
         if conn.get_num_rows_table(table_products) < 1:
@@ -257,27 +254,24 @@ def show_manager_paths_menu(conn, table_paths):
         subprocess.run(["clear"])
         utils.draw_tittle_border("Administrar rutas")
         print("  0. Regresar")
-        print("  1. Limpiar pantalla")
-        print("  2. Visualizar rutas guardadas")
-        print("  3. Registrar nueva ruta")
-        print("  4. Eliminar una ruta")
-        print("  5. Actualizar ruta de exportación")
-        print("  6. Actualizar ruta de importación")
-        option = utils.read_input_integer("\n  * Opción >> ", 0, 6)
+        print("  1. Visualizar rutas guardadas")
+        print("  2. Registrar nueva ruta")
+        print("  3. Eliminar una ruta")
+        print("  4. Actualizar ruta de exportación")
+        print("  5. Actualizar ruta de importación")
+        option = utils.read_input_integer("\n  * Opción >> ", 0, 5)
         if(option == 0):
             break
         elif(option == 1):
-            subprocess.run(["clear"])
-        elif(option == 2):
             conn.validate_table_not_empty(render_table_with_csv_memory, table_paths, "No hay datos para mostrar...")
             input("\n  >>> Presione ENTER para continuar <<<")
-        elif(option == 3):
+        elif(option == 2):
             register_multiple_paths(conn, table_paths)
-        elif(option == 4):
+        elif(option == 3):
             conn.validate_table_not_empty(delete_multiple_paths, table_paths, "No hay datos para eliminar...")
-        elif(option == 5):
+        elif(option == 4):
             conn.validate_table_not_empty(update_path, table_paths, "No hay datos para actualizar...", "is_export")
-        elif(option == 6):
+        elif(option == 5):
             conn.validate_table_not_empty(update_path, table_paths, "No hay datos para actualizar...", "is_import")
         time.sleep(0.5)
 
@@ -334,24 +328,21 @@ def main(conn):
         subprocess.run(["clear"])
         utils.draw_tittle_border("Resgistrar gastos de productos")
         print("  0. Salir")
-        print("  1. Limpiar pantalla")
-        print("  2. Administrar tabla de productos")
-        print("  3. Administrar tabla de rutas")
-        print("  4. Exportar/Importar datos")
-        print("  5. Eliminar datos de tablas")
+        print("  1. Administrar tabla de productos")
+        print("  2. Administrar tabla de rutas")
+        print("  3. Exportar/Importar datos")
+        print("  4. Eliminar datos de tablas")
         try:
-            option = utils.read_input_integer("\n  * Opción >> ", 0, 5)
+            option = utils.read_input_integer("\n  * Opción >> ", 0, 4)
             if(option == 0):
                 break
             elif(option == 1):
-                subprocess.run(["clear"])
-            elif(option == 2):
                 show_manager_products_menu(conn, table_products)
-            elif(option == 3):
+            elif(option == 2):
                 show_manager_paths_menu(conn, table_paths)
-            elif(option == 4):
+            elif(option == 3):
                 show_manager_export_import_data_menu(conn, table_products, table_paths)
-            elif(option == 5):
+            elif(option == 4):
                 conn = delete_tables(conn, table_products, table_paths)
         except (KeyboardInterrupt, EOFError):
             subprocess.run(["clear"])
