@@ -168,8 +168,8 @@ def export_csv_with_default_name(conn, table_products, table_paths):
         print("\n   >>> Por favor configure una ruta de exportación!")
 
 def import_products_from_csv(conn, table_paths, table_products, extension):
-    path_obj = conn.find_path(table_paths, "is_import", True)
-    if(found_path is None):
+    path_obj = conn.find_path(table_paths, "is_import", 1)
+    if(path_obj is None):
         print("\n   >>> No hay rutas de importación configuradas")
         return 0
 
