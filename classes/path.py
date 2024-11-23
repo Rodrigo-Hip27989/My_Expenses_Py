@@ -16,7 +16,7 @@ class Path:
 
     # Setters
     def set_path(self, path):
-        self._path = path
+        self.path = path
 
     def set_is_export(self, is_export):
         self.is_export = is_export

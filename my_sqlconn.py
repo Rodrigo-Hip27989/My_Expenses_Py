@@ -102,7 +102,7 @@ class Database:
     def find_item(self, table_name, field, value):
         query_select = f"SELECT * FROM {table_name} WHERE {field}=? LIMIT 1"
         found_item = self.execute_query(query_select, (value,)).fetchone()
-        if(found_item != None and found_item != []):
+        if(found_item is not None and found_item != []):
             return found_item
         else:
             print(f"\n   *** Ningun elemento con el {field} = {value} fue encontrado ***")

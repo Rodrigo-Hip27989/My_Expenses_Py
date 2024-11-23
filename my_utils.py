@@ -88,7 +88,7 @@ def read_input_continue_confirmation():
 
 def draw_tittle_border(titulo):
     border = '=' * (len(titulo) + 7)
-    print(f"\n  {border}\n  |  {titulo}  |\n  {border}\n")
+    print(f"\n  {border}\n  |  {titulo.upper()}  |\n  {border}\n")
 
 def convert_table_to_in_memory_csv(headers, rows):
     """Genera el contenido CSV en memoria."""

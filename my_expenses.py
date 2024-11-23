@@ -38,7 +38,7 @@ def find_files_by_extension(path, extension):
 
 def select_file_from_list(file_list):
     subprocess.run(["clear"])
-    utils.draw_tittle_border("SELECCIONE UN ARCHIVO PARA IMPORTAR")
+    utils.draw_tittle_border("Seleccione un archivo para importar")
     for i, file in enumerate(file_list, start=1):
         name_file = os.path.basename(file)
         print(f"   {i}. {name_file}")
@@ -71,7 +71,7 @@ def ask_for_product_details():
 def register_multiple_products(conn):
     while True:
         subprocess.run(["clear"])
-        utils.draw_tittle_border("REGISTRAR NUEVO PRODUCTO")
+        utils.draw_tittle_border("Registrar nuevo producto")
         conn.insert_product(ask_for_product_details())
         stop = utils.read_input_yes_no("\n  >>> ¿Desea agregar otro producto (Si/No)?: ")
         if(stop.lower() in ['no', 'n']):
@@ -82,14 +82,14 @@ def ask_for_path_to_insert(is_first_entry):
     if(is_first_entry):
         return Path(path=new_path, is_export=1, is_import=1)
     else:
-        is_export = utils.read_input_yes_no("\n  * Establecer como ruta de exportación (Si/No): ")
-        is_import = utils.read_input_yes_no("\n  * Establecer como ruta de importación (Si/No): ")
-        return Path(new_path, is_export.lower() in ['si', 's'], is_import.lower() in ['si', 's'])
+        is_exp = utils.read_input_yes_no("\n  * Establecer como ruta de exportación (Si/No): ").lower() in ['si', 's']
+        is_imp = utils.read_input_yes_no("\n  * Establecer como ruta de importación (Si/No): ").lower() in ['si', 's']
+        return Path(path=new_path, is_export=is_exp, is_import=is_imp)
 
 def register_multiple_paths(conn, table_paths):
     while True:
         subprocess.run(["clear"])
-        utils.draw_tittle_border("REGISTRAR NUEVA RUTA")
+        utils.draw_tittle_border("Registrar nueva ruta")
         is_first_entry = conn.get_num_rows_table(table_paths) == 0
         conn.insert_path(table_paths, ask_for_path_to_insert(is_first_entry), is_first_entry)
         stop = utils.read_input_yes_no("\n  >>> ¿Desea agregar otra ruta (Si/No)?: ")
@@ -101,21 +101,23 @@ def update_path(conn, table_paths, field):
     type_update=""
     if(field == "is_export"):
         type_update="EXPORTACIÓN"
-    if(field == "is_import"):
+    elif(field == "is_import"):
         type_update="IMPORTACIÓN"
-    utils.draw_tittle_border(f"ATUALIZANDO RUTA DE {type_update}")
+    else:
+        raise ValueError(f"Campo desconocido: {field}")
+    utils.draw_tittle_border(f"Actualizando ruta de {type_update}")
     id_path = utils.read_input_integer(f"\n  * Ingrese el ID: ", 1, 1000000)
     found_path = conn.find_item(table_paths, "ID", id_path)
-    if(found_path != None):
+    if(found_path is not None):
         conn.update_path(table_paths, id_path, field)
 
 def delete_multiple_paths(conn, table_paths):
     while True:
         render_table_with_csv_memory(conn, table_paths)
-        utils.draw_tittle_border("ELIMINAR UNA RUTA")
+        utils.draw_tittle_border("Eliminar una ruta")
         id_path = utils.read_input_integer(f"\n  * Ingrese el ID: ", 1, 1000000)
         found_path = conn.find_item(table_paths, "ID", id_path)
-        if(found_path != None):
+        if(found_path is not None):
             if(found_path[2] == 1 or found_path[3] == 1):
                 print(f"\n  *** No es posible eliminar una ruta csv en uso***")
             else:
@@ -157,7 +159,7 @@ def create_directory_and_get_expanded_path(path):
 
 def export_csv_with_default_name(conn, table_products, table_paths):
     found_path = conn.find_item(table_paths, "is_export", True)
-    if(found_path != None):
+    if(found_path is not None):
         timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
         file_name = f"{table_products.capitalize()}_{timestamp}.csv"
         expanded_path = create_directory_and_get_expanded_path(found_path[1])
@@ -167,7 +169,7 @@ def export_csv_with_default_name(conn, table_products, table_paths):
 
 def import_products_from_csv(conn, table_paths, table_products, extension):
     found_path = conn.find_item(table_paths, "is_import", True)
-    if(found_path == None):
+    if(found_path is None):
         print("\n   >>> No hay rutas de importación configuradas")
         return 0
 
@@ -194,9 +196,9 @@ def import_products_from_csv(conn, table_paths, table_products, extension):
     else:
         conn.import_from_csv(table_products, selected_file, file_path)
 
-def drop_tables(conn, table_products, table_paths):
+def delete_tables(conn, table_products, table_paths):
     subprocess.run(["clear"])
-    utils.draw_tittle_border("ELIMINANDO DATOS DE TABLAS")
+    utils.draw_tittle_border("Eliminando datos de tablas")
     print("   0. Regresar")
     print("   1. Eliminar datos de productos")
     print("   2. Eliminar datos de rutas")
@@ -210,8 +212,8 @@ def drop_tables(conn, table_products, table_paths):
             c = conn.execute_query(f"DELETE FROM {table_paths}")
             conn.confirm_transaction_database(c)
         elif(option == 3):
-            drop_db = utils.read_input_yes_no("\n    >>> Esta acción no puede deshacerse <<< \n\n    ¿Esta seguro de continuar? (Si/No): ")
-            if(drop_db.lower() in ['si', 's']):
+            delete_db = utils.read_input_yes_no("\n    >>> Esta acción no puede deshacerse <<< \n\n    ¿Esta seguro de continuar? (Si/No): ")
+            if(delete_db.lower() in ['si', 's']):
                 conn.disconnect()
                 conn.delete_database()
                 conn = initialize_db()
@@ -222,7 +224,7 @@ def drop_tables(conn, table_products, table_paths):
 def show_product_deletion_menu(conn, table_products):
     while True:
         render_table_with_csv_memory(conn, table_products)
-        utils.draw_tittle_border("ELIMINAR UN PRODUCTO")
+        utils.draw_tittle_border("Eliminar un producto")
         print("  0. Regresar")
         print("  1. Limpiar pantalla")
         print("  2. Usando su ID")
@@ -249,7 +251,7 @@ def show_product_deletion_menu(conn, table_products):
 def show_manager_paths_menu(conn, table_paths):
     while True:
         subprocess.run(["clear"])
-        utils.draw_tittle_border("ADMINSTRAR RUTAS")
+        utils.draw_tittle_border("Administrar rutas")
         print("  0. Regresar")
         print("  1. Limpiar pantalla")
         print("  2. Visualizar rutas guardadas")
@@ -281,7 +283,7 @@ def main(conn):
     signal.signal(signal.SIGINT, handle_interrupt)
     while True:
         subprocess.run(["clear"])
-        utils.draw_tittle_border("REGISTRAR GASTOS DE PRODUCTOS")
+        utils.draw_tittle_border("Resgistrar gastos de productos")
         print("  0. Salir")
         print("  1. Limpiar pantalla")
         print("  2. Visualizar lista de productos")
@@ -307,10 +309,10 @@ def main(conn):
                 conn.validate_table_not_empty(show_product_deletion_menu, table_products, "No hay datos para eliminar...")
                 time.sleep(0.7)
             elif(opcion== 5):
-                conn.validate_table_not_empty(export_csv_with_default_name, table_products, "Aun no hay datos para exportar!", table_paths)
+                conn.validate_table_not_empty(export_csv_with_default_name, table_products, "Aún no hay datos para exportar!", table_paths)
                 input("\n   >>> Presione ENTER para continuar <<<")
             elif(opcion == 6):
-                conn.validate_table_not_empty(import_products_from_csv, table_paths, "Aún no hay rutas guardadas", table_products, "csv")
+                conn.validate_table_not_empty(import_products_from_csv, table_paths, "Aún no hay rutas guardadas!", table_products, "csv")
                 input("\n   >>> Presione ENTER para continuar <<<")
             elif(opcion == 7):
                 show_manager_paths_menu(conn, table_paths)
@@ -318,7 +320,7 @@ def main(conn):
                 print("\n   En proceso de creación...")
                 time.sleep(0.7)
             elif(opcion == 9):
-                conn = drop_tables(conn, table_products, table_paths)
+                conn = delete_tables(conn, table_products, table_paths)
         except (KeyboardInterrupt, EOFError):
             subprocess.run(["clear"])
             print("\n\n\n\n    Interrupción detectada !!!\n\n    Volviendo al menú principal ...\n\n")
