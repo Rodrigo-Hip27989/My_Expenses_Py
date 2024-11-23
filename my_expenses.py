@@ -208,9 +208,13 @@ def delete_tables(conn, table_products, table_paths):
         if(option == 1):
             c = conn.execute_query(f"DELETE FROM {table_products}")
             conn.confirm_transaction_database(c)
+            c = conn.execute_query(f"UPDATE sqlite_sequence SET seq = 0 WHERE name = '{table_products}'")
+            conn.commit(c)
         elif(option == 2):
             c = conn.execute_query(f"DELETE FROM {table_paths}")
             conn.confirm_transaction_database(c)
+            c = conn.execute_query(f"UPDATE sqlite_sequence SET seq = 0 WHERE name = '{table_paths}'")
+            conn.commit(c)
         elif(option == 3):
             delete_db = utils.read_input_yes_no("\n    >>> Esta acción no puede deshacerse <<< \n\n    ¿Esta seguro de continuar? (Si/No): ")
             if(delete_db.lower() in ['si', 's']):
