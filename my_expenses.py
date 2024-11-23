@@ -157,27 +157,27 @@ def create_directory_and_get_expanded_path(path):
         print(f"\n   >>> Ha ocurrido un error inesperado: {e}")
         return None
 
-def export_csv_with_default_name(conn, table_products, table_paths):
+def export_table_to_csv_default(conn, table_name, table_paths):
     path_obj = conn.find_path(table_paths, "is_export", True)
     if(path_obj is not None):
         timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
-        file_name = f"{table_products.capitalize()}_{timestamp}.csv"
+        file_name = f"{table_name.capitalize()}_{timestamp}.csv"
         expanded_path = create_directory_and_get_expanded_path(path_obj.path)
-        conn.export_csv(table_products, file_name, expanded_path)
+        conn.export_table_to_csv(table_name, file_name, expanded_path)
     else:
         print("\n   >>> Por favor configure una ruta de exportación!")
 
-def import_products_from_csv(conn, table_paths, table_products, extension):
+def import_table_from_csv_default(conn, table_name, table_paths):
     path_obj = conn.find_path(table_paths, "is_import", 1)
     if(path_obj is None):
         print("\n   >>> No hay rutas de importación configuradas")
         return 0
 
     file_path = get_expanded_path(path_obj.path)
-    file_list = find_files_by_extension(file_path, extension)
+    file_list = find_files_by_extension(file_path, "csv")
 
     if len(file_list) < 1:
-        print(f"\n   >>> No se encontraron archivos: *.{extension}")
+        print(f"\n   >>> No se encontraron archivos: *.csv")
         return 0
 
     option = select_file_from_list(file_list)
@@ -185,16 +185,16 @@ def import_products_from_csv(conn, table_paths, table_products, extension):
     print(f"\n   [ Ruta de Importación ] \n   > {file_path}")
     print(f"\n   [ Archivo seleccionado ] \n   > {selected_file}")
 
-    if(conn.get_num_rows_table(table_products) > 0):
+    if(conn.get_num_rows_table(table_name) > 0):
         confirm_clear_table = utils.read_input_yes_no("\n   *** SU TABLA NO ESTA VACIA ***\n\n   ¿Desea reemplazar los datos existentes? (Si/No) ")
         if(confirm_clear_table.lower() in ['si', 's']):
-            c = conn.execute_query(f"DELETE FROM {table_products}")
+            c = conn.execute_query(f"DELETE FROM {table_name}")
             conn.commit(c)
-            conn.import_from_csv(table_products, selected_file, file_path)
+            conn.import_table_from_csv(table_name, selected_file, file_path)
         else:
             print("\n   >>> Operacion cancelada")
     else:
-        conn.import_from_csv(table_products, selected_file, file_path)
+        conn.import_table_from_csv(table_name, selected_file, file_path)
 
 def delete_tables(conn, table_products, table_paths):
     subprocess.run(["clear"])
@@ -234,18 +234,18 @@ def show_product_deletion_menu(conn, table_products):
         print("  2. Usando su ID")
         print("  3. Todos los que coincidan con el NOMBRE")
         print("  4. Todos los que coincidan en cierta FECHA")
-        opcion = utils.read_input_integer("\n  * Opción >> ", 0, 4)
-        if(opcion == 0):
+        option = utils.read_input_integer("\n  * Opción >> ", 0, 4)
+        if(option == 0):
             break
-        elif(opcion == 1):
+        elif(option == 1):
             subprocess.run(["clear"])
-        elif(opcion == 2):
+        elif(option == 2):
             id_product = utils.read_input_integer(f"\n  * Ingrese el ID: ", 1, 10000000)
             conn.delete_item(table_products, "ID", id_product)
-        elif(opcion == 3):
+        elif(option == 3):
             name_product = utils.read_input_simple_text(f"\n  * Ingrese el NOMBRE: ")
             conn.delete_item(table_products, "NOMBRE", name_product)
-        elif(opcion == 4):
+        elif(option == 4):
             date_product = utils.read_input_date(f"\n  * Ingrese el FECHA: ")
             conn.delete_item(table_products, "FECHA", date_product)
         if conn.get_num_rows_table(table_products) < 1:
@@ -263,21 +263,21 @@ def show_manager_paths_menu(conn, table_paths):
         print("  4. Eliminar una ruta")
         print("  5. Actualizar ruta de exportación")
         print("  6. Actualizar ruta de importación")
-        opcion = utils.read_input_integer("\n  * Opción >> ", 0, 6)
-        if(opcion == 0):
+        option = utils.read_input_integer("\n  * Opción >> ", 0, 6)
+        if(option == 0):
             break
-        elif(opcion == 1):
+        elif(option == 1):
             subprocess.run(["clear"])
-        elif(opcion == 2):
+        elif(option == 2):
             conn.validate_table_not_empty(render_table_with_csv_memory, table_paths, "No hay datos para mostrar...")
             input("\n  >>> Presione ENTER para continuar <<<")
-        elif(opcion == 3):
+        elif(option == 3):
             register_multiple_paths(conn, table_paths)
-        elif(opcion == 4):
+        elif(option == 4):
             conn.validate_table_not_empty(delete_multiple_paths, table_paths, "No hay datos para eliminar...")
-        elif(opcion == 5):
+        elif(option == 5):
             conn.validate_table_not_empty(update_path, table_paths, "No hay datos para actualizar...", "is_export")
-        elif(opcion == 6):
+        elif(option == 6):
             conn.validate_table_not_empty(update_path, table_paths, "No hay datos para actualizar...", "is_import")
         time.sleep(0.5)
 
@@ -312,10 +312,10 @@ def show_manager_export_import_data_menu(conn, table_products, table_paths):
         if(option == 0):
             break
         elif(option== 1):
-            conn.validate_table_not_empty(export_csv_with_default_name, table_products, "Aún no hay datos para exportar!", table_paths)
+            conn.validate_table_not_empty(export_table_to_csv_default, table_products, "Aún no hay datos para exportar!", table_paths)
             input("\n   >>> Presione ENTER para continuar <<<")
         elif(option == 2):
-            conn.validate_table_not_empty(import_products_from_csv, table_paths, "Aún no hay rutas guardadas!", table_products, "csv")
+            conn.validate_table_not_empty(import_table_from_csv_default, table_products, "Aún no hay rutas guardadas!", table_paths)
             input("\n   >>> Presione ENTER para continuar <<<")
 
 def main(conn):

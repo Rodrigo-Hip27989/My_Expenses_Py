@@ -161,22 +161,22 @@ class Database:
         except Exception as e:
             print(f"\n   >>> Hubo un error al eliminar la base de datos: {e}")
 
-    def export_csv(self, table_name, file_name, path):
+    def export_table_to_csv(self, table_name, file_name, file_path):
         try:
             query_select = f"SELECT * FROM {table_name}"
             headers = self.get_headers(f"{table_name}")
             rows = self.fetch_all(query_select)
-            with open(f"{path}/{file_name}", mode='w', newline='', encoding='utf-8') as archivo_csv:
+            with open(f"{file_path}/{file_name}", mode='w', newline='', encoding='utf-8') as archivo_csv:
                 escritor_csv = csv.writer(archivo_csv)
                 escritor_csv.writerow(headers)
                 escritor_csv.writerows(rows)
             print(f"\n   >>> Exportación exitosa!!\n")
             print(f"   * Nombre: {file_name}")
-            print(f"   * Ruta:   {path}")
+            print(f"   * Ruta:   {file_path}")
         except Exception as e:
             print(f"\n   >>> Error durante la exportación!! <<<\n   >>> {e}\n")
 
-    def import_from_csv(self, table_name, file_name, file_path):
+    def import_table_from_csv(self, table_name, file_name, file_path):
         try:
             headers_tbl = self.get_headers(f"{table_name}")
             with open(f"{file_path}/{file_name}", mode='r', encoding='utf-8') as archivo_csv:
