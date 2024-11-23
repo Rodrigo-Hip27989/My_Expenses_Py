@@ -107,8 +107,8 @@ def update_path(conn, table_paths, field):
         raise ValueError(f"Campo desconocido: {field}")
     utils.draw_tittle_border(f"Actualizando ruta de {type_update}")
     id_path = utils.read_input_integer(f"\n  * Ingrese el ID: ", 1, 1000000)
-    found_path = conn.find_item(table_paths, "ID", id_path)
-    if(found_path is not None):
+    path_obj = conn.find_path(table_paths, "ID", id_path)
+    if(path_obj is not None):
         conn.update_path(table_paths, id_path, field)
 
 def delete_multiple_paths(conn, table_paths):
@@ -116,12 +116,12 @@ def delete_multiple_paths(conn, table_paths):
         render_table_with_csv_memory(conn, table_paths)
         utils.draw_tittle_border("Eliminar una ruta")
         id_path = utils.read_input_integer(f"\n  * Ingrese el ID: ", 1, 1000000)
-        found_path = conn.find_item(table_paths, "ID", id_path)
-        if(found_path is not None):
-            if(found_path[2] == 1 or found_path[3] == 1):
+        path_obj = conn.find_path(table_paths, "ID", id_path)
+        if(path_obj is not None):
+            if(path_obj.is_export == 1 or path_obj.is_import == 1):
                 print(f"\n  *** No es posible eliminar una ruta csv en uso***")
             else:
-                conn.delete_item(table_paths, "ID", found_path[0])
+                conn.delete_item(table_paths, "ID", id_path)
         if conn.get_num_rows_table(table_paths) > 0:
             stop = utils.read_input_yes_no("\n  >>> ¿Desea eliminar otra ruta (Si/No)?: ")
             if(stop.lower() in ['no', 'n']):
@@ -158,22 +158,22 @@ def create_directory_and_get_expanded_path(path):
         return None
 
 def export_csv_with_default_name(conn, table_products, table_paths):
-    found_path = conn.find_item(table_paths, "is_export", True)
-    if(found_path is not None):
+    path_obj = conn.find_path(table_paths, "is_export", True)
+    if(path_obj is not None):
         timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
         file_name = f"{table_products.capitalize()}_{timestamp}.csv"
-        expanded_path = create_directory_and_get_expanded_path(found_path[1])
+        expanded_path = create_directory_and_get_expanded_path(path_obj.path)
         conn.export_csv(table_products, file_name, expanded_path)
     else:
         print("\n   >>> Por favor configure una ruta de exportación!")
 
 def import_products_from_csv(conn, table_paths, table_products, extension):
-    found_path = conn.find_item(table_paths, "is_import", True)
+    path_obj = conn.find_path(table_paths, "is_import", True)
     if(found_path is None):
         print("\n   >>> No hay rutas de importación configuradas")
         return 0
 
-    file_path = get_expanded_path(found_path[1])
+    file_path = get_expanded_path(path_obj.path)
     file_list = find_files_by_extension(file_path, extension)
 
     if len(file_list) < 1:

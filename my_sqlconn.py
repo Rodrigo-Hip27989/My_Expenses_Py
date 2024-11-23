@@ -2,6 +2,8 @@ import sqlite3
 import os
 import csv
 import my_utils as utils
+from classes.product import Product
+from classes.path import Path
 
 class Database:
     def __init__(self, path, file):
@@ -107,6 +109,22 @@ class Database:
         else:
             print(f"\n   *** Ningun elemento con el {field} = {value} fue encontrado ***")
         return None
+
+    def find_path(self, table_name, field, value):
+        found_item = self.find_item(table_name, field, value)
+        if(found_item is not None and found_item != []):
+            _, *found_path = found_item
+            return Path(*found_path)
+        else:
+            return None
+
+    def find_product(self, table_name, field, value):
+        found_item = self.find_item(table_name, field, value)
+        if(found_item is not None and found_item != []):
+            _, *found_product = found_item
+            return Product(*found_product)
+        else:
+            return None
 
     def insert_product(self, product):
         sqlite_statement = '''INSERT INTO productos (nombre, cantidad, medida, precio, total, fecha) VALUES (?, ?, ?, ?, ?, ?)'''
