@@ -281,6 +281,43 @@ def show_manager_paths_menu(conn, table_paths):
             conn.validate_table_not_empty(update_path, table_paths, "No hay datos para actualizar...", "is_import")
         time.sleep(0.5)
 
+def show_manager_products_menu(conn, table_products):
+    while True:
+        subprocess.run(["clear"])
+        utils.draw_tittle_border("Tabla productos")
+        print("  0. Salir")
+        print("  1. Visualizar lista de productos")
+        print("  2. Registrar un producto")
+        print("  3. Eliminar un producto")
+        option = utils.read_input_integer("\n  * Opción >> ", 0, 3)
+        if(option == 0):
+            break
+        elif(option == 1):
+            conn.validate_table_not_empty(render_table_with_csv_memory, table_products, "No hay datos para mostrar...")
+            input("\n   >>> Presione ENTER para continuar <<<")
+        elif(option == 2):
+            register_multiple_products(conn)
+        elif(option == 3):
+            conn.validate_table_not_empty(show_product_deletion_menu, table_products, "No hay datos para eliminar...")
+            time.sleep(0.7)
+
+def show_manager_export_import_data_menu(conn, table_products, table_paths):
+    while True:
+        subprocess.run(["clear"])
+        utils.draw_tittle_border("Opciones de exportacion/importación")
+        print("  0. Salir")
+        print(f"  1. Exportar {table_products.upper()} como CSV")
+        print(f"  2. Importar {table_products.upper()} desde CSV")
+        option = utils.read_input_integer("\n  * Opción >> ", 0, 2)
+        if(option == 0):
+            break
+        elif(option== 1):
+            conn.validate_table_not_empty(export_csv_with_default_name, table_products, "Aún no hay datos para exportar!", table_paths)
+            input("\n   >>> Presione ENTER para continuar <<<")
+        elif(option == 2):
+            conn.validate_table_not_empty(import_products_from_csv, table_paths, "Aún no hay rutas guardadas!", table_products, "csv")
+            input("\n   >>> Presione ENTER para continuar <<<")
+
 def main(conn):
     table_products = "products"
     table_paths = "paths"
@@ -290,40 +327,23 @@ def main(conn):
         utils.draw_tittle_border("Resgistrar gastos de productos")
         print("  0. Salir")
         print("  1. Limpiar pantalla")
-        print("  2. Visualizar lista de productos")
-        print("  3. Registrar un producto")
-        print("  4. Eliminar un producto")
-        print("  5. Exportar CSV")
-        print("  6. Importar CSV")
-        print("  7. Configurar rutas")
-        print("  8. Configurar listas de productos")
-        print("  9. Eliminar datos")
+        print("  2. Administrar tabla de productos")
+        print("  3. Administrar tabla de rutas")
+        print("  4. Exportar/Importar datos")
+        print("  5. Eliminar datos de tablas")
         try:
-            opcion = utils.read_input_integer("\n  * Opción >> ", 0, 9)
-            if(opcion == 0):
+            option = utils.read_input_integer("\n  * Opción >> ", 0, 5)
+            if(option == 0):
                 break
-            elif(opcion == 1):
+            elif(option == 1):
                 subprocess.run(["clear"])
-            elif(opcion == 2):
-                conn.validate_table_not_empty(render_table_with_csv_memory, table_products, "No hay datos para mostrar...")
-                input("\n   >>> Presione ENTER para continuar <<<")
-            elif(opcion == 3):
-                register_multiple_products(conn)
-            elif(opcion == 4):
-                conn.validate_table_not_empty(show_product_deletion_menu, table_products, "No hay datos para eliminar...")
-                time.sleep(0.7)
-            elif(opcion== 5):
-                conn.validate_table_not_empty(export_csv_with_default_name, table_products, "Aún no hay datos para exportar!", table_paths)
-                input("\n   >>> Presione ENTER para continuar <<<")
-            elif(opcion == 6):
-                conn.validate_table_not_empty(import_products_from_csv, table_paths, "Aún no hay rutas guardadas!", table_products, "csv")
-                input("\n   >>> Presione ENTER para continuar <<<")
-            elif(opcion == 7):
+            elif(option == 2):
+                show_manager_products_menu(conn, table_products)
+            elif(option == 3):
                 show_manager_paths_menu(conn, table_paths)
-            elif(opcion == 8):
-                print("\n   En proceso de creación...")
-                time.sleep(0.7)
-            elif(opcion == 9):
+            elif(option == 4):
+                show_manager_export_import_data_menu(conn, table_products, table_paths)
+            elif(option == 5):
                 conn = delete_tables(conn, table_products, table_paths)
         except (KeyboardInterrupt, EOFError):
             subprocess.run(["clear"])
