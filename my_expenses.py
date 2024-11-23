@@ -282,7 +282,7 @@ def show_manager_paths_menu(conn, table_paths):
         time.sleep(0.5)
 
 def main(conn):
-    table_products = "productos"
+    table_products = "products"
     table_paths = "paths"
     signal.signal(signal.SIGINT, handle_interrupt)
     while True:
