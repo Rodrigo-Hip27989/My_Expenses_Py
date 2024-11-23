@@ -308,7 +308,9 @@ def show_manager_export_import_data_menu(conn, table_products, table_paths):
         print("  0. Salir")
         print(f"  1. Exportar {table_products.upper()} como CSV")
         print(f"  2. Importar {table_products.upper()} desde CSV")
-        option = utils.read_input_integer("\n  * Opción >> ", 0, 2)
+        print(f"  3. Exportar {table_paths.upper()} como CSV")
+        print(f"  4. Importar {table_paths.upper()} desde CSV")
+        option = utils.read_input_integer("\n  * Opción >> ", 0, 4)
         if(option == 0):
             break
         elif(option== 1):
@@ -316,6 +318,12 @@ def show_manager_export_import_data_menu(conn, table_products, table_paths):
             input("\n   >>> Presione ENTER para continuar <<<")
         elif(option == 2):
             conn.validate_table_not_empty(import_table_from_csv_default, table_products, "Aún no hay rutas guardadas!", table_paths)
+            input("\n   >>> Presione ENTER para continuar <<<")
+        elif(option == 3):
+            conn.validate_table_not_empty(export_table_to_csv_default, table_paths, "Aún no hay datos para exportar!", table_paths)
+            input("\n   >>> Presione ENTER para continuar <<<")
+        elif(option == 4):
+            conn.validate_table_not_empty(import_table_from_csv_default, table_paths, "Aún no hay rutas guardadas!", table_paths)
             input("\n   >>> Presione ENTER para continuar <<<")
 
 def main(conn):
