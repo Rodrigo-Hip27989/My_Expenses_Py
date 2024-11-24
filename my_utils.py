@@ -10,85 +10,85 @@ def convert_to_float(input_string):
     except ValueError:
         return float(input_string)
 
-def read_input_regex(patron, mensaje):
-    input_varchar = input(mensaje)
-    if(re.fullmatch(patron, input_varchar) is not None):
+def read_input_regex(pattern, message):
+    input_varchar = input(message)
+    if(re.fullmatch(pattern, input_varchar) is not None):
         return input_varchar
     else:
         raise ValueError(f"El valor '{input_varchar}' no es valido!")
 
-def read_input_regex_no_full(patron, mensaje):
-    input_varchar = input(mensaje)
-    if(re.match(patron, input_varchar) is not None):
+def read_input_regex_no_full(pattern, message):
+    input_varchar = input(message)
+    if(re.match(pattern, input_varchar) is not None):
         return input_varchar
     else:
         raise ValueError(f"El valor '{input_varchar}' no es valido!")
 
-def read_valid_varchar(patron, mensaje):
+def read_valid_varchar(pattern, message):
     input_varchar = ""
     while len(input_varchar.strip()) == 0:
-        try: 
-            input_varchar = read_input_regex(patron, mensaje)
+        try:
+            input_varchar = read_input_regex(pattern, message)
         except ValueError as e:
             input_varchar = ""
             print(f"\n *** {e} ***\n")
     return input_varchar
 
-def read_valid_varchar_no_full(patron, mensaje):
+def read_valid_varchar_no_full(pattern, message):
     input_varchar = ""
     while len(input_varchar.strip()) == 0:
         try:
-            input_varchar = read_input_regex_no_full(patron, mensaje)
+            input_varchar = read_input_regex_no_full(pattern, message)
         except ValueError as e:
             input_varchar = ""
             print(f"\n *** {e} ***\n")
     return input_varchar
 
-def read_valid_number(mostrar_mensaje, minimo, maximo, patron, convert_func):
-    numero = minimo - 1
-    while not (minimo <= numero <= maximo):
+def read_valid_number(message, minimum, maximum, pattern, convert_func):
+    number = minimum - 1
+    while not (minimum <= number <= maximum):
         try:
-            numero = convert_func(read_valid_varchar(patron, mostrar_mensaje))
+            number = convert_func(read_valid_varchar(pattern, message))
         except ValueError:
-            numero = minimo - 1
-        if not (minimo <= numero <= maximo):
-            print(f"\n  >>> El número debe estar en el rango [{minimo}-{maximo}] <<<\n")
-    return numero
+            number = minimum - 1
+        if not (minimum <= number <= maximum):
+            print(f"\n  >>> El número debe estar en el rango [{minimum}-{maximum}] <<<\n")
+    return number
 
-def read_input_integer(mostrar_mensaje, minimo, maximo):
+def read_input_integer(message, minimum, maximum):
     regex_integer = r'^[0-9]\d*$'
-    return read_valid_number(mostrar_mensaje, minimo, maximo, regex_integer, int)
+    return read_valid_number(message, minimum, maximum, regex_integer, int)
 
-def read_input_float(mostrar_mensaje, minimo, maximo):
+def read_input_float(message, minimum, maximum):
     regex_float = r'^(?!.*\/0)(-?\d+(\.\d+)?|-\d+/\d+|\d+/\d+)$'
-    return read_valid_number(mostrar_mensaje, minimo, maximo, regex_float, convert_to_float)
+    return read_valid_number(message, minimum, maximum, regex_float, convert_to_float)
 
-def read_input_simple_text(mensaje):
+def read_input_simple_text(message):
     regex_simple_text = r'^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ]+[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ()\.\-\_\ ]*'
-    return read_valid_varchar(regex_simple_text, mensaje)
+    return read_valid_varchar(regex_simple_text, message)
 
-def read_input_paths_linux(mensaje):
+def read_input_paths_linux(message):
     env_var_path = r'^(?:/[\w\.áéíóúÁÉÍÓÚñÑ_-]+|\$\w+)(?:/[\w\.áéíóúÁÉÍÓÚñÑ_-]*|\$\w*)*(?<!/)$'
     absolute_path = r'^(?:/([\$\w+]|[\w\.áéíóúÁÉÍÓÚñÑ_-]+(?:/[\w\.-áéíóúÁÉÍÓÚñÑ_-]+)*))(?<!/)$'
     relative_path = r'^[\w\.áéíóúÁÉÍÓÚñÑ_-]+(?:/[\w\.-áéíóúÁÉÍÓÚñÑ_-]+)*(?<!/)$'
     home_path = r'^~/?([\w\.áéíóúÁÉÍÓÚñÑ_-]+(?:/[\w\.-áéíóúÁÉÍÓÚñÑ_-]+)*)(?<!/)$'
     regex_path = f'({env_var_path}|{absolute_path}|{relative_path}|{home_path})'
-    return read_valid_varchar_no_full(regex_path, mensaje)
+    return read_valid_varchar_no_full(regex_path, message)
 
-def read_input_date(mensaje):
+def read_input_date(message):
     regex_date = r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$'
-    return read_valid_varchar(regex_date, mensaje)
+    return read_valid_varchar(regex_date, message)
 
-def read_input_yes_no(mensaje):
+def read_input_yes_no(message):
     regex_options = r'^(SI|NO|Si|No|si|no|S|N|s|n)$'
-    return read_valid_varchar(regex_options, mensaje)
+    return read_valid_varchar(regex_options, message)
 
 def read_input_continue_confirmation():
     return read_input_yes_no("\n  >>> ¿Desea continuar (Si/No)? ")
 
-def draw_tittle_border(titulo):
-    border = '=' * (len(titulo) + 7)
-    print(f"\n  {border}\n  |  {titulo.upper()}  |\n  {border}\n")
+def draw_tittle_border(tittle):
+    border = '=' * (len(tittle) + 7)
+    print(f"\n  {border}\n  |  {tittle.upper()}  |\n  {border}\n")
 
 def convert_table_to_in_memory_csv(headers, rows):
     """Genera el contenido CSV en memoria."""
