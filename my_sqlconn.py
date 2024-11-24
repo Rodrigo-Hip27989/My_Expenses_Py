@@ -38,7 +38,7 @@ class Database:
 
     def create_products_tbl(self):
         c = self.conn.cursor()
-        c.execute("CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, quantity REAL, unit TEXT, price REAL, total REAL, date TEXT)")
+        c.execute("CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, quantity TEXT, unit TEXT, price REAL, total REAL, date TEXT)")
         self.conn.commit()
         c.close()
 

@@ -1,4 +1,5 @@
 import random
+import my_utils as utils
 
 class Product:
     def __init__(self, name, quantity, unit, total, date):
@@ -29,10 +30,10 @@ class Product:
         return self.date
 
     def calculate_price(self):
-        return self.total/self.quantity
+        return round(self.total/utils.convert_to_float(self.quantity), 7)
 
     def calculate_total(self):
-        return self.quantity*self.price
+        return round(utils.convert_to_float(self.quantity)*self.price, 7)
 
     # Setters
     def set_name(self, name):

@@ -58,7 +58,7 @@ def render_table_with_csv_memory(conn, table_name):
 
 def ask_for_product_details():
     name = utils.read_input_simple_text("  * Nombre: ")
-    quantity = utils.read_input_float("  * Cantidad: ", 0.0001, 1000000)
+    quantity = utils.read_input_float_fraction_str("  * Cantidad: ")
     unit = utils.read_input_simple_text("  * Medida: ")
     total = utils.read_input_float("  * Total: ", 0, 1000000)
     date = datetime.now().strftime("%d/%m/%Y")

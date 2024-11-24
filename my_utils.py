@@ -60,8 +60,13 @@ def read_input_integer(message, minimum, maximum):
     return read_valid_number(message, minimum, maximum, regex_integer, int)
 
 def read_input_float(message, minimum, maximum):
-    regex_float = r'^(?!.*\/0)(-?\d+(\.\d+)?|-\d+/\d+|\d+/\d+)$'
-    return read_valid_number(message, minimum, maximum, regex_float, convert_to_float)
+    regex_float = r'^(0(\.\d+)?|([1-9]\d*)(\.\d+)?)$'
+    return read_valid_number(message, minimum, maximum, regex_float, float)
+
+def read_input_float_fraction_str(message):
+    regex_float = r'^(0(\.\d+)?|([1-9]\d*)(\.\d+)?)$'
+    regex_fraction = r'^(?!0\/)(?!.*\/0)[1-9]\d*\/[1-9]\d*$'
+    return read_valid_varchar(f'({regex_float})|({regex_fraction})', message)
 
 def read_input_simple_text(message):
     regex_simple_text = r'^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ]+[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ()\.\-\_\ ]*'
