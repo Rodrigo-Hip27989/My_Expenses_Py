@@ -137,10 +137,9 @@ def get_expanded_path(path):
         return final_expanded_path
     except KeyError as e:
         print(f"\n   >>> Error: Variable de entorno no encontrada en la ruta. \n   >>>Detalles: {e}")
-        return None
     except Exception as e:
         print(f"\n   >>> Ha ocurrido un error inesperado: {e}")
-        return None
+    return None
 
 def create_directory_and_get_expanded_path(path):
     try:
@@ -149,36 +148,25 @@ def create_directory_and_get_expanded_path(path):
         return expanded_path
     except PermissionError as e:
         print(f"\n   >>> Error: No tienes permisos suficientes para crear el directorio. \n   >>> Detalles: {e}")
-        return None
     except OSError as e:
         print(f"\n   >>> Error: Ha ocurrido un error con el sistema operativo. \n   >>>Detalles: {e}")
-        return None
     except Exception as e:
         print(f"\n   >>> Ha ocurrido un error inesperado: {e}")
-        return None
+    return None
 
-def export_table_to_csv_default(conn, table_name, table_paths):
-    path_obj = conn.find_path(table_paths, "is_export", True)
-    if(path_obj is not None):
-        timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
-        file_name = f"{table_name.capitalize()}_{timestamp}.csv"
-        expanded_path = create_directory_and_get_expanded_path(path_obj.path)
-        conn.export_table_to_csv(table_name, file_name, expanded_path)
-    else:
-        print("\n   >>> Por favor configure una ruta de exportación!")
+def export_table_to_csv_default(conn, table_name, export_path):
+    timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
+    file_name = f"{table_name.capitalize()}_{timestamp}.csv"
+    expanded_path = create_directory_and_get_expanded_path(export_path.path)
+    conn.export_table_to_csv(table_name, file_name, expanded_path)
 
-def import_table_from_csv_default(conn, table_name, table_paths):
-    path_obj = conn.find_path(table_paths, "is_import", 1)
-    if(path_obj is None):
-        print("\n   >>> No hay rutas de importación configuradas")
-        return 0
-
-    file_path = get_expanded_path(path_obj.path)
+def import_table_from_csv_default(conn, table_name, import_path):
+    file_path = get_expanded_path(import_path.path)
     file_list = find_files_by_extension(file_path, "csv")
 
     if len(file_list) < 1:
         print(f"\n   >>> No se encontraron archivos: *.csv")
-        return 0
+        return
 
     option = select_file_from_list(file_list)
     selected_file = os.path.basename(file_list[option-1])
@@ -263,16 +251,16 @@ def show_manager_paths_menu(conn, table_paths):
         if(option == 0):
             break
         elif(option == 1):
-            conn.validate_table_not_empty(render_table_with_csv_memory, table_paths, "No hay datos para mostrar...")
+            conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_paths)
             input("\n  >>> Presione ENTER para continuar <<<")
         elif(option == 2):
             register_multiple_paths(conn, table_paths)
         elif(option == 3):
-            conn.validate_table_not_empty(delete_multiple_paths, table_paths, "No hay datos para eliminar...")
+            conn.validate_table_not_empty("No hay datos para eliminar...", delete_multiple_paths, table_paths)
         elif(option == 4):
-            conn.validate_table_not_empty(update_path, table_paths, "No hay datos para actualizar...", "is_export")
+            conn.validate_table_not_empty("No hay datos para actualizar...", update_path, table_paths, "is_export")
         elif(option == 5):
-            conn.validate_table_not_empty(update_path, table_paths, "No hay datos para actualizar...", "is_import")
+            conn.validate_table_not_empty("No hay datos para actualizar...", update_path, table_paths, "is_import")
         time.sleep(0.5)
 
 def show_manager_products_menu(conn, table_products):
@@ -287,38 +275,34 @@ def show_manager_products_menu(conn, table_products):
         if(option == 0):
             break
         elif(option == 1):
-            conn.validate_table_not_empty(render_table_with_csv_memory, table_products, "No hay datos para mostrar...")
+            conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_products)
             input("\n   >>> Presione ENTER para continuar <<<")
         elif(option == 2):
             register_multiple_products(conn)
         elif(option == 3):
-            conn.validate_table_not_empty(show_product_deletion_menu, table_products, "No hay datos para eliminar...")
+            conn.validate_table_not_empty("No hay datos para eliminar...", show_product_deletion_menu, table_products)
             time.sleep(0.7)
 
-def show_manager_export_import_data_menu(conn, table_products, table_paths):
+def show_manager_export_import_data_menu(conn, table_names, export_path, import_path):
+    menu_options = []
+    for i, table in enumerate(table_names):
+        menu_options.append((f"Exportar {table.upper()} como CSV", export_table_to_csv_default, table, export_path))
+        menu_options.append((f"Importar {table.upper()} desde CSV", import_table_from_csv_default, table, import_path))
+    total_options = len(menu_options)
+
     while True:
         subprocess.run(["clear"])
         utils.draw_tittle_border("Opciones de exportacion/importación")
         print("  0. Salir")
-        print(f"  1. Exportar {table_products.upper()} como CSV")
-        print(f"  2. Importar {table_products.upper()} desde CSV")
-        print(f"  3. Exportar {table_paths.upper()} como CSV")
-        print(f"  4. Importar {table_paths.upper()} desde CSV")
-        option = utils.read_input_integer("\n  * Opción >> ", 0, 4)
-        if(option == 0):
+        for idx, (description, _, _, _) in enumerate(menu_options, 1):
+            print(f"  {idx}. {description}")
+        option = utils.read_input_integer("\n  * Opción >> ", 0, total_options)
+        if option == 0:
             break
-        elif(option== 1):
-            conn.validate_table_not_empty(export_table_to_csv_default, table_products, "Aún no hay datos para exportar!", table_paths)
-            input("\n   >>> Presione ENTER para continuar <<<")
-        elif(option == 2):
-            conn.validate_table_not_empty(import_table_from_csv_default, table_products, "Aún no hay rutas guardadas!", table_paths)
-            input("\n   >>> Presione ENTER para continuar <<<")
-        elif(option == 3):
-            conn.validate_table_not_empty(export_table_to_csv_default, table_paths, "Aún no hay datos para exportar!", table_paths)
-            input("\n   >>> Presione ENTER para continuar <<<")
-        elif(option == 4):
-            conn.validate_table_not_empty(import_table_from_csv_default, table_paths, "Aún no hay rutas guardadas!", table_paths)
-            input("\n   >>> Presione ENTER para continuar <<<")
+        elif 1 <= option <= total_options:
+            description, action, table, path = menu_options[option - 1]
+            action(conn, table, path)
+        input("\n   >>> Presione ENTER para continuar <<<")
 
 def main(conn):
     table_products = "products"
@@ -341,7 +325,12 @@ def main(conn):
             elif(option == 2):
                 show_manager_paths_menu(conn, table_paths)
             elif(option == 3):
-                show_manager_export_import_data_menu(conn, table_products, table_paths)
+                export_path = conn.find_path(table_paths, "is_export", 1)
+                import_path = conn.find_path(table_paths, "is_import", 1)
+                if(export_path is not None and import_path is not None):
+                    show_manager_export_import_data_menu(conn, [table_paths, table_products], export_path, import_path)
+                else:
+                    print(f"\n      No hay rutas de exportación y/o importación configuradas!!")
             elif(option == 4):
                 conn = delete_tables(conn, table_products, table_paths)
         except (KeyboardInterrupt, EOFError):

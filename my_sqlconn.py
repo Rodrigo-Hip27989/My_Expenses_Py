@@ -81,7 +81,7 @@ class Database:
         c.close()
         return numero_columnas
 
-    def validate_table_not_empty(self, operation, table_name, message_if_empty, *args):
+    def validate_table_not_empty(self, message_if_empty, operation, table_name, *args):
         if self.get_num_rows_table(table_name) > 0:
             operation(self, table_name, *args)
         else:
