@@ -184,7 +184,7 @@ def import_table_from_csv_default(conn, table_name, import_path):
     else:
         conn.import_table_from_csv(table_name, selected_file, file_path)
 
-def delete_tables(conn, table_products, table_paths):
+def handle_delete_tables_menu(conn, table_products, table_paths):
     subprocess.run(["clear"])
     utils.draw_tittle_border("Eliminando datos de tablas")
     print("   0. Regresar")
@@ -213,7 +213,7 @@ def delete_tables(conn, table_products, table_paths):
                 print("\n   >>> Operacion cancelada")
     return conn
 
-def show_product_deletion_menu(conn, table_products):
+def handle_product_deletion_menu(conn, table_products):
     while True:
         render_table_with_csv_memory(conn, table_products)
         utils.draw_tittle_border("Eliminar un producto")
@@ -237,7 +237,7 @@ def show_product_deletion_menu(conn, table_products):
             break
         time.sleep(0.5)
 
-def show_manager_paths_menu(conn, table_paths):
+def handle_paths_menu(conn, table_paths):
     while True:
         subprocess.run(["clear"])
         utils.draw_tittle_border("Administrar rutas")
@@ -263,7 +263,7 @@ def show_manager_paths_menu(conn, table_paths):
             conn.validate_table_not_empty("No hay datos para actualizar...", update_path, table_paths, "is_import")
         time.sleep(0.5)
 
-def show_manager_products_menu(conn, table_products):
+def handle_products_menu(conn, table_products):
     while True:
         subprocess.run(["clear"])
         utils.draw_tittle_border("Tabla productos")
@@ -280,10 +280,10 @@ def show_manager_products_menu(conn, table_products):
         elif(option == 2):
             register_multiple_products(conn)
         elif(option == 3):
-            conn.validate_table_not_empty("No hay datos para eliminar...", show_product_deletion_menu, table_products)
+            conn.validate_table_not_empty("No hay datos para eliminar...", handle_product_deletion_menu, table_products)
             time.sleep(0.7)
 
-def show_manager_export_import_data_menu(conn, table_names, export_path, import_path):
+def handle_export_import_data_menu(conn, table_names, export_path, import_path):
     menu_options = []
     for i, table in enumerate(table_names):
         menu_options.append((f"Exportar {table.upper()} como CSV", export_table_to_csv_default, table, export_path))
@@ -321,18 +321,18 @@ def main(conn):
             if(option == 0):
                 break
             elif(option == 1):
-                show_manager_products_menu(conn, table_products)
+                handle_products_menu(conn, table_products)
             elif(option == 2):
-                show_manager_paths_menu(conn, table_paths)
+                handle_paths_menu(conn, table_paths)
             elif(option == 3):
                 export_path = conn.find_path(table_paths, "is_export", 1)
                 import_path = conn.find_path(table_paths, "is_import", 1)
                 if(export_path is not None and import_path is not None):
-                    show_manager_export_import_data_menu(conn, [table_paths, table_products], export_path, import_path)
+                    handle_export_import_data_menu(conn, [table_paths, table_products], export_path, import_path)
                 else:
                     print(f"\n      No hay rutas de exportación y/o importación configuradas!!")
             elif(option == 4):
-                conn = delete_tables(conn, table_products, table_paths)
+                conn = handle_delete_tables_menu(conn, table_products, table_paths)
         except (KeyboardInterrupt, EOFError):
             subprocess.run(["clear"])
             print("\n\n\n\n    Interrupción detectada !!!\n\n    Volviendo al menú principal ...\n\n")
