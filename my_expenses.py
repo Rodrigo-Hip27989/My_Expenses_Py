@@ -89,12 +89,13 @@ def show_products_summary(conn, table_products):
     else:
         print("\n    No hay datos disponibles en la tabla de productos.")
 
-def ask_for_product_details():
+def ask_for_product_details(date = None):
     name = utils.read_input_simple_text("  * Nombre: ")
     quantity = utils.read_input_float_fraction_str("  * Cantidad: ")
     unit = utils.read_input_simple_text("  * Medida: ")
     total = utils.read_input_float("  * Total: ", 0, 1000000)
-    date = datetime.now().strftime("%d/%m/%Y")
+    if(date is None):
+        date = datetime.now().strftime("%d/%m/%Y")
     print(f"  * Fecha (Día/Mes/Año): {date}")
     change_date = utils.read_input_yes_no("\n  >>> ¿Desea cambiar la fecha (Si/No)?: ")
     if(change_date.lower() in ['si', 's']):
@@ -109,6 +110,23 @@ def register_multiple_products(conn):
         stop = utils.read_input_yes_no("\n  >>> ¿Desea agregar otro producto (Si/No)?: ")
         if(stop.lower() in ['no', 'n']):
             break
+
+def update_product(conn, table_products):
+    render_table_with_csv_memory(conn, table_products)
+    utils.draw_tittle_border(f"Actualizando detalles del producto")
+    id_prod = utils.read_input_integer(f"   >>> Ingrese el ID: ", 1, 1000000)
+    prod_obj = conn.find_product(table_products, "ID", id_prod)
+    if(prod_obj is not None):
+        print(f"\n  [ DATOS ACTUALES ]\n")
+        print(f"  * Nombre: {prod_obj.get_name()}")
+        print(f"  * Cantidad: {prod_obj.get_quantity()}")
+        print(f"  * Medida: {prod_obj.get_unit()}")
+        print(f"  * Precio: {prod_obj.get_price()}")
+        print(f"  * Total: {prod_obj.get_total()}")
+        print(f"  * Fecha: {prod_obj.get_date()}")
+        print(f"\n  [ NUEVOS DATOS ]\n")
+        conn.update_product(table_products, id_prod, ask_for_product_details(prod_obj.get_date()))
+    input("\n   >>> Presione ENTER para continuar <<<")
 
 def ask_for_path_to_insert(is_first_entry):
     new_path = utils.read_input_paths_linux("  * Ruta: ")
@@ -311,7 +329,8 @@ def handle_products_menu(conn, table_products):
         print("  1. Visualizar lista de productos")
         print("  2. Registrar un producto")
         print("  3. Eliminar un producto")
-        print("  4. Ver resumen de los productos")
+        print("  4. Actualizar un producto")
+        print("  5. Ver resumen de los productos")
         option = utils.read_input_integer("\n  * Opción >> ", 0, 4)
         if(option == 0):
             break
@@ -324,6 +343,8 @@ def handle_products_menu(conn, table_products):
             conn.validate_table_not_empty("No hay datos para eliminar...", handle_product_deletion_menu, table_products)
             time.sleep(0.7)
         elif(option == 4):
+            conn.validate_table_not_empty("No hay datos para actualizar...", update_product, table_products)
+        elif(option == 5):
             conn.validate_table_not_empty("No hay productos del cual ver resumen...", show_products_summary, table_products)
             input("\n   >>> Presione ENTER para continuar <<<")
 

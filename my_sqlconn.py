@@ -127,8 +127,8 @@ class Database:
     def find_product(self, table_name, field, value):
         found_item = self.find_item(table_name, field, value)
         if(found_item is not None and found_item != []):
-            _, *found_product = found_item
-            return Product(*found_product)
+            _, name, quantity, unit, _, total, date = found_item
+            return Product(name, quantity, unit, total, date)
         else:
             return None
 
@@ -151,6 +151,12 @@ class Database:
     def update_path(self, table_name, id_path, field):
         self.execute_query(f"UPDATE {table_name} SET {field} = 0")
         c = self.execute_query(f"UPDATE {table_name} SET {field} = 1 WHERE id = {id_path}")
+        self.confirm_transaction_database(c)
+
+    def update_product(self, table_name, id_prod, product_obj):
+        params = product_obj.get_db_values() + [id_prod]
+        query = f"UPDATE {table_name} SET name = ?, quantity = ?, unit = ?, price = ?, total = ?, date = ? WHERE id = ?;"
+        c = self.execute_query(query, params)
         self.confirm_transaction_database(c)
 
     def delete_database(self):
