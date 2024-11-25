@@ -56,6 +56,39 @@ def render_table_with_csv_memory(conn, table_name):
     fully_formatted_table = utils.add_borders_and_margins_to_table(formatted_data)
     print(fully_formatted_table)
 
+def show_products_summary(conn, table_products):
+    query = f"""
+        SELECT
+            COUNT(*) AS total_products,
+            SUM(quantity) AS total_qty,
+            SUM(total) AS total_cost,
+            AVG(total) AS avg_cost,
+            MIN(total) AS min_cost,
+            MAX(total) AS max_cost,
+            (SELECT name FROM {table_products} ORDER BY total DESC LIMIT 1) AS most_expensive,
+            (SELECT name FROM {table_products} ORDER BY total ASC LIMIT 1) AS least_expensive
+        FROM {table_products};
+    """
+    # Ejecutar la consulta
+    result = conn.fetch_one(query)
+
+    if result:
+        total_products, total_qty, total_cost, avg_cost, min_cost, max_cost, most_expensive, least_expensive = result
+
+        # Mostrar el resumen
+        subprocess.run(["clear"])
+        utils.draw_tittle_border("Resumen de los productos")
+        print(f"  - Total de productos: {total_products}")
+        print(f"  - Cantidad total: {total_qty}")
+        print(f"  - Costo total: ${total_cost:,.3f}")
+        print(f"  - Costo promedio: ${avg_cost:,.3f}")
+        print(f"  - Costo mínimo: ${min_cost:,.3f}")
+        print(f"  - Costo máximo: ${max_cost:,.3f}")
+        print(f"  - Producto más caro: {most_expensive}")
+        print(f"  - Producto más barato: {least_expensive}")
+    else:
+        print("\n    No hay datos disponibles en la tabla de productos.")
+
 def ask_for_product_details():
     name = utils.read_input_simple_text("  * Nombre: ")
     quantity = utils.read_input_float_fraction_str("  * Cantidad: ")
@@ -271,7 +304,8 @@ def handle_products_menu(conn, table_products):
         print("  1. Visualizar lista de productos")
         print("  2. Registrar un producto")
         print("  3. Eliminar un producto")
-        option = utils.read_input_integer("\n  * Opción >> ", 0, 3)
+        print("  4. Ver estadisticas de los productos")
+        option = utils.read_input_integer("\n  * Opción >> ", 0, 4)
         if(option == 0):
             break
         elif(option == 1):
@@ -282,6 +316,9 @@ def handle_products_menu(conn, table_products):
         elif(option == 3):
             conn.validate_table_not_empty("No hay datos para eliminar...", handle_product_deletion_menu, table_products)
             time.sleep(0.7)
+        elif(option == 4):
+            show_products_summary(conn, table_products)
+            input("\n   >>> Presione ENTER para continuar <<<")
 
 def handle_export_import_data_menu(conn, table_names, export_path, import_path):
     menu_options = []

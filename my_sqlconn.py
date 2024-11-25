@@ -68,6 +68,12 @@ class Database:
             return cursor.fetchall()
         return []
 
+    def fetch_one(self, query, params=()):
+        cursor = self.execute_query(query, params)
+        if cursor:
+            return cursor.fetchone()
+        return None
+
     def get_headers(self, table_name):
         query = f"PRAGMA table_info({table_name})"
         cursor = self.execute_query(query)
