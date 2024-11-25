@@ -60,7 +60,6 @@ def show_products_summary(conn, table_products):
     query = f"""
         SELECT
             COUNT(*) AS total_products,
-            SUM(quantity) AS total_qty,
             SUM(total) AS total_cost,
             AVG(total) AS avg_cost,
             MIN(total) AS min_cost,
@@ -73,19 +72,18 @@ def show_products_summary(conn, table_products):
     result = conn.fetch_one(query)
 
     if result:
-        total_products, total_qty, total_cost, avg_cost, min_cost, max_cost, most_expensive, least_expensive = result
+        total_products, total_cost, avg_cost, min_cost, max_cost, most_expensive, least_expensive = result
 
         # Mostrar el resumen
         subprocess.run(["clear"])
         utils.draw_tittle_border("Resumen de los productos")
-        print(f"  - Total de productos: {total_products}")
-        print(f"  - Cantidad total: {total_qty}")
-        print(f"  - Costo total: ${total_cost:,.3f}")
-        print(f"  - Costo promedio: ${avg_cost:,.3f}")
-        print(f"  - Costo mínimo: ${min_cost:,.3f}")
-        print(f"  - Costo máximo: ${max_cost:,.3f}")
-        print(f"  - Producto más caro: {most_expensive}")
+        print(f"  - Num. Productos: {total_products}\n")
+        print(f"  - Costo Total: ${total_cost:,.3f}")
+        print(f"  - Costo Promedio: ${avg_cost:,.3f}\n")
         print(f"  - Producto más barato: {least_expensive}")
+        print(f"  - Costo (mínimo): ${min_cost:,.3f}\n")
+        print(f"  - Producto más caro: {most_expensive}")
+        print(f"  - Costo (máximo): ${max_cost:,.3f}\n")
     else:
         print("\n    No hay datos disponibles en la tabla de productos.")
 
@@ -331,7 +329,7 @@ def handle_products_menu(conn, table_products):
         print("  3. Eliminar un producto")
         print("  4. Actualizar un producto")
         print("  5. Ver resumen de los productos")
-        option = utils.read_input_integer("\n  * Opción >> ", 0, 4)
+        option = utils.read_input_integer("\n  * Opción >> ", 0, 5)
         if(option == 0):
             break
         elif(option == 1):
