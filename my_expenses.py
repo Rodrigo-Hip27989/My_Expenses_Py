@@ -304,7 +304,7 @@ def handle_products_menu(conn, table_products):
         print("  1. Visualizar lista de productos")
         print("  2. Registrar un producto")
         print("  3. Eliminar un producto")
-        print("  4. Ver estadisticas de los productos")
+        print("  4. Ver resumen de los productos")
         option = utils.read_input_integer("\n  * Opción >> ", 0, 4)
         if(option == 0):
             break
@@ -317,7 +317,7 @@ def handle_products_menu(conn, table_products):
             conn.validate_table_not_empty("No hay datos para eliminar...", handle_product_deletion_menu, table_products)
             time.sleep(0.7)
         elif(option == 4):
-            show_products_summary(conn, table_products)
+            conn.validate_table_not_empty("No hay productos del cual ver resumen...", show_products_summary, table_products)
             input("\n   >>> Presione ENTER para continuar <<<")
 
 def handle_export_import_data_menu(conn, table_names, export_path, import_path):
