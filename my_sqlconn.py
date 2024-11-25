@@ -177,8 +177,6 @@ class Database:
                 escritor_csv.writerow(headers)
                 escritor_csv.writerows(rows)
             print(f"\n   >>> Exportación exitosa!!\n")
-            print(f"   * Nombre: {file_name}")
-            print(f"   * Ruta:   {file_path}")
         except Exception as e:
             print(f"\n   >>> Error durante la exportación!! <<<\n   >>> {e}\n")
 

@@ -188,8 +188,15 @@ def create_directory_and_get_expanded_path(path):
     return None
 
 def export_table_to_csv_default(conn, table_name, export_path):
+    subprocess.run(["clear"])
+    utils.draw_tittle_border(f"Exportando tabla {table_name}")
     timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
     file_name = f"{table_name.capitalize()}_{timestamp}.csv"
+    print(f"\n   [ Ruta del archivo ] \n   > {export_path.path}")
+    print(f"\n   [ Nombre del Archivo ] \n   > {file_name}")
+    change_name = utils.read_input_yes_no("\n  >>> ¿Desea cambiar el nombre del archivo (Si/No)?: ")
+    if(change_name.lower() in ['si', 's']):
+        file_name = utils.read_input_file_csv(f"\n   [ Nuevo Nombre ] \n   > ")
     expanded_path = create_directory_and_get_expanded_path(export_path.path)
     conn.export_table_to_csv(table_name, file_name, expanded_path)
 
