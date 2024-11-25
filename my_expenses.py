@@ -268,7 +268,6 @@ def handle_product_deletion_menu(conn, table_products):
             conn.delete_item(table_products, "DATE", date_product)
         if conn.get_num_rows_table(table_products) < 1:
             break
-        time.sleep(0.5)
 
 def handle_paths_menu(conn, table_paths):
     while True:
@@ -294,7 +293,8 @@ def handle_paths_menu(conn, table_paths):
             conn.validate_table_not_empty("No hay datos para actualizar...", update_path, table_paths, "is_export")
         elif(option == 5):
             conn.validate_table_not_empty("No hay datos para actualizar...", update_path, table_paths, "is_import")
-        time.sleep(0.5)
+        if option in range(4,6):
+            time.sleep(1.5)
 
 def handle_products_menu(conn, table_products):
     while True:
