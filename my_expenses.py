@@ -229,10 +229,10 @@ def handle_product_deletion_menu(conn, table_products):
             conn.delete_item(table_products, "ID", id_product)
         elif(option == 2):
             name_product = utils.read_input_simple_text(f"\n  * Ingrese el NOMBRE: ")
-            conn.delete_item(table_products, "NOMBRE", name_product)
+            conn.delete_item(table_products, "NAME", name_product)
         elif(option == 3):
             date_product = utils.read_input_date(f"\n  * Ingrese el FECHA: ")
-            conn.delete_item(table_products, "FECHA", date_product)
+            conn.delete_item(table_products, "DATE", date_product)
         if conn.get_num_rows_table(table_products) < 1:
             break
         time.sleep(0.5)
