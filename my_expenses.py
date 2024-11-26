@@ -346,11 +346,24 @@ def handle_products_menu(conn, table_products):
             conn.validate_table_not_empty("No hay productos del cual ver resumen...", show_products_summary, table_products)
             input("\n   >>> Presione ENTER para continuar <<<")
 
-def handle_export_import_data_menu(conn, table_names, export_path, import_path):
+def handle_export_import_data_menu(conn, table_names):
+    table_paths = table_names[0]
+    if(conn.is_table_empty(table_paths)):
+        print(f"\n      No hay rutas guardas!!")
+        input("\n   >>> Presione ENTER para continuar <<<")
+        return
+
+    export_path = conn.find_path(table_paths, "is_export", 1)
+    import_path = conn.find_path(table_paths, "is_import", 1)
+    if(export_path is None or import_path is None):
+        print(f"\n      No hay rutas de exportación y/o importación configuradas!!")
+        input("\n   >>> Presione ENTER para continuar <<<")
+        return
+
     menu_options = []
-    for i, table in enumerate(table_names):
-        menu_options.append((f"Exportar {table.upper()} como CSV", export_table_to_csv_default, table, export_path))
-        menu_options.append((f"Importar {table.upper()} desde CSV", import_table_from_csv_default, table, import_path))
+    for table in (t.upper() for t in table_names):
+        menu_options.append((f"Exportar {table} como CSV", export_table_to_csv_default, table, export_path))
+        menu_options.append((f"Importar {table} desde CSV", import_table_from_csv_default, table, import_path))
     total_options = len(menu_options)
 
     while True:
@@ -388,12 +401,7 @@ def main(conn):
             elif(option == 2):
                 handle_paths_menu(conn, table_paths)
             elif(option == 3):
-                export_path = conn.find_path(table_paths, "is_export", 1)
-                import_path = conn.find_path(table_paths, "is_import", 1)
-                if(export_path is not None and import_path is not None):
-                    handle_export_import_data_menu(conn, [table_paths, table_products], export_path, import_path)
-                else:
-                    print(f"\n      No hay rutas de exportación y/o importación configuradas!!")
+                handle_export_import_data_menu(conn, [table_paths, table_products])
             elif(option == 4):
                 conn = handle_delete_tables_menu(conn, table_products, table_paths)
         except (KeyboardInterrupt, EOFError):
