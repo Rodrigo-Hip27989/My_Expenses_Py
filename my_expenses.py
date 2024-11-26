@@ -139,7 +139,7 @@ def register_multiple_paths(conn, table_paths):
     while True:
         subprocess.run(["clear"])
         utils.draw_tittle_border("Registrar nueva ruta")
-        is_first_entry = conn.get_num_rows_table(table_paths) == 0
+        is_first_entry = conn.is_table_empty(table_paths)
         conn.insert_path(table_paths, ask_for_path_to_insert(is_first_entry), is_first_entry)
         stop = utils.read_input_yes_no("\n  >>> ¿Desea agregar otra ruta (Si/No)?: ")
         if(stop.lower() in ['no', 'n']):
@@ -171,7 +171,7 @@ def delete_multiple_paths(conn, table_paths):
                 print(f"\n  *** No es posible eliminar una ruta csv en uso***")
             else:
                 conn.delete_item(table_paths, "ID", id_path)
-        if conn.get_num_rows_table(table_paths) > 0:
+        if not conn.is_table_empty(table_paths):
             stop = utils.read_input_yes_no("\n  >>> ¿Desea eliminar otra ruta (Si/No)?: ")
             if(stop.lower() in ['no', 'n']):
                 break
@@ -229,7 +229,7 @@ def import_table_from_csv_default(conn, table_name, import_path):
     print(f"\n   [ Ruta de Importación ] \n   > {file_path}")
     print(f"\n   [ Archivo seleccionado ] \n   > {selected_file}")
 
-    if(conn.get_num_rows_table(table_name) > 0):
+    if not conn.is_table_empty(table_name):
         confirm_clear_table = utils.read_input_yes_no("\n   *** SU TABLA NO ESTA VACIA ***\n\n   ¿Desea reemplazar los datos existentes? (Si/No) ")
         if(confirm_clear_table.lower() in ['si', 's']):
             c = conn.execute_query(f"DELETE FROM {table_name}")
@@ -289,7 +289,7 @@ def handle_product_deletion_menu(conn, table_products):
         elif(option == 3):
             date_product = utils.read_input_date(f"\n  * Ingrese el FECHA: ")
             conn.delete_item(table_products, "DATE", date_product)
-        if conn.get_num_rows_table(table_products) < 1:
+        if conn.is_table_empty(table_products):
             break
 
 def handle_paths_menu(conn, table_paths):
