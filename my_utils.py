@@ -30,8 +30,7 @@ def read_valid_varchar(pattern, message):
         try:
             input_varchar = read_input_regex(pattern, message)
         except ValueError as e:
-            input_varchar = ""
-            print(f"\n *** {e} ***\n")
+            print(f"\n *** {e} ***")
     return input_varchar
 
 def read_valid_varchar_no_full(pattern, message):
@@ -40,24 +39,23 @@ def read_valid_varchar_no_full(pattern, message):
         try:
             input_varchar = read_input_regex_no_full(pattern, message)
         except ValueError as e:
-            input_varchar = ""
-            print(f"\n *** {e} ***\n")
+            print(f"\n *** {e} ***")
     return input_varchar
 
 def read_valid_number(message, minimum, maximum, pattern, convert_func):
-    number = minimum - 1
-    while not (minimum <= number <= maximum):
-        try:
-            number = convert_func(read_valid_varchar(pattern, message))
-        except ValueError:
-            number = minimum - 1
+    while True:
+        number = convert_func(read_valid_varchar(pattern, message))
         if not (minimum <= number <= maximum):
-            print(f"\n  >>> El número debe estar en el rango [{minimum}-{maximum}] <<<\n")
-    return number
+            print(f"\n  *** El número debe estar en el rango [{minimum}-{maximum}] ***")
+        else:
+            return number
 
 def read_input_integer(message, minimum, maximum):
     regex_integer = r'^[0-9]\d*$'
     return read_valid_number(message, minimum, maximum, regex_integer, int)
+
+def read_input_options_menu(minimum, maximum):
+    return read_input_integer(f"\n  [ Opción ]: ", minimum, maximum)
 
 def read_input_float(message, minimum, maximum):
     regex_float = r'^(0(\.\d+)?|([1-9]\d*)(\.\d+)?)$'
@@ -90,10 +88,10 @@ def read_input_date(message):
 
 def read_input_yes_no(message):
     regex_options = r'^(SI|NO|Si|No|si|no|S|N|s|n)$'
-    return read_valid_varchar(regex_options, message)
+    return read_valid_varchar(regex_options, f"\n  * {message} (si/no): ")
 
 def read_input_continue_confirmation():
-    return read_input_yes_no("\n  >>> ¿Desea continuar (Si/No)? ")
+    return read_input_yes_no("¿Desea continuar?")
 
 def draw_tittle_border(tittle):
     border = '=' * (len(tittle) + 7)
