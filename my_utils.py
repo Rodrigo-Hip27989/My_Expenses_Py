@@ -11,18 +11,24 @@ def convert_to_float(input_string):
         return float(input_string)
 
 def read_input_regex(pattern, message):
-    input_varchar = input(message)
-    if(re.fullmatch(pattern, input_varchar) is not None):
-        return input_varchar
-    else:
-        raise ValueError(f"El valor '{input_varchar}' no es valido!")
+    try:
+        input_varchar = input(message)
+        if(re.fullmatch(pattern, input_varchar) is not None):
+            return input_varchar
+        else:
+            raise ValueError(f"\n   *** El valor '{input_varchar}' no es valido! ***")
+    except re.error as regex_error:
+        raise ValueError(f"\n   Expresión regular inválido:\n   {regex_error}")
 
 def read_input_regex_no_full(pattern, message):
-    input_varchar = input(message)
-    if(re.match(pattern, input_varchar) is not None):
-        return input_varchar
-    else:
-        raise ValueError(f"El valor '{input_varchar}' no es valido!")
+    try:
+        input_varchar = input(message)
+        if(re.match(pattern, input_varchar) is not None):
+            return input_varchar
+        else:
+            raise ValueError(f"\n   *** El valor '{input_varchar}' no es valido! ***")
+    except re.error as regex_error:
+        raise ValueError(f"\n   Expresión regular inválido:\n   {regex_error}")
 
 def read_valid_varchar(pattern, message):
     input_varchar = ""
@@ -30,7 +36,7 @@ def read_valid_varchar(pattern, message):
         try:
             input_varchar = read_input_regex(pattern, message)
         except ValueError as e:
-            print(f"\n *** {e} ***")
+            print(f"{e}")
     return input_varchar
 
 def read_valid_varchar_no_full(pattern, message):
@@ -39,7 +45,7 @@ def read_valid_varchar_no_full(pattern, message):
         try:
             input_varchar = read_input_regex_no_full(pattern, message)
         except ValueError as e:
-            print(f"\n *** {e} ***")
+            print(f"{e}")
     return input_varchar
 
 def read_valid_number(message, minimum, maximum, pattern, convert_func):
