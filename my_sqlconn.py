@@ -38,7 +38,7 @@ class Database:
 
     def create_products_tbl(self):
         c = self.conn.cursor()
-        c.execute("CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, quantity TEXT, unit TEXT, price REAL, total REAL, date TEXT)")
+        c.execute("CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, quantity TEXT, unit TEXT, price REAL, total REAL, date TEXT, category TEXT)")
         self.conn.commit()
         c.close()
 
@@ -136,7 +136,7 @@ class Database:
             return None
 
     def insert_product(self, product):
-        sqlite_statement = '''INSERT INTO products (name, quantity, unit, price, total, date) VALUES (?, ?, ?, ?, ?, ?)'''
+        sqlite_statement = '''INSERT INTO products (name, quantity, unit, price, total, date, category) VALUES (?, ?, ?, ?, ?, ?, ?)'''
         c = self.execute_query(sqlite_statement, product.get_db_values())
         self.confirm_transaction_database(c)
         c.close()

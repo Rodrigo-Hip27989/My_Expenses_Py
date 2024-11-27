@@ -98,7 +98,12 @@ def ask_for_product_details(date = None):
     change_date = utils.read_input_yes_no("¿Desea cambiar la fecha?")
     if(change_date.lower() in ['si', 's']):
         date = utils.read_input_date("  * Fecha (Día/Mes/Año): ")
-    return Product(name=name, quantity=quantity, unit=unit, total=total, date=date)
+    set_category = utils.read_input_yes_no("¿Desea asignar a una categoria?")
+    if(set_category.lower() in ['si', 's']):
+        category = utils.read_input_simple_text("  * Categoria: ")
+        return Product(name=name, quantity=quantity, unit=unit, total=total, date=date, category=category)
+    else:
+        return Product(name=name, quantity=quantity, unit=unit, total=total, date=date)
 
 def register_multiple_products(conn):
     while True:

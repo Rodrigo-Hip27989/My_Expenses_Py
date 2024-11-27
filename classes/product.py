@@ -2,13 +2,17 @@ import random
 import my_utils as utils
 
 class Product:
-    def __init__(self, name, quantity, unit, total, date):
+    def __init__(self, name, quantity, unit, total, date, category=None):
         self.name = name
         self.quantity = quantity
         self.unit = unit
         self.total = total
         self.price = self.calculate_price()
         self.date = date
+        if((category is not None) and (category != "")):
+            self.category = f"{category.upper()}"
+        else:
+            self.category = "NO ESPECIFICADO"
 
     # Getters
     def get_name(self):
@@ -28,6 +32,9 @@ class Product:
 
     def get_date(self):
         return self.date
+
+    def get_category(self):
+        return self.category
 
     def calculate_price(self):
         return round(self.total/utils.convert_to_float(self.quantity), 7)
@@ -67,8 +74,11 @@ class Product:
     def set_date(self, date):
         self.date = date
 
+    def set_category(self, category):
+        self.category = category
+
     def get_db_values(self):
-        return [self.name, self.quantity, self.unit, self.price, self.total, self.date]
+        return [self.name, self.quantity, self.unit, self.price, self.total, self.date, self.category]
 
     def __str__(self):
         """Representación en string del producto."""
@@ -77,4 +87,5 @@ class Product:
                 f"Unidad de Medida: {self.get_unit()}\n"
                 f"Precio Unitario: {self.get_price()}\n"
                 f"Total: {self.get_total()}\n"
-                f"Fecha: {self.get_date()}")
+                f"Fecha: {self.get_date()}\n"
+                f"Categoria: {self.get_category()}")
