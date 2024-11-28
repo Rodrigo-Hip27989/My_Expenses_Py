@@ -45,6 +45,31 @@ def select_file_from_list(file_list):
     option = utils.read_input_options_menu(1, (len(file_list)))
     return option
 
+def get_expanded_path(path):
+    try:
+        expanded_path = os.path.expandvars(path)
+        expanded_path = os.path.expanduser(expanded_path)
+        final_expanded_path = os.path.abspath(expanded_path)
+        return final_expanded_path
+    except KeyError as e:
+        print(f"\n   >>> Error: Variable de entorno no encontrada en la ruta. \n   >>>Detalles: {e}")
+    except Exception as e:
+        print(f"\n   >>> Ha ocurrido un error inesperado: {e}")
+    return None
+
+def create_directory_and_get_expanded_path(path):
+    try:
+        expanded_path = get_expanded_path(path)
+        os.makedirs(expanded_path, exist_ok=True)
+        return expanded_path
+    except PermissionError as e:
+        print(f"\n   >>> Error: No tienes permisos suficientes para crear el directorio. \n   >>> Detalles: {e}")
+    except OSError as e:
+        print(f"\n   >>> Error: Ha ocurrido un error con el sistema operativo. \n   >>>Detalles: {e}")
+    except Exception as e:
+        print(f"\n   >>> Ha ocurrido un error inesperado: {e}")
+    return None
+
 def render_table_with_csv_memory(conn, table_name):
     subprocess.run(["clear"])
     print("\n")
@@ -89,7 +114,7 @@ def ask_for_product_details(date = None):
     name = utils.read_input_simple_text("  * Nombre: ")
     quantity = utils.read_input_float_fraction_str("  * Cantidad: ")
     unit = utils.read_input_simple_text("  * Medida: ")
-    total = utils.read_input_float("  * Total: ", 0, 1000000)
+    total = utils.read_input_float("  * Total: ")
     if(date is None):
         date = datetime.now().strftime("%d/%m/%Y")
     print(f"  * Fecha (Día/Mes/Año): {date}")
@@ -115,7 +140,7 @@ def register_multiple_products(conn):
 def update_product(conn, table_products):
     render_table_with_csv_memory(conn, table_products)
     utils.draw_tittle_border(f"Actualizando detalles del producto")
-    id_prod = utils.read_input_integer("\n  * Ingrese el ID: ", 1, 1000000)
+    id_prod = utils.read_input_integer("\n  * Ingrese el ID: ")
     prod_obj = conn.find_product(table_products, "ID", id_prod)
     if(prod_obj is not None):
         print(f"\n  [ DATOS ACTUALES ]\n")
@@ -129,6 +154,29 @@ def update_product(conn, table_products):
         print(f"\n  [ NUEVOS DATOS ]\n")
         conn.update_product(table_products, id_prod, ask_for_product_details(prod_obj.get_date()))
     input("\n   >>> Presione ENTER para continuar <<<")
+
+def handle_product_deletion_menu(conn, table_products):
+    while True:
+        render_table_with_csv_memory(conn, table_products)
+        utils.draw_tittle_border("Eliminar un producto")
+        print("  0. Regresar")
+        print("  1. Usando su ID")
+        print("  2. Todos con el NOMBRE")
+        print("  3. Todos con la FECHA")
+        option = utils.read_input_options_menu(0, 3)
+        if(option == 0):
+            break
+        elif(option == 1):
+            id_product = utils.read_input_integer("\n  * Ingrese el ID: ")
+            conn.delete_item(table_products, "ID", id_product)
+        elif(option == 2):
+            name_product = utils.read_input_simple_text("\n  * Ingrese el NOMBRE: ")
+            conn.delete_item(table_products, "NAME", name_product)
+        elif(option == 3):
+            date_product = utils.read_input_date("\n  * Ingrese el FECHA: ")
+            conn.delete_item(table_products, "DATE", date_product)
+        if conn.is_table_empty(table_products):
+            break
 
 def ask_for_path_to_insert(is_first_entry):
     new_path = utils.read_input_paths_linux("  * Ruta: ")
@@ -159,7 +207,7 @@ def update_path(conn, table_paths, field):
     else:
         raise ValueError(f"Campo desconocido: {field}")
     utils.draw_tittle_border(f"Actualizando ruta de {type_update}")
-    id_path = utils.read_input_integer("\n  * Ingrese el ID: ", 1, 1000000)
+    id_path = utils.read_input_integer("\n  * Ingrese el ID: ")
     path_obj = conn.find_path(table_paths, "ID", id_path)
     if(path_obj is not None):
         conn.update_path(table_paths, id_path, field)
@@ -168,7 +216,7 @@ def delete_multiple_paths(conn, table_paths):
     while True:
         render_table_with_csv_memory(conn, table_paths)
         utils.draw_tittle_border("Eliminar una ruta")
-        id_path = utils.read_input_integer("\n  * Ingrese el ID: ", 1, 1000000)
+        id_path = utils.read_input_integer("\n  * Ingrese el ID: ")
         path_obj = conn.find_path(table_paths, "ID", id_path)
         if(path_obj is not None):
             if(path_obj.is_export == 1 or path_obj.is_import == 1):
@@ -181,31 +229,6 @@ def delete_multiple_paths(conn, table_paths):
                 break
         else:
             break
-
-def get_expanded_path(path):
-    try:
-        expanded_path = os.path.expandvars(path)
-        expanded_path = os.path.expanduser(expanded_path)
-        final_expanded_path = os.path.abspath(expanded_path)
-        return final_expanded_path
-    except KeyError as e:
-        print(f"\n   >>> Error: Variable de entorno no encontrada en la ruta. \n   >>>Detalles: {e}")
-    except Exception as e:
-        print(f"\n   >>> Ha ocurrido un error inesperado: {e}")
-    return None
-
-def create_directory_and_get_expanded_path(path):
-    try:
-        expanded_path = get_expanded_path(path)
-        os.makedirs(expanded_path, exist_ok=True)
-        return expanded_path
-    except PermissionError as e:
-        print(f"\n   >>> Error: No tienes permisos suficientes para crear el directorio. \n   >>> Detalles: {e}")
-    except OSError as e:
-        print(f"\n   >>> Error: Ha ocurrido un error con el sistema operativo. \n   >>>Detalles: {e}")
-    except Exception as e:
-        print(f"\n   >>> Ha ocurrido un error inesperado: {e}")
-    return None
 
 def export_table_to_csv_default(conn, table_name, export_path):
     subprocess.run(["clear"])
@@ -274,29 +297,6 @@ def handle_delete_tables_menu(conn, table_products, table_paths):
             else:
                 print("\n   >>> Operacion cancelada")
     return conn
-
-def handle_product_deletion_menu(conn, table_products):
-    while True:
-        render_table_with_csv_memory(conn, table_products)
-        utils.draw_tittle_border("Eliminar un producto")
-        print("  0. Regresar")
-        print("  1. Usando su ID")
-        print("  2. Todos los que coincidan con el NOMBRE")
-        print("  3. Todos los que coincidan en cierta FECHA")
-        option = utils.read_input_options_menu(0, 3)
-        if(option == 0):
-            break
-        elif(option == 1):
-            id_product = utils.read_input_integer("\n  * Ingrese el ID: ", 1, 10000000)
-            conn.delete_item(table_products, "ID", id_product)
-        elif(option == 2):
-            name_product = utils.read_input_simple_text("\n  * Ingrese el NOMBRE: ")
-            conn.delete_item(table_products, "NAME", name_product)
-        elif(option == 3):
-            date_product = utils.read_input_date("\n  * Ingrese el FECHA: ")
-            conn.delete_item(table_products, "DATE", date_product)
-        if conn.is_table_empty(table_products):
-            break
 
 def handle_paths_menu(conn, table_paths):
     while True:

@@ -48,24 +48,26 @@ def read_valid_varchar_no_full(pattern, message):
             print(f"{e}")
     return input_varchar
 
-def read_valid_number(message, minimum, maximum, pattern, convert_func):
+def read_valid_number(pattern, convert_func, message, minimum, maximum):
     while True:
         number = convert_func(read_valid_varchar(pattern, message))
-        if not (minimum <= number <= maximum):
-            print(f"\n  *** El número debe estar en el rango [{minimum}-{maximum}] ***")
+        if minimum is not None and number < minimum:
+            print(f"\n  *** El número debe ser mayor o igual a {minimum} ***")
+        elif maximum is not None and number > maximum:
+            print(f"\n  *** El número debe ser menor o igual a {maximum} ***")
         else:
             return number
 
-def read_input_integer(message, minimum, maximum):
+def read_input_integer(message, minimum=None, maximum=None):
     regex_integer = r'^[0-9]\d*$'
-    return read_valid_number(message, minimum, maximum, regex_integer, int)
+    return read_valid_number(regex_integer, int, message, minimum, maximum)
 
 def read_input_options_menu(minimum, maximum):
     return read_input_integer(f"\n  [ Opción ]: ", minimum, maximum)
 
-def read_input_float(message, minimum, maximum):
+def read_input_float(message, minimum=None, maximum=None):
     regex_float = r'^(0(\.\d+)?|([1-9]\d*)(\.\d+)?)$'
-    return read_valid_number(message, minimum, maximum, regex_float, float)
+    return read_valid_number(regex_float, float, message, minimum, maximum)
 
 def read_input_float_fraction_str(message):
     regex_float = r'^(0(\.\d+)?|([1-9]\d*)(\.\d+)?)$'
