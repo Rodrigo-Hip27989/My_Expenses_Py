@@ -1,4 +1,3 @@
-import random
 import my_utils as utils
 
 class Product:
@@ -12,7 +11,7 @@ class Product:
         if((category is not None) and (category != "")):
             self.category = f"{category.upper()}"
         else:
-            self.category = "NO ESPECIFICADO"
+            self.category = ""
 
     # Getters
     def get_name(self):

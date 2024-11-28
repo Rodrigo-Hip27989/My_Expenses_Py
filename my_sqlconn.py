@@ -198,6 +198,8 @@ class Database:
                 if(len(headers_csv) != len(headers_tbl)):
                     raise ValueError("Las cabeceras del archivo y la tabla no coinciden !!!")
                 for fila in lector_csv:
+                    while len(fila) < len(headers_csv):
+                        fila.append("")
                     placeholders = ', '.join(['?' for _ in headers_csv])
                     query_insert = f"INSERT INTO {table_name} ({', '.join(headers_csv)}) VALUES ({placeholders})"
                     c = self.execute_query(query_insert, fila)
