@@ -130,8 +130,8 @@ class Database:
     def find_product(self, table_name, field, value):
         found_item = self.find_item(table_name, field, value)
         if(found_item is not None and found_item != []):
-            _, name, quantity, unit, _, total, date = found_item
-            return Product(name, quantity, unit, total, date)
+            _, name, quantity, unit, _, total, date, category = found_item
+            return Product(name, quantity, unit, total, date, category)
         else:
             return None
 
@@ -158,7 +158,7 @@ class Database:
 
     def update_product(self, table_name, id_prod, product_obj):
         params = product_obj.get_db_values() + [id_prod]
-        query = f"UPDATE {table_name} SET name = ?, quantity = ?, unit = ?, price = ?, total = ?, date = ? WHERE id = ?;"
+        query = f"UPDATE {table_name} SET name = ?, quantity = ?, unit = ?, price = ?, total = ?, date = ?, category = ? WHERE id = ?;"
         c = self.execute_query(query, params)
         self.confirm_transaction_database(c)
 

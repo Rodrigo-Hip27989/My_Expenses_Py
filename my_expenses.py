@@ -60,21 +60,19 @@ def show_products_summary(conn, table_products):
     query = f"""
         SELECT
             COUNT(*) AS total_products,
-            SUM(total) AS total_cost,
-            AVG(total) AS avg_cost,
-            MIN(total) AS min_cost,
-            MAX(total) AS max_cost,
-            (SELECT name FROM {table_products} ORDER BY total DESC LIMIT 1) AS most_expensive,
-            (SELECT name FROM {table_products} ORDER BY total ASC LIMIT 1) AS least_expensive
+            SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END) AS total_cost,
+            AVG(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END) AS avg_cost,
+            MIN(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END) AS min_cost,
+            MAX(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END) AS max_cost,
+            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' ORDER BY total DESC LIMIT 1) AS most_expensive,
+            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' ORDER BY total ASC LIMIT 1) AS least_expensive
         FROM {table_products};
     """
-    # Ejecutar la consulta
     result = conn.fetch_one(query)
 
     if result:
         total_products, total_cost, avg_cost, min_cost, max_cost, most_expensive, least_expensive = result
 
-        # Mostrar el resumen
         subprocess.run(["clear"])
         utils.draw_tittle_border("Resumen de los productos")
         print(f"  - Num. Productos: {total_products}\n")
@@ -127,6 +125,7 @@ def update_product(conn, table_products):
         print(f"  * Precio: {prod_obj.get_price()}")
         print(f"  * Total: {prod_obj.get_total()}")
         print(f"  * Fecha: {prod_obj.get_date()}")
+        print(f"  * Categoria: {prod_obj.get_category()}")
         print(f"\n  [ NUEVOS DATOS ]\n")
         conn.update_product(table_products, id_prod, ask_for_product_details(prod_obj.get_date()))
     input("\n   >>> Presione ENTER para continuar <<<")
@@ -331,16 +330,16 @@ def handle_products_menu(conn, table_products):
         subprocess.run(["clear"])
         utils.draw_tittle_border("Tabla productos")
         print("  0. Salir")
-        print("  1. Visualizar lista de productos")
+        print("  1. Ver resumen de los productos")
         print("  2. Registrar un producto")
         print("  3. Eliminar un producto")
         print("  4. Actualizar un producto")
-        print("  5. Ver resumen de los productos")
+        print("  5. Ver lista de productos")
         option = utils.read_input_options_menu(0, 5)
         if(option == 0):
             break
         elif(option == 1):
-            conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_products)
+            conn.validate_table_not_empty("No hay productos del cual ver resumen...", show_products_summary, table_products)
             input("\n   >>> Presione ENTER para continuar <<<")
         elif(option == 2):
             register_multiple_products(conn)
@@ -350,7 +349,7 @@ def handle_products_menu(conn, table_products):
         elif(option == 4):
             conn.validate_table_not_empty("No hay datos para actualizar...", update_product, table_products)
         elif(option == 5):
-            conn.validate_table_not_empty("No hay productos del cual ver resumen...", show_products_summary, table_products)
+            conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_products)
             input("\n   >>> Presione ENTER para continuar <<<")
 
 def handle_export_import_data_menu(conn, table_names):
