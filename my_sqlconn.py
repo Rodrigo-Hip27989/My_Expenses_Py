@@ -179,30 +179,40 @@ class Database:
     def export_table_to_csv(self, table_name, file_name, file_path):
         try:
             query_select = f"SELECT * FROM {table_name}"
-            headers = self.get_headers(f"{table_name}")
+            tbl_headers = self.get_headers(f"{table_name}")
             rows = self.fetch_all(query_select)
-            with open(f"{file_path}/{file_name}", mode='w', newline='', encoding='utf-8') as archivo_csv:
-                escritor_csv = csv.writer(archivo_csv)
-                escritor_csv.writerow(headers)
-                escritor_csv.writerows(rows)
+            with open(f"{file_path}/{file_name}", mode='w', newline='', encoding='utf-8') as csv_file:
+                csv_writer = csv.writer(csv_file)
+                csv_writer.writerow(tbl_headers)
+                csv_writer.writerows(rows)
             print(f"\n   >>> Exportación exitosa!!\n")
         except Exception as e:
             print(f"\n   >>> Error durante la exportación!! <<<\n   >>> {e}\n")
 
     def import_table_from_csv(self, table_name, file_name, file_path):
         try:
-            headers_tbl = self.get_headers(f"{table_name}")
-            with open(f"{file_path}/{file_name}", mode='r', encoding='utf-8') as archivo_csv:
-                lector_csv = csv.reader(archivo_csv)
-                headers_csv = next(lector_csv)
-                if(len(headers_csv) != len(headers_tbl)):
-                    raise ValueError("Las cabeceras del archivo y la tabla no coinciden !!!")
-                for fila in lector_csv:
-                    while len(fila) < len(headers_csv):
-                        fila.append("")
-                    placeholders = ', '.join(['?' for _ in headers_csv])
-                    query_insert = f"INSERT INTO {table_name} ({', '.join(headers_csv)}) VALUES ({placeholders})"
-                    c = self.execute_query(query_insert, fila)
+            tbl_headers = self.get_headers(f"{table_name}")
+            with open(f"{file_path}/{file_name}", mode='r', encoding='utf-8') as csv_file:
+                csv_reader = csv.reader(csv_file)
+                csv_headers = next(csv_reader)
+
+                if len(csv_headers) != len(tbl_headers):
+                    raise ValueError(f"Las cabeceras del archivo CSV y la tabla no coinciden en número. "
+                                     f"\n\n  * Num. cabeceras del archivo: {len(csv_headers)}\n  * Num. cabeceras de la tabla: {len(tbl_headers)}")
+
+                tbl_headers_clean = [header.strip().lower() for header in tbl_headers]
+                csv_headers_clean = [header.strip().lower() for header in csv_headers]
+
+                if tbl_headers_clean != csv_headers_clean:
+                    raise ValueError(f"Las cabeceras del archivo CSV y la tabla no coinciden"
+                                     f"\n\n  * csv_headers: {csv_headers}\n  * tbl_headers: {tbl_headers}")
+
+                for row in csv_reader:
+                    while len(row) < len(csv_headers):
+                        row.append("")
+                    placeholders = ', '.join(['?' for _ in csv_headers])
+                    query_insert = f"INSERT INTO {table_name} ({', '.join(csv_headers)}) VALUES ({placeholders})"
+                    c = self.execute_query(query_insert, row)
                     self.commit(c)
             print("\n   >>> Importación exitosa!!\n")
         except Exception as e:
