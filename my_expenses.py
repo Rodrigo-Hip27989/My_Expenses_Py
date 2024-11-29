@@ -353,6 +353,54 @@ def handle_paths_menu(conn, table_paths):
         if option in range(4,6):
             time.sleep(1.5)
 
+def view_sorted_product_list(conn, table_products):
+    order_columns = [
+        ("name", "NOMBRE"),
+        ("quantity", "CANTIDAD"),
+        ("unit", "MEDIDA"),
+        ("price", "PRECIO unitario"),
+        ("total", "PRECIO TOTAL"),
+        ("date", "FECHA"),
+        ("category", "CATEGORIA")
+    ]
+
+    menu_options = [
+        (0, "Regresar"),
+    ]
+
+    for index, (column, description) in enumerate(order_columns, start=1):
+        menu_options.append((index, f"Ver lista en orden por {description} ({column})"))
+
+    for i, column in enumerate(order_columns[:-1]):
+        menu_options.append((i + 8, f"Ver lista en orden por CATEGORIA y {order_columns[i][1]}"))
+
+    while True:
+        subprocess.run(["clear"])
+        utils.draw_tittle_border("Ordenamiento de productos")
+
+        for option, description in menu_options:
+            print(f"  {option}. {description}")
+
+        option = utils.read_input_options_menu(0, 13)
+
+        if option == 0:
+            break
+
+        if option in range(1, 8):
+            column = order_columns[option - 1][0]
+            if column == "quantity":
+                column = "CAST(quantity AS REAL)"
+            query = f"SELECT * FROM {table_products} ORDER BY {column} ASC;"
+
+        elif option in range(8, 14):
+            column = order_columns[option - 8][0]
+            if column == "quantity":
+                column = "CAST(quantity AS REAL)"
+            query = f"SELECT * FROM {table_products} ORDER BY category ASC, {column} ASC;"
+
+        conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_products, query)
+        input("\n   >>> Presione ENTER para continuar <<<")
+
 def handle_products_menu(conn, table_products):
     while True:
         subprocess.run(["clear"])
@@ -363,15 +411,8 @@ def handle_products_menu(conn, table_products):
         print("  3. Eliminar un producto")
         print("  4. Actualizar un producto")
         print("  5. Ver lista de productos")
-        print("  6. Ver lista en orden ASC por fecha")
-        print("  7. Ver lista en orden DES por fecha")
-        print("  8. Ver lista en orden ASC por categoria")
-        print("  9. Ver lista en orden DES por categoria")
-        print("  10. Ver lista en orden ASC por categoria y ASC por fecha")
-        print("  11. Ver lista en orden ASC por categoria y DESC por fecha")
-        print("  12. Ver lista en orden DESC por categoria y ASC por fecha")
-        print("  13. Ver lista en orden DESC por categoria y DESC por fecha")
-        option = utils.read_input_options_menu(0, 13)
+        print("  6. Ver lista de productos ordenada")
+        option = utils.read_input_options_menu(0, 6)
         if(option == 0):
             break
         elif(option == 1):
@@ -387,33 +428,8 @@ def handle_products_menu(conn, table_products):
         elif(option == 5):
             conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_products)
             input("\n   >>> Presione ENTER para continuar <<<")
-        elif option in [6, 7, 8, 9]:
-            order_column = "date" if option in [6, 7] else "category"
-            order_direction = "ASC" if option in [6, 8] else "DESC"
-            if option in [6, 7]:
-                found_wrong_rows = check_formats_date(conn, table_products)
-                if found_wrong_rows:
-                    update_wrong_date = utils.read_input_yes_no("¿Su tabla contiene fechas en formato incorrecto desea actualizarlas ahora?")
-                    if update_wrong_date.lower() in ['si', 's']:
-                        update_formats_date(conn, table_products, found_wrong_rows)
-            query = f"SELECT * FROM {table_products} ORDER BY {order_column} {order_direction};"
-            conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_products, query)
-            input("\n   >>> Presione ENTER para continuar <<<")
-        elif option in [10, 11, 12, 13]:
-            order_mapping = {
-                10: ("category ASC", "date ASC"),
-                11: ("category ASC", "date DESC"),
-                12: ("category DESC", "date ASC"),
-                13: ("category DESC", "date DESC")
-            }
-            order_category, order_date = order_mapping[option]
-            query = f"SELECT * FROM {table_products} ORDER BY {order_category}, {order_date};"
-            found_wrong_rows = check_formats_date(conn, table_products)
-            if found_wrong_rows:
-                update_wrong_date = utils.read_input_yes_no("¿Su tabla contiene fechas en formato incorrecto desea actualizarlas ahora?")
-                if update_wrong_date.lower() in ['si', 's']:
-                    update_formats_date(conn, table_products, found_wrong_rows)
-            conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_products, query)
+        elif(option == 6):
+            conn.validate_table_not_empty("No hay datos para mostrar...", view_sorted_product_list, table_products)
             input("\n   >>> Presione ENTER para continuar <<<")
 
 def handle_export_import_data_menu(conn, table_names):
