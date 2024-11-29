@@ -354,25 +354,14 @@ def handle_paths_menu(conn, table_paths):
             time.sleep(1.5)
 
 def view_sorted_product_list(conn, table_products):
-    order_columns = [
-        ("name", "NOMBRE"),
-        ("quantity", "CANTIDAD"),
-        ("unit", "MEDIDA"),
-        ("price", "PRECIO unitario"),
-        ("total", "PRECIO TOTAL"),
-        ("date", "FECHA"),
-        ("category", "CATEGORIA")
-    ]
+    columns = conn.get_headers(table_products)[1:]
+    menu_options = [(0, "Regresar")]
 
-    menu_options = [
-        (0, "Regresar"),
-    ]
+    for index, column in enumerate(columns, start=1):
+        menu_options.append((index, f"Ver lista en orden por {column.upper()}"))
 
-    for index, (column, description) in enumerate(order_columns, start=1):
-        menu_options.append((index, f"Ver lista en orden por {description} ({column})"))
-
-    for i, column in enumerate(order_columns[:-1]):
-        menu_options.append((i + 8, f"Ver lista en orden por CATEGORIA y {order_columns[i][1]}"))
+    for i, column in enumerate(columns[:-1]):
+        menu_options.append((i + 8, f"Ver lista en orden por CATEGORY y {columns[i].upper()}"))
 
     while True:
         subprocess.run(["clear"])
@@ -387,15 +376,15 @@ def view_sorted_product_list(conn, table_products):
             break
 
         if option in range(1, 8):
-            column = order_columns[option - 1][0]
+            column = columns[option - 1]
             if column == "quantity":
-                column = "CAST(quantity AS REAL)"
+                column = utils.convert_column_sql_quantity_to_float(column)
             query = f"SELECT * FROM {table_products} ORDER BY {column} ASC;"
 
         elif option in range(8, 14):
-            column = order_columns[option - 8][0]
+            column = columns[option - 8]
             if column == "quantity":
-                column = "CAST(quantity AS REAL)"
+                column = utils.convert_column_sql_quantity_to_float(column)
             query = f"SELECT * FROM {table_products} ORDER BY category ASC, {column} ASC;"
 
         if option in [6, 13]:

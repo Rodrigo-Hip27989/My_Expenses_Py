@@ -10,6 +10,18 @@ def convert_to_float(input_string):
     except ValueError:
         return float(input_string)
 
+def convert_column_sql_quantity_to_float(column):
+    converted_column = f"""
+    CASE
+        WHEN {column} LIKE '%/%' THEN
+            CAST(SUBSTR({column}, 1, INSTR({column}, '/') - 1) AS REAL) /
+            CAST(SUBSTR({column}, INSTR({column}, '/') + 1) AS REAL)
+        ELSE
+            CAST({column} AS REAL)
+    END
+    """
+    return converted_column
+
 def read_input_regex(pattern, message):
     try:
         input_varchar = input(message)
