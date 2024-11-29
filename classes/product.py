@@ -2,14 +2,14 @@ import my_utils as utils
 
 class Product:
     def __init__(self, name, quantity, unit, total, date, category=None):
-        self.name = name
+        self.name = f"{name.title()}"
         self.quantity = quantity
-        self.unit = unit
+        self.unit = f"{unit.upper()}"
         self.total = total
         self.price = self.calculate_price()
         self.date = date
         if((category is not None) and (category != "")):
-            self.category = f"{category.upper()}"
+            self.category = f"{category.title()}"
         else:
             self.category = ""
 
