@@ -361,7 +361,11 @@ def handle_products_menu(conn, table_products):
         print("  7. Ver lista en orden DES por fecha")
         print("  8. Ver lista en orden ASC por categoria")
         print("  9. Ver lista en orden DES por categoria")
-        option = utils.read_input_options_menu(0, 9)
+        print("  10. Ver lista en orden ASC por categoria y ASC por fecha")
+        print("  11. Ver lista en orden ASC por categoria y DESC por fecha")
+        print("  12. Ver lista en orden DESC por categoria y ASC por fecha")
+        print("  13. Ver lista en orden DESC por categoria y DESC por fecha")
+        option = utils.read_input_options_menu(0, 13)
         if(option == 0):
             break
         elif(option == 1):
@@ -387,6 +391,22 @@ def handle_products_menu(conn, table_products):
                     if update_wrong_date.lower() in ['si', 's']:
                         update_formats_date(conn, table_products, found_wrong_rows)
             query = f"SELECT * FROM {table_products} ORDER BY {order_column} {order_direction};"
+            conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_products, query)
+            input("\n   >>> Presione ENTER para continuar <<<")
+        elif option in [10, 11, 12, 13]:
+            order_mapping = {
+                10: ("category ASC", "date ASC"),
+                11: ("category ASC", "date DESC"),
+                12: ("category DESC", "date ASC"),
+                13: ("category DESC", "date DESC")
+            }
+            order_category, order_date = order_mapping[option]
+            query = f"SELECT * FROM {table_products} ORDER BY {order_category}, {order_date};"
+            found_wrong_rows = check_formats_date(conn, table_products)
+            if found_wrong_rows:
+                update_wrong_date = utils.read_input_yes_no("¿Su tabla contiene fechas en formato incorrecto desea actualizarlas ahora?")
+                if update_wrong_date.lower() in ['si', 's']:
+                    update_formats_date(conn, table_products, found_wrong_rows)
             conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_products, query)
             input("\n   >>> Presione ENTER para continuar <<<")
 
