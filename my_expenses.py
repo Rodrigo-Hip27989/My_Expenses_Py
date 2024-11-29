@@ -113,23 +113,29 @@ def show_products_summary(conn, table_products):
     else:
         print("\n    No hay datos disponibles en la tabla de productos.")
 
-def ask_for_product_details(date = None):
+def ask_for_product_details(date_ = None):
     name = utils.read_input_simple_text("  * Nombre: ")
     quantity = utils.read_input_float_fraction_str("  * Cantidad: ")
     unit = utils.read_input_simple_text("  * Medida: ")
     total = utils.read_input_float("  * Total: ")
-    if(date is None):
-        date = datetime.now().strftime("%d/%m/%Y")
-    print(f"  * Fecha (Día/Mes/Año): {date}")
+    if(date_ is None):
+        date_ = datetime.now().strftime("%Y-%m-%d")
+    print(f"  * Fecha (Año-Mes-Día): {date_}")
     change_date = utils.read_input_yes_no("¿Desea cambiar la fecha?")
     if(change_date.lower() in ['si', 's']):
-        date = utils.read_input_date("  * Fecha (Día/Mes/Año): ")
+        while True:
+            try:
+                date_ = utils.read_input_date("  * Fecha (Año-Mes-Día): ")
+                date_obj = datetime.strptime(date_, "%Y-%m-%d")
+                break
+            except ValueError:
+                print("\n   * La fecha proporcionada no es válida en el calendario.\n")
     set_category = utils.read_input_yes_no("¿Desea asignar a una categoria?")
     if(set_category.lower() in ['si', 's']):
         category = utils.read_input_simple_text("  * Categoria: ")
-        return Product(name=name, quantity=quantity, unit=unit, total=total, date=date, category=category)
+        return Product(name=name, quantity=quantity, unit=unit, total=total, date=date_, category=category)
     else:
-        return Product(name=name, quantity=quantity, unit=unit, total=total, date=date)
+        return Product(name=name, quantity=quantity, unit=unit, total=total, date=date_)
 
 def register_multiple_products(conn):
     while True:

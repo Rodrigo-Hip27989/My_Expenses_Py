@@ -91,7 +91,10 @@ def read_input_paths_linux(message):
     return read_valid_varchar_no_full(regex_path, message)
 
 def read_input_date(message):
-    regex_date = r'^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$'
+    regex_year = r'\d{4}'
+    regex_month = r'(0[1-9]|1[0-2])'
+    regex_day = r'(0[1-9]|[12][0-9]|3[01])'
+    regex_date = f"{regex_year}-{regex_month}-{regex_day}"
     return read_valid_varchar(regex_date, message)
 
 def read_input_yes_no(message):
