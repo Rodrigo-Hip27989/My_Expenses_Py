@@ -398,6 +398,15 @@ def view_sorted_product_list(conn, table_products):
                 column = "CAST(quantity AS REAL)"
             query = f"SELECT * FROM {table_products} ORDER BY category ASC, {column} ASC;"
 
+        if option in [6, 13]:
+            found_wrong_rows = check_formats_date(conn, table_products)
+            if found_wrong_rows:
+                update_wrong_date = utils.read_input_yes_no("¿Su tabla contiene fechas en formato incorrecto desea actualizarlas ahora?")
+                if update_wrong_date.lower() in ['si', 's']:
+                    update_formats_date(conn, table_products, found_wrong_rows)
+                else:
+                    input("\n   *** La ordenación no se aplicará correctamente ***\n")
+
         conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_products, query)
         input("\n   >>> Presione ENTER para continuar <<<")
 
