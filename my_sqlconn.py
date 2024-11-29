@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import csv
+import re
 import my_utils as utils
 from classes.product import Product
 from classes.path import Path
@@ -74,12 +75,31 @@ class Database:
             return cursor.fetchone()
         return None
 
-    def get_headers(self, table_name):
-        query = f"PRAGMA table_info({table_name})"
-        cursor = self.execute_query(query)
-        if cursor:
-            return [desc[1] for desc in cursor.fetchall()]
-        return []
+    def get_headers(self, table_name, sql_query = None):
+        if sql_query is None:
+            sql_query = f"SELECT * FROM {table_name}"
+
+        sql_query = sql_query.strip().lower()
+
+        if '*' in sql_query:
+            try:
+                pragma_query = f"PRAGMA table_info({table_name});"
+                columns_info = self.execute_query(pragma_query)
+                columns = [column[1] for column in columns_info]
+                return columns
+            except Exception as e:
+                print(f"Error al obtener las columnas de la tabla con PRAGMA: {e}")
+                return []
+
+        else:
+            match = re.search(r"select\s+([\w_,\s]+)\s+from\s+", sql_query)
+            if match:
+                columns_str = match.group(1)
+                columns = [col.strip() for col in columns_str.split(',')]
+                return columns
+            else:
+                print("No se encontraron columnas explícitas en la instrucción SELECT.")
+                return []
 
     def get_num_rows_table(self, table_name):
         c = self.execute_query(f"SELECT COUNT(*) Num FROM {table_name}")

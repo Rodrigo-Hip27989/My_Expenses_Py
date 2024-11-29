@@ -3,6 +3,7 @@ import subprocess
 import signal
 import glob
 import time
+import re
 from datetime import datetime
 import my_sqlconn as sqlc
 import my_utils as utils
@@ -70,13 +71,15 @@ def create_directory_and_get_expanded_path(path):
         print(f"\n   >>> Ha ocurrido un error inesperado: {e}")
     return None
 
-def render_table_with_csv_memory(conn, table_name):
+def render_table_with_csv_memory(conn, table_name, query=None):
     subprocess.run(["clear"])
     print("\n")
-    headers_table = conn.get_headers(f"{table_name}")
-    headers_table = [header.upper() for header in headers_table]
-    rows_table = conn.fetch_all(f"SELECT * FROM {table_name}")
-    csv_data = utils.convert_table_to_in_memory_csv(headers_table, rows_table)
+    if(query is None):
+        query = f"SELECT * FROM {table_name}"
+    tbl_rows = conn.fetch_all(query)
+    tbl_headers = conn.get_headers(table_name, query)
+    tbl_headers = [header.upper() for header in tbl_headers]
+    csv_data = utils.convert_table_to_in_memory_csv(tbl_headers, tbl_rows)
     formatted_data = utils.format_csv_using_column_command(csv_data)
     fully_formatted_table = utils.add_borders_and_margins_to_table(formatted_data)
     print(fully_formatted_table)
@@ -268,6 +271,25 @@ def import_table_from_csv_default(conn, table_name, import_path):
     else:
         conn.import_table_from_csv(table_name, selected_file, file_path)
 
+def check_formats_date(conn, table_name):
+    regex_iso8601 = r'^\d{4}-\d{2}-\d{2}$'
+    rows = conn.fetch_all(f"SELECT id, date FROM {table_name}")
+    wrong_rows = []
+    for row in rows:
+        id_, date_ = row
+        if not re.match(regex_iso8601, date_):
+            wrong_rows.append({'id': id_, 'date': date_})
+    return wrong_rows
+
+def update_formats_date(conn, table_name, wrong_rows):
+    for row in wrong_rows:
+        id_ = row['id']
+        original_date = row['date']
+        normalized_date = utils.convert_ddmmyyyy_to_iso8601(original_date)
+        c = conn.execute_query(f"UPDATE {table_name} SET date = ? WHERE id = ?", (normalized_date, id_))
+        conn.commit(c)
+    return conn
+
 def handle_delete_tables_menu(conn, table_products, table_paths):
     subprocess.run(["clear"])
     utils.draw_tittle_border("Eliminando datos de tablas")
@@ -335,7 +357,11 @@ def handle_products_menu(conn, table_products):
         print("  3. Eliminar un producto")
         print("  4. Actualizar un producto")
         print("  5. Ver lista de productos")
-        option = utils.read_input_options_menu(0, 5)
+        print("  6. Ver lista en orden ASC por fecha")
+        print("  7. Ver lista en orden DES por fecha")
+        print("  8. Ver lista en orden ASC por categoria")
+        print("  9. Ver lista en orden DES por categoria")
+        option = utils.read_input_options_menu(0, 9)
         if(option == 0):
             break
         elif(option == 1):
@@ -350,6 +376,18 @@ def handle_products_menu(conn, table_products):
             conn.validate_table_not_empty("No hay datos para actualizar...", update_product, table_products)
         elif(option == 5):
             conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_products)
+            input("\n   >>> Presione ENTER para continuar <<<")
+        elif option in [6, 7, 8, 9]:
+            order_column = "date" if option in [6, 7] else "category"
+            order_direction = "ASC" if option in [6, 8] else "DESC"
+            if option in [6, 7]:
+                found_wrong_rows = check_formats_date(conn, table_products)
+                if found_wrong_rows:
+                    update_wrong_date = utils.read_input_yes_no("¿Su tabla contiene fechas en formato incorrecto desea actualizarlas ahora?")
+                    if update_wrong_date.lower() in ['si', 's']:
+                        update_formats_date(conn, table_products, found_wrong_rows)
+            query = f"SELECT * FROM {table_products} ORDER BY {order_column} {order_direction};"
+            conn.validate_table_not_empty("No hay datos para mostrar...", render_table_with_csv_memory, table_products, query)
             input("\n   >>> Presione ENTER para continuar <<<")
 
 def handle_export_import_data_menu(conn, table_names):

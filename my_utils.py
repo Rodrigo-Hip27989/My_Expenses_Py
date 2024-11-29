@@ -101,6 +101,15 @@ def read_input_yes_no(message):
 def read_input_continue_confirmation():
     return read_input_yes_no("¿Desea continuar?")
 
+def convert_ddmmyyyy_to_iso8601(date_):
+    if '/' in date_:
+        segments = date_.split('/')
+        return f"{segments[2]}-{segments[1]}-{segments[0]}"
+    elif '-' in date_:
+        segments = date_.split('-')
+        return f"{segments[2]}-{segments[1]}-{segments[0]}"
+    return date_
+
 def draw_tittle_border(tittle):
     border = '=' * (len(tittle) + 7)
     print(f"\n  {border}\n  |  {tittle.upper()}  |\n  {border}\n")
