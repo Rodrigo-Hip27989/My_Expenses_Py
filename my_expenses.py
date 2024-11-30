@@ -34,7 +34,7 @@ def find_files_by_extension(path, extension):
         return []
     pattern = os.path.join(final_expanded_path, f"*.{extension}")
     file_list = glob.glob(pattern)
-    file_list_sorted = sorted(file_list, key=lambda x: os.path.getctime(x))
+    file_list_sorted = sorted(file_list, key=lambda x: os.path.basename(x).lower())
     return file_list_sorted
 
 def select_file_from_list(file_list):
