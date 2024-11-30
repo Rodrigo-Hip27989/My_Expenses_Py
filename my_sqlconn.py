@@ -228,6 +228,7 @@ class Database:
                                      f"\n\n  * csv_headers: {csv_headers}\n  * tbl_headers: {tbl_headers}")
 
                 for row in csv_reader:
+                    row = [cell.strip() for cell in row]
                     while len(row) < len(csv_headers):
                         row.append("")
                     placeholders = ', '.join(['?' for _ in csv_headers])
