@@ -117,6 +117,9 @@ def read_input_continue_confirmation():
     return read_input_yes_no("¿Desea continuar?")
 
 def convert_ddmmyyyy_to_iso8601(date_):
+    date_ = date_.strip()
+    if len(date_) == 10 and date_[4] == '-' and date_[7] == '-':
+        return date_
     if '/' in date_:
         segments = date_.split('/')
         return f"{segments[2]}-{segments[1]}-{segments[0]}"
