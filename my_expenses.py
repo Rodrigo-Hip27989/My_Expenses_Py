@@ -87,29 +87,36 @@ def render_table_with_csv_memory(conn, table_name, query=None):
 def show_products_summary(conn, table_products):
     query = f"""
         SELECT
+            category,
             COUNT(*) AS total_products,
             SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END) AS total_cost,
             AVG(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END) AS avg_cost,
             MIN(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END) AS min_cost,
             MAX(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END) AS max_cost,
-            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' ORDER BY total DESC LIMIT 1) AS most_expensive,
-            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' ORDER BY total ASC LIMIT 1) AS least_expensive
-        FROM {table_products};
+            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' AND category = p.category ORDER BY total DESC LIMIT 1) AS most_expensive,
+            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' AND category = p.category ORDER BY total ASC LIMIT 1) AS least_expensive
+        FROM {table_products} p
+        GROUP BY category
+        ORDER BY category;
     """
-    result = conn.fetch_one(query)
+    result = conn.fetch_all(query)
 
     if result:
-        total_products, total_cost, avg_cost, min_cost, max_cost, most_expensive, least_expensive = result
-
         subprocess.run(["clear"])
         utils.draw_tittle_border("Resumen de los productos")
-        print(f"  - Num. Productos: {total_products}\n")
-        print(f"  - Costo Total: ${total_cost:,.3f}")
-        print(f"  - Costo Promedio: ${avg_cost:,.3f}\n")
-        print(f"  - Producto más barato: {least_expensive}")
-        print(f"  - Costo (mínimo): ${min_cost:,.3f}\n")
-        print(f"  - Producto más caro: {most_expensive}")
-        print(f"  - Costo (máximo): ${max_cost:,.3f}\n")
+
+        for row in result:
+            category, total_products, total_cost, avg_cost, min_cost, max_cost, most_expensive, least_expensive = row
+            if(category is None or category == ""):
+                category = Product.get_unspecified_category_name()
+            utils.draw_subtitle_border(f"Categoría: {category}")
+            print(f"  - Num. Productos: {total_products}")
+            print(f"  - Costo Total: ${total_cost:,.3f}")
+            print(f"  - Costo Promedio: ${avg_cost:,.3f}")
+            print(f"  - Producto más barato: {least_expensive}")
+            print(f"  - Costo (mínimo): ${min_cost:,.3f}")
+            print(f"  - Producto más caro: {most_expensive}")
+            print(f"  - Costo (máximo): ${max_cost:,.3f}\n")
     else:
         print("\n    No hay datos disponibles en la tabla de productos.")
 
@@ -135,7 +142,7 @@ def ask_for_product_details(date_ = None):
         category = utils.read_input_simple_text("  * Categoria: ")
         return Product(name=name, quantity=quantity, unit=unit, total=total, date=date_, category=category)
     else:
-        return Product(name=name, quantity=quantity, unit=unit, total=total, date=date_)
+        return Product(name=name, quantity=quantity, unit=unit, total=total, date=date_, category=Product.get_unspecified_category_name())
 
 def register_multiple_products(conn):
     while True:

@@ -11,7 +11,7 @@ class Product:
         if((category is not None) and (category != "")):
             self.category = f"{category.title()}"
         else:
-            self.category = ""
+            self.category = Product.get_unspecified_category_name()
 
     # Getters
     def get_name(self):
@@ -34,6 +34,10 @@ class Product:
 
     def get_category(self):
         return self.category
+
+    @staticmethod
+    def get_unspecified_category_name():
+        return "Unspecified"
 
     def calculate_price(self):
         return round(self.total/utils.convert_to_float(self.quantity), 7)
