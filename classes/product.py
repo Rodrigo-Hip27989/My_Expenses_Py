@@ -36,8 +36,24 @@ class Product:
         return self.category
 
     @staticmethod
+    def get_unspecified_name():
+        return "ITEM"
+
+    @staticmethod
+    def get_unspecified_quantity():
+        return "0"
+
+    @staticmethod
     def get_unspecified_unit():
         return "UNITS"
+
+    @staticmethod
+    def get_unspecified_price():
+        return 0
+
+    @staticmethod
+    def get_unspecified_total():
+        return 0
 
     @staticmethod
     def get_unspecified_date():
@@ -94,10 +110,10 @@ class Product:
         return [self.get_name(), self.get_quantity(), self.get_unit(), self.get_price(), self.get_total(), self.get_date(), self.get_category()]
 
     def __str__(self):
-        return (f"Nombre: {self.get_name()}\n"
-                f"Cantidad: {self.get_quantity()}\n"
-                f"Unidad de Medida: {self.get_unit()}\n"
-                f"Precio Unitario: {self.get_price()}\n"
-                f"Total: {self.get_total()}\n"
-                f"Fecha: {self.get_date()}\n"
-                f"Categoria: {self.get_category()}")
+        return (f"  - Nombre: {self.get_name()}\n"
+                f"  - Cantidad: {self.get_quantity()}\n"
+                f"  - Unidad de Medida: {self.get_unit()}\n"
+                f"  - Precio Unitario: {self.get_price()}\n"
+                f"  - Total: {self.get_total()}\n"
+                f"  - Fecha: {self.get_date()}\n"
+                f"  - Categoria: {self.get_category()}")

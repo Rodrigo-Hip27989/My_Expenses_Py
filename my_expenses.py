@@ -97,13 +97,7 @@ def update_product(conn, table_products):
     prod_obj = conn.find_product(table_products, "ID", id_prod)
     if(prod_obj is not None):
         print(f"\n  [ DATOS ACTUALES ]\n")
-        print(f"  * Nombre: {prod_obj.get_name()}")
-        print(f"  * Cantidad: {prod_obj.get_quantity()}")
-        print(f"  * Medida: {prod_obj.get_unit()}")
-        print(f"  * Precio: {prod_obj.get_price()}")
-        print(f"  * Total: {prod_obj.get_total()}")
-        print(f"  * Fecha: {prod_obj.get_date()}")
-        print(f"  * Categoria: {prod_obj.get_category()}")
+        print(prod_obj.__str__())
         print(f"\n  [ NUEVOS DATOS ]\n")
         conn.update_product(table_products, id_prod, ask_for_product_details(prod_obj.get_date()))
     input("\n   >>> Presione ENTER para continuar <<<")
@@ -268,19 +262,19 @@ def update_data_to_correct_format(conn, table_products):
         if((unit_ is not None) and (unit_.strip() != "")):
             unit_ = unit_.strip().upper()
         else:
-            unit_ = "UNITS"
+            unit_ = Product.get_unspecified_unit()
         if((date_ is not None) and (date_.strip() != "")):
             date_ = utils.convert_ddmmyyyy_to_iso8601(date_)
         else:
-            date_ = "0001-01-01"
+            date_ = Product.get_unspecified_date()
         if((quantity_ is None) or (quantity_ == "")):
-            quantity_ = 0
+            quantity_ = Product.get_unspecified_quantity()
         if((total_ is None) or (total_ == "")):
-            total_ = 0
+            total_ = Product.get_unspecified_total()
         if(utils.convert_to_float(quantity_) > 0 and utils.convert_to_float(total_) > 0):
             price_ = Product.calculate_price(quantity_, total_)
         else:
-            price_ = 0
+            price_ = Product.get_unspecified_price()
 
         if not category_ or category_ == "":
             category_ = Product.get_unspecified_category_name()
