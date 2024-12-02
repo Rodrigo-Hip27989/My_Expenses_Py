@@ -3,6 +3,7 @@ import subprocess
 import csv
 import re
 from fractions import Fraction
+import my_utils as utils
 
 def convert_to_float(input_string):
     try:
@@ -137,7 +138,6 @@ def draw_subtitle_border(subtittle):
     print(f"\n  {border}\n  |  {subtittle.title()}  |\n  {border}\n")
 
 def convert_table_to_in_memory_csv(headers, rows):
-    """Genera el contenido CSV en memoria."""
     output = io.StringIO()
     csv_writer = csv.writer(output)
     csv_writer.writerow(headers)
@@ -145,7 +145,6 @@ def convert_table_to_in_memory_csv(headers, rows):
     return output.getvalue()
 
 def format_csv_using_column_command(csv_data):
-    """Formatea los datos CSV usando el comando 'column'."""
     try:
         process = subprocess.Popen(
             ['column', '-t', '-s,'],  # Comando 'column' para formatear con tabuladores
@@ -163,18 +162,27 @@ def format_csv_using_column_command(csv_data):
         return ""
 
 def add_borders_and_margins_to_table(formatted_data, margin=4):
-    """Agrega márgenes y bordes a la tabla formateada."""
     if not formatted_data:
         return ""
 
     lines = formatted_data.splitlines()
-
     if len(lines) > 0:
         max_length = max(len(line) for line in lines)
         lines.insert(0, '-' * max_length)
         lines.insert(2, '-' * max_length)
         lines.append('-' * max_length)
 
-    # Añadir márgenes
     return "\n".join([f"{' ' * margin}{line}" for line in lines])
 
+def display_formatted_table(conn, table_name, query=None):
+    subprocess.run(["clear"])
+    print("\n")
+    if(query is None):
+        query = f"SELECT * FROM {table_name}"
+    tbl_rows = conn.fetch_all(query)
+    tbl_headers = conn.get_headers(table_name, query)
+    tbl_headers = [header.upper() for header in tbl_headers]
+    csv_data = utils.convert_table_to_in_memory_csv(tbl_headers, tbl_rows)
+    formatted_data = utils.format_csv_using_column_command(csv_data)
+    fully_formatted_table = utils.add_borders_and_margins_to_table(formatted_data)
+    print(fully_formatted_table)
