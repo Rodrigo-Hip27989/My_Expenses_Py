@@ -45,7 +45,7 @@ def show_products_summary(conn, table_products):
         for row in result:
             category, total_products, total_cost, avg_cost, min_cost, max_cost, most_expensive, least_expensive = row
             if(category is None or category.strip() == ""):
-                category = Product.get_unspecified_category_name()
+                category = Product.get_unspecified_category()
             utils.draw_subtitle_border(f"Categoría: {category}")
             print(f"  - Num. Productos: {total_products}")
             print(f"  - Costo Total: ${total_cost:,.3f}")
@@ -78,8 +78,8 @@ def ask_for_product_details(date_ = None):
     if(set_category.lower() in ['si', 's']):
         category = utils.read_input_simple_text("  * Categoria: ")
     else:
-        category = Product.get_unspecified_category_name()
-    return Product(name=name.title(), quantity=quantity, unit=unit.upper(), total=total, date=date_, category=category.title())
+        category = Product.get_unspecified_category()
+    return Product(name=name, quantity=quantity, unit=unit, total=total, date=date_, category=category)
 
 def register_multiple_products(conn):
     while True:
@@ -99,7 +99,7 @@ def update_product(conn, table_products):
         print(f"\n  [ DATOS ACTUALES ]\n")
         print(prod_obj.__str__())
         print(f"\n  [ NUEVOS DATOS ]\n")
-        conn.update_product(table_products, id_prod, ask_for_product_details(prod_obj.get_date()))
+        conn.update_product(table_products, id_prod, ask_for_product_details(prod_obj.date), True)
     input("\n   >>> Presione ENTER para continuar <<<")
 
 def handle_product_deletion_menu(conn, table_products):
@@ -254,36 +254,12 @@ def handle_paths_menu(conn, table_paths):
             time.sleep(1.5)
 
 def update_data_to_correct_format(conn, table_products):
-    query = f"SELECT id, name, quantity, unit, total, date, category FROM {table_products};"
+    query = f"SELECT id, name, quantity, unit, price, total, date, category FROM {table_products};"
     tbl_rows = conn.fetch_all(query)
     for row in tbl_rows:
-        id_, name_, quantity_, unit_, total_, date_, category_ = row
-        name_ = name_.strip().title()
-        if((unit_ is not None) and (unit_.strip() != "")):
-            unit_ = unit_.strip().upper()
-        else:
-            unit_ = Product.get_unspecified_unit()
-        if((date_ is not None) and (date_.strip() != "")):
-            date_ = utils.convert_ddmmyyyy_to_iso8601(date_)
-        else:
-            date_ = Product.get_unspecified_date()
-        if((quantity_ is None) or (quantity_ == "")):
-            quantity_ = Product.get_unspecified_quantity()
-        if((total_ is None) or (total_ == "")):
-            total_ = Product.get_unspecified_total()
-        if(utils.convert_to_float(quantity_) > 0 and utils.convert_to_float(total_) > 0):
-            price_ = Product.calculate_price(quantity_, total_)
-        else:
-            price_ = Product.get_unspecified_price()
-
-        if not category_ or category_ == "":
-            category_ = Product.get_unspecified_category_name()
-        else:
-            category_ = category_.title()
-
-        update_query = f"UPDATE {table_products} SET name = ?, unit = ?, price = ?, total = ?, date = ?, category = ? WHERE id = ?;"
-        c = conn.execute_query(update_query, (name_, unit_, price_, total_, date_, category_, id_))
-        conn.commit(c)
+        id_, name_, quantity_, unit_, price_, total_, date_, category_ = row
+        product_obj = Product(name=name_, quantity=quantity_, unit=unit_, price=price_, total=total_, date=date_, category=category_)
+        conn.update_product(table_products, id_, product_obj)
     return conn
 
 def view_sorted_product_list(conn, table_products):

@@ -176,11 +176,14 @@ class Database:
         c = self.execute_query(f"UPDATE {table_name} SET {field} = 1 WHERE id = {id_path}")
         self.confirm_transaction_database(c)
 
-    def update_product(self, table_name, id_prod, product_obj):
+    def update_product(self, table_name, id_prod, product_obj, confirm=False):
         params = product_obj.get_db_values() + [id_prod]
         query = f"UPDATE {table_name} SET name = ?, quantity = ?, unit = ?, price = ?, total = ?, date = ?, category = ? WHERE id = ?;"
         c = self.execute_query(query, params)
-        self.confirm_transaction_database(c)
+        if(confirm):
+            self.confirm_transaction_database(c)
+        else:
+            self.commit(c)
 
     def delete_database(self):
         try:
