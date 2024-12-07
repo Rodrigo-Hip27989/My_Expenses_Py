@@ -7,17 +7,25 @@ from classes.product import Product
 from classes.path import Path
 
 class Database:
-    def __init__(self, path, file):
+    def __init__(self, path="sqlite_db", file="my_expenses.db"):
         self.db_path = path
         self.db_file = file
         os.makedirs(self.db_path, exist_ok=True)
-        self.conn = None
+        self.connect()
+        self.create_products_tbl()
+        self.create_paths_tbl()
 
     def connect(self):
         try:
             self.conn = sqlite3.connect(f"{self.db_path}/{self.db_file}")
         except sqlite3.Error as e:
             print(f"\n   >>> Error al conectar a la base de datos: {e}")
+            self.conn = None
+
+    def get_connection(self):
+        if self.conn is None:
+            self.conn = sqlite3.connect(f"{self.db_path}/{self.db_file}")
+        return self.conn
 
     def disconnect(self):
         if self.conn:
@@ -228,14 +236,14 @@ class Database:
 
                 if tbl_headers_clean != csv_headers_clean:
                     raise ValueError(f"Las cabeceras del archivo CSV y la tabla no coinciden"
-                                     f"\n\n  * csv_headers: {csv_headers}\n  * tbl_headers: {tbl_headers}")
+                                     f"\n\n  * csv_headers: {csv_headers_clean}\n  * tbl_headers: {tbl_headers_clean}")
 
                 for row in csv_reader:
                     row = [cell.strip() for cell in row]
                     while len(row) < len(csv_headers):
                         row.append("")
                     placeholders = ', '.join(['?' for _ in csv_headers])
-                    query_insert = f"INSERT INTO {table_name} ({', '.join(csv_headers)}) VALUES ({placeholders})"
+                    query_insert = f"INSERT INTO {table_name} ({', '.join(csv_headers_clean)}) VALUES ({placeholders})"
                     c = self.execute_query(query_insert, row)
                     self.commit(c)
             print("\n   >>> Importación exitosa!!\n")

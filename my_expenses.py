@@ -9,15 +9,6 @@ import my_file_operations as fop
 from classes.product import Product
 from classes.path import Path
 
-def initialize_db():
-    db_path="sqlite_db"
-    db_file="my_expenses.db"
-    conn = sqlc.Database(db_path, db_file)
-    conn.connect()
-    conn.create_products_tbl()
-    conn.create_paths_tbl()
-    return conn
-
 def handle_interrupt(sig, frame):
     raise KeyboardInterrupt
 
@@ -221,7 +212,7 @@ def handle_delete_tables_menu(conn, table_products, table_paths):
             if(delete_db.lower() in ['si', 's']):
                 conn.disconnect()
                 conn.delete_database()
-                conn = initialize_db()
+                conn = sqlc.Database()
             else:
                 print("\n   >>> Operacion cancelada")
     return conn
@@ -376,9 +367,10 @@ def handle_export_import_data_menu(conn, table_names):
             action(conn, table, path)
         input("\n   >>> Presione ENTER para continuar <<<")
 
-def main(conn):
+def main():
     table_products = "products"
     table_paths = "paths"
+    conn = sqlc.Database()
     signal.signal(signal.SIGINT, handle_interrupt)
     while True:
         subprocess.run(["clear"])
@@ -407,4 +399,4 @@ def main(conn):
     conn.disconnect()
 
 if __name__ == "__main__":
-    main(initialize_db())
+    main()
