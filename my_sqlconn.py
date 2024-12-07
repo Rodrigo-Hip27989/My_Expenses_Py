@@ -173,10 +173,21 @@ class Database:
         c = self.execute_query(f"INSERT INTO {table_paths} (path, is_export, is_import) VALUES (?, ?, ?)", path.get_db_values())
         self.confirm_transaction_database(c)
 
-    def update_path(self, table_name, id_path, field):
-        self.execute_query(f"UPDATE {table_name} SET {field} = 0")
-        c = self.execute_query(f"UPDATE {table_name} SET {field} = 1 WHERE id = {id_path}")
-        self.confirm_transaction_database(c)
+    def update_path(self, table_paths, path_id, path_obj, is_first_entry, confirm=False):
+        params = path_obj.get_db_values() + [path_id]
+        query = f"UPDATE {table_paths} SET path = ?, is_export = ?, is_import = ? WHERE id = ?;"
+
+        if not is_first_entry:
+            if(path_obj.get_is_export()):
+                self.execute_query(f"UPDATE {table_paths} SET is_export = 0")
+            if(path_obj.get_is_import()):
+                self.execute_query(f"UPDATE {table_paths} SET is_import = 0")
+
+        c = self.execute_query(query, params)
+        if confirm:
+            self.confirm_transaction_database(c)
+        else:
+            self.commit(c)
 
     def update_product(self, table_name, id_prod, product_obj, confirm=False):
         params = product_obj.get_db_values() + [id_prod]

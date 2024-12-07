@@ -113,7 +113,7 @@ def handle_product_deletion_menu(conn, table_products):
             break
 
 def ask_for_path_to_insert(is_first_entry):
-    new_path = utils.read_input_paths_linux("  * Ruta: ")
+    new_path = utils.read_input_paths_linux("\n  * Ruta: ")
     if(is_first_entry):
         return Path(path=new_path, is_export=1, is_import=1)
     else:
@@ -131,20 +131,14 @@ def register_multiple_paths(conn, table_paths):
         if(stop.lower() in ['no', 'n']):
             break
 
-def update_path(conn, table_paths, field):
+def update_path(conn, table_paths):
     utils.display_formatted_table(conn, table_paths)
-    type_update=""
-    if(field == "is_export"):
-        type_update="EXPORTACIÓN"
-    elif(field == "is_import"):
-        type_update="IMPORTACIÓN"
-    else:
-        raise ValueError(f"Campo desconocido: {field}")
-    utils.draw_tittle_border(f"Actualizando ruta de {type_update}")
+    utils.draw_tittle_border(f"Actualizando ruta")
     id_path = utils.read_input_integer("\n  * Ingrese el ID: ")
     path_obj = conn.find_path(table_paths, "ID", id_path)
     if(path_obj is not None):
-        conn.update_path(table_paths, id_path, field)
+        is_first_entry = conn.get_num_rows_table(table_paths) == 1
+        conn.update_path(table_paths, id_path, ask_for_path_to_insert(is_first_entry), is_first_entry, True)
 
 def delete_multiple_paths(conn, table_paths):
     while True:
@@ -221,9 +215,8 @@ def handle_paths_menu(conn, table_paths):
         print("  1. Visualizar rutas guardadas")
         print("  2. Registrar nueva ruta")
         print("  3. Eliminar una ruta")
-        print("  4. Actualizar ruta de exportación")
-        print("  5. Actualizar ruta de importación")
-        option = utils.read_input_options_menu(0, 5)
+        print("  4. Actualizar ruta")
+        option = utils.read_input_options_menu(0, 4)
         if(option == 0):
             break
         elif(option == 1):
@@ -234,10 +227,8 @@ def handle_paths_menu(conn, table_paths):
         elif(option == 3):
             conn.validate_table_not_empty("No hay datos para eliminar...", delete_multiple_paths, table_paths)
         elif(option == 4):
-            conn.validate_table_not_empty("No hay datos para actualizar...", update_path, table_paths, "is_export")
-        elif(option == 5):
-            conn.validate_table_not_empty("No hay datos para actualizar...", update_path, table_paths, "is_import")
-        if option in range(4,6):
+            conn.validate_table_not_empty("No hay datos para actualizar...", update_path, table_paths)
+        if option in range(4,5):
             time.sleep(1.5)
 
 def update_data_to_correct_format(conn, table_products):
