@@ -7,24 +7,25 @@ from classes.product import Product
 from classes.path import Path
 
 class Database:
-    def __init__(self, path="sqlite_db", file="my_expenses.db"):
-        self.db_path = path
+    def __init__(self, dir="sqlite_db", file="my_expenses.db"):
+        self.db_dir = dir
         self.db_file = file
-        os.makedirs(self.db_path, exist_ok=True)
+        self.db_full_path = os.path.join(dir, file)
+        os.makedirs(self.db_dir, exist_ok=True)
         self.connect()
         self.create_products_tbl()
         self.create_paths_tbl()
 
     def connect(self):
         try:
-            self.conn = sqlite3.connect(f"{self.db_path}/{self.db_file}")
+            self.conn = sqlite3.connect(self.db_full_path)
         except sqlite3.Error as e:
             print(f"\n   >>> Error al conectar a la base de datos: {e}")
             self.conn = None
 
     def get_connection(self):
         if self.conn is None:
-            self.conn = sqlite3.connect(f"{self.db_path}/{self.db_file}")
+            self.conn = sqlite3.connect(self.db_full_path)
         return self.conn
 
     def disconnect(self):
@@ -34,6 +35,8 @@ class Database:
     def cursor(self):
         if self.conn:
             return self.conn.cursor()
+        else:
+            return self.get_connection().cursor()
 
     def commit(self, c):
         if self.conn:
@@ -46,24 +49,17 @@ class Database:
             print("\n  *** Operación cancelada ***")
 
     def create_products_tbl(self):
-        c = self.conn.cursor()
-        c.execute("CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, quantity TEXT, unit TEXT, price REAL, total REAL, date TEXT, category TEXT)")
-        self.conn.commit()
-        c.close()
-
+        sql_query = "CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, quantity TEXT, unit TEXT, price REAL, total REAL, date TEXT, category TEXT)"
+        c = self.execute_query(sql_query)
+        self.commit(c)
 
     def create_paths_tbl(self):
-        c = self.conn.cursor()
-        c.execute("CREATE TABLE IF NOT EXISTS paths (id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL, is_export BOOLEAN NOT NULL DEFAULT 0, is_import BOOLEAN NOT NULL DEFAULT 0)")
-        self.conn.commit()
-        c.close()
+        sql_query = "CREATE TABLE IF NOT EXISTS paths (id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL, is_export BOOLEAN NOT NULL DEFAULT 0, is_import BOOLEAN NOT NULL DEFAULT 0)"
+        c = self.execute_query(sql_query)
+        self.commit(c)
 
     def execute_query(self, query, params=()):
-        if self.conn is None:
-            print("\n   >>> Error: No hay conexión a la base de datos.")
-            return None
-
-        cursor = self.conn.cursor()
+        cursor = self.cursor()
         try:
             cursor.execute(query, params)
             return cursor
@@ -93,8 +89,9 @@ class Database:
             try:
                 pragma_query = f"PRAGMA table_info({table_name});"
                 columns_info = self.execute_query(pragma_query)
-                columns = [column[1] for column in columns_info]
-                return columns
+                if(columns_info is not None):
+                    columns = [column[1] for column in columns_info]
+                    return columns
             except Exception as e:
                 print(f"Error al obtener las columnas de la tabla con PRAGMA: {e}")
                 return []
@@ -136,7 +133,6 @@ class Database:
         query_delete = f"DELETE FROM {table_name} WHERE {field}=?"
         c = self.execute_query(query_delete, (value,))
         self.confirm_transaction_database(c)
-        c.close()
 
     def find_item(self, table_name, field, value):
         query_select = f"SELECT * FROM {table_name} WHERE {field}=? LIMIT 1"
@@ -167,7 +163,6 @@ class Database:
         sqlite_statement = '''INSERT INTO products (name, quantity, unit, price, total, date, category) VALUES (?, ?, ?, ?, ?, ?, ?)'''
         c = self.execute_query(sqlite_statement, product.get_db_values())
         self.confirm_transaction_database(c)
-        c.close()
 
     def insert_path(self, table_paths, path, is_first_entry):
         if not is_first_entry:
@@ -177,7 +172,6 @@ class Database:
                 self.execute_query(f"UPDATE {table_paths} SET is_import = 0")
         c = self.execute_query(f"INSERT INTO {table_paths} (path, is_export, is_import) VALUES (?, ?, ?)", path.get_db_values())
         self.confirm_transaction_database(c)
-        c.close()
 
     def update_path(self, table_name, id_path, field):
         self.execute_query(f"UPDATE {table_name} SET {field} = 0")
@@ -195,15 +189,14 @@ class Database:
 
     def delete_database(self):
         try:
-            db_full_path = os.path.join(self.db_path, self.db_file)
-            if os.path.exists(db_full_path):
-                if os.path.isfile(db_full_path):
-                    os.remove(db_full_path)
+            if os.path.exists(self.db_full_path):
+                if os.path.isfile(self.db_full_path):
+                    os.remove(self.db_full_path)
                     print(f"\n   >>> La base de datos ha sido eliminada!")
                 else:
                     print("\n   >>> La ruta proporcionada no es un archivo válido!")
             else:
-                print(f"\n   >>> No se encontró el archivo de base de datos en la ruta: {self.db_path}")
+                print(f"\n   >>> No se encontró el archivo de base de datos en la ruta: {self.db_dir}")
         except Exception as e:
             print(f"\n   >>> Hubo un error al eliminar la base de datos: {e}")
 
