@@ -48,29 +48,25 @@ def show_products_summary(conn, table_products):
     else:
         print("\n    No hay datos disponibles en la tabla de productos.")
 
-def ask_for_product_details(date_ = None):
+def ask_for_product_details(date_ = "", cat = ""):
     name = utils.read_input_simple_text("  * Nombre: ")
-    quantity = utils.read_input_float_fraction_str("  * Cantidad: ")
+    qty = utils.read_input_float_fraction_str("  * Cantidad: ")
     unit = utils.read_input_simple_text("  * Medida: ")
     total = utils.read_input_float("  * Total: ")
-    if(date_ is None or date_.strip() == ""):
-        date_ = datetime.now().strftime("%Y-%m-%d")
+    date_ = datetime.now().strftime("%Y-%m-%d") if date_.strip() == "" else date_
+    cat = Product.get_unspecified_category() if cat.strip() == "" else cat
+
     print(f"  * Fecha (Año-Mes-Día): {date_}")
     change_date = utils.read_input_yes_no("¿Desea cambiar la fecha?")
     if(change_date.lower() in ['si', 's']):
-        while True:
-            try:
-                date_ = utils.read_input_date("  * Fecha (Año-Mes-Día): ")
-                date_obj = datetime.strptime(date_, "%Y-%m-%d")
-                break
-            except ValueError:
-                print("\n   * La fecha proporcionada no es válida en el calendario.\n")
-    set_category = utils.read_input_yes_no("¿Desea asignar a una categoria?")
-    if(set_category.lower() in ['si', 's']):
-        category = utils.read_input_simple_text("  * Categoria: ")
-    else:
-        category = Product.get_unspecified_category()
-    return Product(name=name, quantity=quantity, unit=unit, total=total, date=date_, category=category)
+        date_ = utils.read_input_date("  * Fecha (Año-Mes-Día): ")
+
+    print(f"  * Categoria: {cat}")
+    change_category = utils.read_input_yes_no("¿Desea asignar/cambiar la categoria?")
+    if(change_category.lower() in ['si', 's']):
+        cat = utils.read_input_simple_text("  * Categoria: ")
+
+    return Product(name=name, quantity=qty, unit=unit, total=total, date=date_, category=cat)
 
 def register_multiple_products(conn):
     while True:
@@ -90,7 +86,7 @@ def update_product(conn, table_products):
         print(f"\n  [ DATOS ACTUALES ]\n")
         print(prod_obj.__str__())
         print(f"\n  [ NUEVOS DATOS ]\n")
-        conn.update_product(table_products, id_prod, ask_for_product_details(prod_obj.date), True)
+        conn.update_product(table_products, id_prod, ask_for_product_details(prod_obj.date, prod_obj.category), True)
     input("\n   >>> Presione ENTER para continuar <<<")
 
 def handle_product_deletion_menu(conn, table_products):

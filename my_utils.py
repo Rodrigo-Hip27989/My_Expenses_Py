@@ -3,6 +3,7 @@ import subprocess
 import csv
 import re
 from fractions import Fraction
+from datetime import datetime
 import my_utils as utils
 
 def convert_to_float(input_string):
@@ -108,7 +109,13 @@ def read_input_date(message):
     regex_month = r'(0[1-9]|1[0-2])'
     regex_day = r'(0[1-9]|[12][0-9]|3[01])'
     regex_date = f"{regex_year}-{regex_month}-{regex_day}"
-    return read_valid_varchar(regex_date, message)
+    while True:
+        try:
+            date_ = read_valid_varchar(regex_date, message)
+            datetime.strptime(date_, "%Y-%m-%d")
+            return date_
+        except ValueError:
+            print("\n  *** La fecha proporcionada no es válida en el calendario. ***\n")
 
 def read_input_yes_no(message):
     regex_options = r'^(SI|NO|Si|No|si|no|S|N|s|n)$'

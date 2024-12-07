@@ -154,8 +154,8 @@ class Database:
     def find_product(self, table_name, field, value):
         found_item = self.find_item(table_name, field, value)
         if(found_item is not None and found_item != []):
-            _, name, quantity, unit, _, total, date, category = found_item
-            return Product(name, quantity, unit, total, date, category)
+            _, name, qty, unit, _, total, date_, cat = found_item
+            return Product(name=name, quantity=qty, unit=unit, total=total, date=date_, category=cat)
         else:
             return None
 
