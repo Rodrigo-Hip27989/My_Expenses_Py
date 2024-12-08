@@ -178,24 +178,24 @@ def handle_paths_menu(conn, table_paths):
         subprocess.run(["clear"])
         utils.draw_tittle_border("Administrar rutas")
         print("  0. Regresar")
-        print("  1. Visualizar rutas guardadas")
-        print("  2. Registrar nueva ruta")
-        print("  3. Eliminar una ruta")
-        print("  4. Actualizar ruta")
+        print("  1. Registrar nueva ruta")
+        print("  2. Visualizar rutas guardadas")
+        print("  3. Actualizar ruta")
+        print("  4. Eliminar una ruta")
         option = valid.read_options_menu(0, 4)
         if(option == 0):
             break
         elif(option == 1):
+            register_multiple_paths(conn, table_paths)
+        elif(option == 2):
             conn.validate_table_not_empty("No hay datos para mostrar...", utils.display_formatted_table, table_paths)
             input("\n  >>> Presione ENTER para continuar <<<")
-        elif(option == 2):
-            register_multiple_paths(conn, table_paths)
         elif(option == 3):
-            conn.validate_table_not_empty("No hay datos para eliminar...", delete_multiple_paths, table_paths)
-        elif(option == 4):
             conn.validate_table_not_empty("No hay datos para actualizar...", update_path, table_paths)
-        if option in range(4,5):
-            time.sleep(1.5)
+        elif(option == 4):
+            conn.validate_table_not_empty("No hay datos para eliminar...", delete_multiple_paths, table_paths)
+        if option in range(3,5):
+            time.sleep(1.2)
 
 def update_data_to_correct_format(conn, table_products):
     query = f"SELECT id, name, quantity, unit, price, total, date, category FROM {table_products};"
