@@ -265,34 +265,34 @@ def handle_products_menu(conn, table_products):
         subprocess.run(["clear"])
         utils.draw_tittle_border("Tabla productos")
         print("  0. Salir")
-        print("  1. Ver resumen de los productos")
+        print("  1. Ver lista de productos")
         print("  2. Registrar un producto")
-        print("  3. Eliminar un producto")
-        print("  4. Actualizar un producto")
-        print("  5. Actualizar el formato de todos los datos")
-        print("  6. Ver lista de productos")
-        print("  7. Ver lista de productos ordenada")
+        print("  3. Actualizar un producto")
+        print("  4. Eliminar un producto")
+        print("  5. Ver resumen de los productos")
+        print("  6. Ver lista de productos ordenada")
+        print("  7. Actualizar el formato de los datos")
         option = valid.read_options_menu(0, 7)
         if(option == 0):
             break
         elif(option == 1):
-            conn.validate_table_not_empty("No hay productos del cual ver resumen...", show_products_summary, table_products)
+            conn.validate_table_not_empty("No hay datos para mostrar...", utils.display_formatted_table, table_products)
             input("\n   >>> Presione ENTER para continuar <<<")
         elif(option == 2):
             register_multiple_products(conn)
         elif(option == 3):
+            conn.validate_table_not_empty("No hay datos para actualizar...", update_product, table_products)
+        elif(option == 4):
             conn.validate_table_not_empty("No hay datos para eliminar...", handle_product_deletion_menu, table_products)
             time.sleep(0.7)
-        elif(option == 4):
-            conn.validate_table_not_empty("No hay datos para actualizar...", update_product, table_products)
         elif(option == 5):
+            conn.validate_table_not_empty("No hay productos del cual ver resumen...", show_products_summary, table_products)
+            input("\n   >>> Presione ENTER para continuar <<<")
+        elif(option == 6):
+            conn.validate_table_not_empty("No hay datos para mostrar...", view_sorted_product_list, table_products)
+        elif(option == 7):
             conn.validate_table_not_empty("No hay datos para actualizar...", update_data_to_correct_format, table_products)
             input("\n   >>> Actualización completada <<<")
-        elif(option == 6):
-            conn.validate_table_not_empty("No hay datos para mostrar...", utils.display_formatted_table, table_products)
-            input("\n   >>> Presione ENTER para continuar <<<")
-        elif(option == 7):
-            conn.validate_table_not_empty("No hay datos para mostrar...", view_sorted_product_list, table_products)
 
 def handle_export_import_data_menu(conn, table_names):
     table_paths = table_names[0]
