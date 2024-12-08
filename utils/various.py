@@ -4,7 +4,6 @@ import csv
 import re
 from fractions import Fraction
 from datetime import datetime
-import my_utils as utils
 
 def convert_to_float(input_string):
     try:
@@ -189,7 +188,7 @@ def display_formatted_table(conn, table_name, query=None):
     tbl_rows = conn.fetch_all(query)
     tbl_headers = conn.get_headers(table_name, query)
     tbl_headers = [header.upper() for header in tbl_headers]
-    csv_data = utils.convert_table_to_in_memory_csv(tbl_headers, tbl_rows)
-    formatted_data = utils.format_csv_using_column_command(csv_data)
-    fully_formatted_table = utils.add_borders_and_margins_to_table(formatted_data)
+    csv_data = convert_table_to_in_memory_csv(tbl_headers, tbl_rows)
+    formatted_data = format_csv_using_column_command(csv_data)
+    fully_formatted_table = add_borders_and_margins_to_table(formatted_data)
     print(fully_formatted_table)

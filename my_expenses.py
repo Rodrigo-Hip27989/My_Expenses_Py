@@ -4,8 +4,8 @@ import time
 import re
 from datetime import datetime
 import my_sqlconn as sqlc
-import my_utils as utils
-import my_file_operations as fop
+import utils.various as utils
+import utils.file_operations as fop
 from classes.summary_products import SummaryProducts
 from classes.product import Product
 from classes.path import Path

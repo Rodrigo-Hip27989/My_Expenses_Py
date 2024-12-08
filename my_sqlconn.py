@@ -2,7 +2,7 @@ import sqlite3
 import os
 import csv
 import re
-import my_utils as utils
+import utils.various as utils
 from classes.product import Product
 from classes.path import Path
 

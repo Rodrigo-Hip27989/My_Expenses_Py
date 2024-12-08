@@ -1,4 +1,4 @@
-import my_utils as utils
+import utils.various as utils
 
 class Product:
     def __init__(self, name="", quantity="", unit="", price=None, total=None, date="", category=""):
