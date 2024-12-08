@@ -6,6 +6,7 @@ from datetime import datetime
 import my_sqlconn as sqlc
 import my_utils as utils
 import my_file_operations as fop
+from classes.summary_products import SummaryProducts
 from classes.product import Product
 from classes.path import Path
 
@@ -34,26 +35,17 @@ def show_products_summary(conn, table_products):
         utils.draw_tittle_border("Resumen de los productos")
 
         for row in result:
-            category = row['category']
-            total_products = row['total_products']
-            total_cost = row['total_cost']
-            avg_cost = row['avg_cost']
-            min_cost = row['min_cost']
-            max_cost = row['max_cost']
-            most_expensive = row['most_expensive']
-            least_expensive = row['least_expensive']
-
-            if(category is None or category.strip() == ""):
-                category = Product.get_unspecified_category()
-
-            utils.draw_subtitle_border(f"Categoría: {category}")
-            print(f"  - Num. Productos: {total_products}")
-            print(f"  - Costo Total: ${total_cost:,.3f}")
-            print(f"  - Costo Promedio: ${avg_cost:,.3f}")
-            print(f"  - Producto más barato: {least_expensive}")
-            print(f"  - Costo (mínimo): ${min_cost:,.3f}")
-            print(f"  - Producto más caro: {most_expensive}")
-            print(f"  - Costo (máximo): ${max_cost:,.3f}\n")
+            summary = SummaryProducts(
+                category=row['category'],
+                total_products=row['total_products'],
+                total_cost=row['total_cost'],
+                avg_cost=row['avg_cost'],
+                min_cost=row['min_cost'],
+                max_cost=row['max_cost'],
+                most_expensive=row['most_expensive'],
+                least_expensive=row['least_expensive']
+            )
+            print(summary.format_summary())
     else:
         print("\n    No hay datos disponibles en la tabla de productos.")
 
