@@ -254,13 +254,13 @@ def view_sorted_product_list(conn, table_products):
         if option in range(1, 8):
             column = columns[option - 1]
             if column == "quantity":
-                column = utils.convert_column_sql_quantity_to_float(column)
+                column = sqlc.Database.convert_column_sql_quantity_to_float(column)
             query = f"SELECT * FROM {table_products} ORDER BY {column} ASC;"
 
         elif option in range(8, 14):
             column = columns[option - 8]
             if column == "quantity":
-                column = utils.convert_column_sql_quantity_to_float(column)
+                column = sqlc.Database.convert_column_sql_quantity_to_float(column)
             query = f"SELECT * FROM {table_products} ORDER BY category ASC, {column} ASC;"
 
         if option in [6, 13]:

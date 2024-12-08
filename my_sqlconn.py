@@ -209,6 +209,19 @@ class Database:
             c = self.execute_query(f"UPDATE {table_name} SET date = ? WHERE id = ?", (normalized_date, id_))
             self.commit(c)
 
+    @staticmethod
+    def convert_column_sql_quantity_to_float(column):
+        converted_column_template = f"""
+        CASE
+            WHEN {column} LIKE '%/%' THEN
+                CAST(SUBSTR({column}, 1, INSTR({column}, '/') - 1) AS REAL) /
+                CAST(SUBSTR({column}, INSTR({column}, '/') + 1) AS REAL)
+            ELSE
+                CAST({column} AS REAL)
+        END
+        """
+        return converted_column_template
+
     def delete_database(self):
         try:
             if os.path.exists(self.db_full_path):
