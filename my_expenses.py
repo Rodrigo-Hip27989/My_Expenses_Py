@@ -269,7 +269,7 @@ def view_sorted_product_list(conn, table_products):
             if found_wrong_rows:
                 update_wrong_date = valid.read_short_answer("¿Su tabla contiene fechas en formato incorrecto desea actualizarlas ahora?")
                 if update_wrong_date.lower() in ['si', 's']:
-                    utils.update_formats_date(conn, table_products, found_wrong_rows)
+                    conn.update_formats_date(conn, table_products, found_wrong_rows)
                 else:
                     input("\n   *** La ordenación no se aplicará correctamente ***\n")
 

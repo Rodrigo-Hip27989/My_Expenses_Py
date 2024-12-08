@@ -3,18 +3,6 @@ import subprocess
 import csv
 import re
 
-def convert_ddmmyyyy_to_iso8601(date_):
-    date_ = date_.strip()
-    if len(date_) == 10 and date_[4] == '-' and date_[7] == '-':
-        return date_
-    if '/' in date_:
-        segments = date_.split('/')
-        return f"{segments[2]}-{segments[1]}-{segments[0]}"
-    elif '-' in date_:
-        segments = date_.split('-')
-        return f"{segments[2]}-{segments[1]}-{segments[0]}"
-    return date_
-
 def draw_tittle_border(tittle):
     border = '=' * (len(tittle) + 7)
     print(f"\n  {border}\n  |  {tittle.upper()}  |\n  {border}\n")
@@ -73,6 +61,18 @@ def display_formatted_table(conn, table_name, query=None):
     fully_formatted_table = add_borders_and_margins_to_table(formatted_data)
     print(fully_formatted_table)
 
+def convert_ddmmyyyy_to_iso8601(date_):
+    date_ = date_.strip()
+    if len(date_) == 10 and date_[4] == '-' and date_[7] == '-':
+        return date_
+    if '/' in date_:
+        segments = date_.split('/')
+        return f"{segments[2]}-{segments[1]}-{segments[0]}"
+    elif '-' in date_:
+        segments = date_.split('-')
+        return f"{segments[2]}-{segments[1]}-{segments[0]}"
+    return date_
+
 def check_formats_date(rows):
     regex_iso8601 = r'^\d{4}-\d{2}-\d{2}$'
     wrong_rows = []
@@ -82,12 +82,3 @@ def check_formats_date(rows):
         if not re.match(regex_iso8601, date_):
             wrong_rows.append({'id': id_, 'date': date_})
     return wrong_rows
-
-def update_formats_date(conn, table_name, wrong_rows):
-    for row in wrong_rows:
-        id_ = row['id']
-        original_date = row['date']
-        normalized_date = convert_ddmmyyyy_to_iso8601(original_date)
-        c = conn.execute_query(f"UPDATE {table_name} SET date = ? WHERE id = ?", (normalized_date, id_))
-        conn.commit(c)
-    return conn

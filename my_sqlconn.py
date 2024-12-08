@@ -201,6 +201,14 @@ class Database:
         else:
             self.commit(c)
 
+    def update_formats_date(self, table_name, wrong_rows):
+        for row in wrong_rows:
+            id_ = row['id']
+            original_date = row['date']
+            normalized_date = utils.convert_ddmmyyyy_to_iso8601(original_date)
+            c = self.execute_query(f"UPDATE {table_name} SET date = ? WHERE id = ?", (normalized_date, id_))
+            self.commit(c)
+
     def delete_database(self):
         try:
             if os.path.exists(self.db_full_path):
