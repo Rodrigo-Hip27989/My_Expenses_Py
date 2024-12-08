@@ -3,8 +3,8 @@ import os
 import csv
 import re
 import utils.various as utils
-from classes.product import Product
-from classes.path import Path
+from models.product import Product
+from models.path import Path
 
 class Database:
     def __init__(self, dir="sqlite_db", file="my_expenses.db"):

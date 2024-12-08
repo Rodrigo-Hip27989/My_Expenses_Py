@@ -6,9 +6,9 @@ from datetime import datetime
 import my_sqlconn as sqlc
 import utils.various as utils
 import utils.file_operations as fop
-from classes.summary_products import SummaryProducts
-from classes.product import Product
-from classes.path import Path
+from models.summary_products import SummaryProducts
+from models.product import Product
+from models.path import Path
 
 def handle_interrupt(sig, frame):
     raise KeyboardInterrupt

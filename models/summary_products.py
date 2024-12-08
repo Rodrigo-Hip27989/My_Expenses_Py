@@ -1,4 +1,4 @@
-from classes.product import Product
+from models.product import Product
 
 class SummaryProducts:
     def __init__(self, category, total_products, total_cost, avg_cost, min_cost, max_cost, most_expensive, least_expensive):
