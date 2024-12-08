@@ -1,7 +1,6 @@
 import subprocess
 import signal
 import time
-import re
 from datetime import datetime
 import my_sqlconn as sqlc
 import utils.various as utils
@@ -159,26 +158,6 @@ def delete_multiple_paths(conn, table_paths):
         else:
             break
 
-def check_formats_date(conn, table_name):
-    regex_iso8601 = r'^\d{4}-\d{2}-\d{2}$'
-    rows = conn.fetch_all(f"SELECT id, date FROM {table_name}")
-    wrong_rows = []
-    for row in rows:
-        id_ = row['id']
-        date_ = row['date']
-        if not re.match(regex_iso8601, date_):
-            wrong_rows.append({'id': id_, 'date': date_})
-    return wrong_rows
-
-def update_formats_date(conn, table_name, wrong_rows):
-    for row in wrong_rows:
-        id_ = row['id']
-        original_date = row['date']
-        normalized_date = utils.convert_ddmmyyyy_to_iso8601(original_date)
-        c = conn.execute_query(f"UPDATE {table_name} SET date = ? WHERE id = ?", (normalized_date, id_))
-        conn.commit(c)
-    return conn
-
 def handle_delete_tables_menu(conn, table_products, table_paths):
     subprocess.run(["clear"])
     utils.draw_tittle_border("Eliminando datos de tablas")
@@ -284,11 +263,11 @@ def view_sorted_product_list(conn, table_products):
             query = f"SELECT * FROM {table_products} ORDER BY category ASC, {column} ASC;"
 
         if option in [6, 13]:
-            found_wrong_rows = check_formats_date(conn, table_products)
+            found_wrong_rows = utils.check_formats_date(conn, table_products)
             if found_wrong_rows:
                 update_wrong_date = utils.read_input_yes_no("¿Su tabla contiene fechas en formato incorrecto desea actualizarlas ahora?")
                 if update_wrong_date.lower() in ['si', 's']:
-                    update_formats_date(conn, table_products, found_wrong_rows)
+                    utils.update_formats_date(conn, table_products, found_wrong_rows)
                 else:
                     input("\n   *** La ordenación no se aplicará correctamente ***\n")
 

@@ -192,3 +192,23 @@ def display_formatted_table(conn, table_name, query=None):
     formatted_data = format_csv_using_column_command(csv_data)
     fully_formatted_table = add_borders_and_margins_to_table(formatted_data)
     print(fully_formatted_table)
+
+def check_formats_date(conn, table_name):
+    regex_iso8601 = r'^\d{4}-\d{2}-\d{2}$'
+    rows = conn.fetch_all(f"SELECT id, date FROM {table_name}")
+    wrong_rows = []
+    for row in rows:
+        id_ = row['id']
+        date_ = row['date']
+        if not re.match(regex_iso8601, date_):
+            wrong_rows.append({'id': id_, 'date': date_})
+    return wrong_rows
+
+def update_formats_date(conn, table_name, wrong_rows):
+    for row in wrong_rows:
+        id_ = row['id']
+        original_date = row['date']
+        normalized_date = convert_ddmmyyyy_to_iso8601(original_date)
+        c = conn.execute_query(f"UPDATE {table_name} SET date = ? WHERE id = ?", (normalized_date, id_))
+        conn.commit(c)
+    return conn
