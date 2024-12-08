@@ -5,6 +5,7 @@ from datetime import datetime
 import my_sqlconn as sqlc
 import utils.various as utils
 import utils.file_operations as fop
+import utils.input_validations as valid
 from models.summary_products import SummaryProducts
 from models.product import Product
 from models.path import Path
@@ -49,22 +50,22 @@ def show_products_summary(conn, table_products):
         print("\n    No hay datos disponibles en la tabla de productos.")
 
 def ask_for_product_details(date_ = "", cat = ""):
-    name = utils.read_input_simple_text("  * Nombre: ")
-    qty = utils.read_input_float_fraction_str("  * Cantidad: ")
-    unit = utils.read_input_simple_text("  * Medida: ")
-    total = utils.read_input_float("  * Total: ")
+    name = valid.read_simple_text("  * Nombre: ")
+    qty = valid.read_float_fraction_str("  * Cantidad: ")
+    unit = valid.read_simple_text("  * Medida: ")
+    total = valid.read_float("  * Total: ")
     date_ = datetime.now().strftime("%Y-%m-%d") if date_.strip() == "" else date_
     cat = Product.get_unspecified_category() if cat.strip() == "" else cat
 
     print(f"  * Fecha (Año-Mes-Día): {date_}")
-    change_date = utils.read_input_yes_no("¿Desea cambiar la fecha?")
+    change_date = valid.read_short_answer("¿Desea cambiar la fecha?")
     if(change_date.lower() in ['si', 's']):
-        date_ = utils.read_input_date("  * Fecha (Año-Mes-Día): ")
+        date_ = valid.read_date("  * Fecha (Año-Mes-Día): ")
 
     print(f"  * Categoria: {cat}")
-    change_category = utils.read_input_yes_no("¿Desea asignar/cambiar la categoria?")
+    change_category = valid.read_short_answer("¿Desea asignar/cambiar la categoria?")
     if(change_category.lower() in ['si', 's']):
-        cat = utils.read_input_simple_text("  * Categoria: ")
+        cat = valid.read_simple_text("  * Categoria: ")
 
     return Product(name=name, quantity=qty, unit=unit, total=total, date=date_, category=cat)
 
@@ -73,14 +74,14 @@ def register_multiple_products(conn):
         subprocess.run(["clear"])
         utils.draw_tittle_border("Registrar nuevo producto")
         conn.insert_product(ask_for_product_details())
-        stop = utils.read_input_yes_no("¿Desea agregar otro producto?")
+        stop = valid.read_short_answer("¿Desea agregar otro producto?")
         if(stop.lower() in ['no', 'n']):
             break
 
 def update_product(conn, table_products):
     utils.display_formatted_table(conn, table_products)
     utils.draw_tittle_border(f"Actualizando detalles del producto")
-    id_prod = utils.read_input_integer("\n  * Ingrese el ID: ")
+    id_prod = valid.read_integer("\n  * Ingrese el ID: ")
     prod_obj = conn.find_product(table_products, "ID", id_prod)
     if(prod_obj is not None):
         print(f"\n  [ DATOS ACTUALES ]\n")
@@ -97,28 +98,28 @@ def handle_product_deletion_menu(conn, table_products):
         print("  1. Usando su ID")
         print("  2. Todos con el NOMBRE")
         print("  3. Todos con la FECHA")
-        option = utils.read_input_options_menu(0, 3)
+        option = valid.read_options_menu(0, 3)
         if(option == 0):
             break
         elif(option == 1):
-            id_product = utils.read_input_integer("\n  * Ingrese el ID: ")
+            id_product = valid.read_integer("\n  * Ingrese el ID: ")
             conn.delete_item(table_products, "ID", id_product)
         elif(option == 2):
-            name_product = utils.read_input_simple_text("\n  * Ingrese el NOMBRE: ")
+            name_product = valid.read_simple_text("\n  * Ingrese el NOMBRE: ")
             conn.delete_item(table_products, "NAME", name_product)
         elif(option == 3):
-            date_product = utils.read_input_date("\n  * Ingrese el FECHA: ")
+            date_product = valid.read_date("\n  * Ingrese el FECHA: ")
             conn.delete_item(table_products, "DATE", date_product)
         if conn.is_table_empty(table_products):
             break
 
 def ask_for_path_to_insert(is_first_entry):
-    new_path = utils.read_input_paths_linux("\n  * Ruta: ")
+    new_path = valid.read_paths_linux("\n  * Ruta: ")
     if(is_first_entry):
         return Path(path=new_path, is_export=1, is_import=1)
     else:
-        is_exp = utils.read_input_yes_no("¿Establecer como ruta de exportación?").lower() in ['si', 's']
-        is_imp = utils.read_input_yes_no("¿Establecer como ruta de importación?").lower() in ['si', 's']
+        is_exp = valid.read_short_answer("¿Establecer como ruta de exportación?").lower() in ['si', 's']
+        is_imp = valid.read_short_answer("¿Establecer como ruta de importación?").lower() in ['si', 's']
         return Path(path=new_path, is_export=is_exp, is_import=is_imp)
 
 def register_multiple_paths(conn, table_paths):
@@ -127,14 +128,14 @@ def register_multiple_paths(conn, table_paths):
         utils.draw_tittle_border("Registrar nueva ruta")
         is_first_entry = conn.is_table_empty(table_paths)
         conn.insert_path(table_paths, ask_for_path_to_insert(is_first_entry), is_first_entry)
-        stop = utils.read_input_yes_no("¿Desea agregar otra ruta?")
+        stop = valid.read_short_answer("¿Desea agregar otra ruta?")
         if(stop.lower() in ['no', 'n']):
             break
 
 def update_path(conn, table_paths):
     utils.display_formatted_table(conn, table_paths)
     utils.draw_tittle_border(f"Actualizando ruta")
-    id_path = utils.read_input_integer("\n  * Ingrese el ID: ")
+    id_path = valid.read_integer("\n  * Ingrese el ID: ")
     path_obj = conn.find_path(table_paths, "ID", id_path)
     if(path_obj is not None):
         is_first_entry = conn.get_num_rows_table(table_paths) == 1
@@ -144,7 +145,7 @@ def delete_multiple_paths(conn, table_paths):
     while True:
         utils.display_formatted_table(conn, table_paths)
         utils.draw_tittle_border("Eliminar una ruta")
-        id_path = utils.read_input_integer("\n  * Ingrese el ID: ")
+        id_path = valid.read_integer("\n  * Ingrese el ID: ")
         path_obj = conn.find_path(table_paths, "ID", id_path)
         if(path_obj is not None):
             if(path_obj.is_export == 1 or path_obj.is_import == 1):
@@ -152,7 +153,7 @@ def delete_multiple_paths(conn, table_paths):
             else:
                 conn.delete_item(table_paths, "ID", id_path)
         if not conn.is_table_empty(table_paths):
-            stop = utils.read_input_yes_no("¿Desea eliminar otra ruta?")
+            stop = valid.read_short_answer("¿Desea eliminar otra ruta?")
             if(stop.lower() in ['no', 'n']):
                 break
         else:
@@ -165,7 +166,7 @@ def handle_delete_tables_menu(conn, table_products, table_paths):
     print("   1. Eliminar datos de productos")
     print("   2. Eliminar datos de rutas")
     print("   3. Eliminar datos de todas las tablas")
-    option = utils.read_input_options_menu(0, 3)
+    option = valid.read_options_menu(0, 3)
     if(option != 0):
         if(option == 1):
             c = conn.execute_query(f"DELETE FROM {table_products}")
@@ -179,7 +180,7 @@ def handle_delete_tables_menu(conn, table_products, table_paths):
             conn.commit(c)
         elif(option == 3):
             print("\n  *** Esta acción no puede deshacerse ***\n")
-            delete_db = utils.read_input_continue_confirmation()
+            delete_db = valid.read_answer_continue()
             if(delete_db.lower() in ['si', 's']):
                 conn.disconnect()
                 conn.delete_database()
@@ -197,7 +198,7 @@ def handle_paths_menu(conn, table_paths):
         print("  2. Registrar nueva ruta")
         print("  3. Eliminar una ruta")
         print("  4. Actualizar ruta")
-        option = utils.read_input_options_menu(0, 4)
+        option = valid.read_options_menu(0, 4)
         if(option == 0):
             break
         elif(option == 1):
@@ -245,7 +246,7 @@ def view_sorted_product_list(conn, table_products):
         for option, description in menu_options:
             print(f"  {option}. {description}")
 
-        option = utils.read_input_options_menu(0, 13)
+        option = valid.read_options_menu(0, 13)
 
         if option == 0:
             break
@@ -263,9 +264,10 @@ def view_sorted_product_list(conn, table_products):
             query = f"SELECT * FROM {table_products} ORDER BY category ASC, {column} ASC;"
 
         if option in [6, 13]:
-            found_wrong_rows = utils.check_formats_date(conn, table_products)
+            rows = conn.fetch_all(f"SELECT id, date FROM {table_products}")
+            found_wrong_rows = utils.check_formats_date(rows)
             if found_wrong_rows:
-                update_wrong_date = utils.read_input_yes_no("¿Su tabla contiene fechas en formato incorrecto desea actualizarlas ahora?")
+                update_wrong_date = valid.read_short_answer("¿Su tabla contiene fechas en formato incorrecto desea actualizarlas ahora?")
                 if update_wrong_date.lower() in ['si', 's']:
                     utils.update_formats_date(conn, table_products, found_wrong_rows)
                 else:
@@ -286,7 +288,7 @@ def handle_products_menu(conn, table_products):
         print("  5. Actualizar el formato de todos los datos")
         print("  6. Ver lista de productos")
         print("  7. Ver lista de productos ordenada")
-        option = utils.read_input_options_menu(0, 7)
+        option = valid.read_options_menu(0, 7)
         if(option == 0):
             break
         elif(option == 1):
@@ -334,7 +336,7 @@ def handle_export_import_data_menu(conn, table_names):
         print("  0. Salir")
         for idx, (description, _, _, _) in enumerate(menu_options, 1):
             print(f"  {idx}. {description}")
-        option = utils.read_input_options_menu(0, total_options)
+        option = valid.read_options_menu(0, total_options)
         if option == 0:
             break
         elif 1 <= option <= total_options:
@@ -356,7 +358,7 @@ def main():
         print("  3. Exportar/Importar datos")
         print("  4. Eliminar datos de tablas")
         try:
-            option = utils.read_input_options_menu(0, 4)
+            option = valid.read_options_menu(0, 4)
             if(option == 0):
                 break
             elif(option == 1):

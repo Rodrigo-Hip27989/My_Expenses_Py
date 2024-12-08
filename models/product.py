@@ -1,4 +1,5 @@
 import utils.various as utils
+from utils.input_validations import convert_to_float
 
 class Product:
     def __init__(self, name="", quantity="", unit="", price=None, total=None, date="", category=""):
@@ -76,11 +77,11 @@ class Product:
 
     @staticmethod
     def calculate_price(quantity, total):
-        return round(utils.convert_to_float(total)/utils.convert_to_float(quantity), 7)
+        return round(convert_to_float(total)/convert_to_float(quantity), 7)
 
     @staticmethod
     def calculate_total(quantity, price):
-        return round(utils.convert_to_float(quantity)*utils.convert_to_float(price), 7)
+        return round(convert_to_float(quantity)*convert_to_float(price), 7)
 
     @name.setter
     def name(self, name):

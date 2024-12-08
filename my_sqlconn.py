@@ -3,6 +3,7 @@ import os
 import csv
 import re
 import utils.various as utils
+import utils.input_validations as valid
 from models.product import Product
 from models.path import Path
 
@@ -124,7 +125,7 @@ class Database:
             print(f"\n      {message_if_empty}")
 
     def confirm_transaction_database(self, c):
-        continuar = utils.read_input_continue_confirmation()
+        continuar = valid.read_answer_continue()
         if(continuar.lower() in ['si', 's']):
             self.commit(c)
             print(f"\n  >>> Filas modificadas: {c.rowcount} <<<")

@@ -2,6 +2,7 @@ import os
 import glob
 import subprocess
 import utils.various as utils
+import utils.input_validations as valid
 from datetime import datetime
 
 def find_files_by_extension(path, extension):
@@ -25,7 +26,7 @@ def select_file_from_list(file_list):
     for i, file in enumerate(file_list, start=1):
         name_file = os.path.basename(file)
         print(f"   {i}. {name_file}")
-    option = utils.read_input_options_menu(1, (len(file_list)))
+    option = valid.read_options_menu(1, (len(file_list)))
     return option
 
 def get_expanded_path(path):
@@ -60,9 +61,9 @@ def export_table_to_csv_default(conn, table_name, export_path):
     file_name = f"{table_name.capitalize()}_{timestamp}.csv"
     print(f"\n   [ Ruta del archivo ] \n   > {export_path.path}")
     print(f"\n   [ Nombre del Archivo ] \n   > {file_name}")
-    change_name = utils.read_input_yes_no("¿Desea cambiar el nombre del archivo?")
+    change_name = valid.read_short_answer("¿Desea cambiar el nombre del archivo?")
     if(change_name.lower() in ['si', 's']):
-        file_name = utils.read_input_file_csv(f"\n   [ Nuevo Nombre ] \n   > ")
+        file_name = valid.read_file_name_csv(f"\n   [ Nuevo Nombre ] \n   > ")
     expanded_path = create_directory_and_get_expanded_path(export_path.path)
     conn.export_table_to_csv(table_name, file_name, expanded_path)
 
@@ -81,7 +82,7 @@ def import_table_from_csv_default(conn, table_name, import_path):
 
     if not conn.is_table_empty(table_name):
         print("   *** SU TABLA NO ESTA VACIA ***")
-        confirm_clear_table = utils.read_input_yes_no("¿Desea reemplazar los datos existentes?")
+        confirm_clear_table = valid.read_short_answer("¿Desea reemplazar los datos existentes?")
         if(confirm_clear_table.lower() in ['si', 's']):
             c = conn.execute_query(f"DELETE FROM {table_name}")
             conn.commit(c)
