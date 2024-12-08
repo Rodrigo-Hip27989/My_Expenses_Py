@@ -14,40 +14,25 @@ def handle_interrupt(sig, frame):
     raise KeyboardInterrupt
 
 def show_products_summary(conn, table_products):
-    query = f"""
+    drop_view_query = "DROP VIEW IF EXISTS summary_products;"
+    conn.execute_query(drop_view_query)
+    query_create_view = f"""
+        CREATE VIEW summary_products AS
         SELECT
             category,
-            COUNT(*) AS total_products,
-            SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END) AS total_cost,
-            AVG(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END) AS avg_cost,
-            MIN(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END) AS min_cost,
-            MAX(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END) AS max_cost,
+            COUNT(*) AS num_items,
+            ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost,
+            ROUND(AVG(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS avg_cost,
+            ROUND(MIN(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS min_cost,
+            ROUND(MAX(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS max_cost,
             (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' AND category = p.category ORDER BY total DESC LIMIT 1) AS most_expensive,
             (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' AND category = p.category ORDER BY total ASC LIMIT 1) AS least_expensive
         FROM {table_products} p
         GROUP BY category
         ORDER BY category;
     """
-    result = conn.fetch_all(query)
-
-    if result:
-        subprocess.run(["clear"])
-        utils.draw_tittle_border("Resumen de los productos")
-
-        for row in result:
-            summary = SummaryProducts(
-                category=row['category'],
-                total_products=row['total_products'],
-                total_cost=row['total_cost'],
-                avg_cost=row['avg_cost'],
-                min_cost=row['min_cost'],
-                max_cost=row['max_cost'],
-                most_expensive=row['most_expensive'],
-                least_expensive=row['least_expensive']
-            )
-            print(summary.format_summary())
-    else:
-        print("\n    No hay datos disponibles en la tabla de productos.")
+    conn.execute_query(query_create_view)
+    utils.display_formatted_table(conn, "summary_products")
 
 def ask_for_product_details(date_ = "", cat = ""):
     name = valid.read_simple_text("  * Nombre: ")
