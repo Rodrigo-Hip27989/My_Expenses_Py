@@ -17,10 +17,13 @@ def warning_interrupt():
     print("\n\n\n\n    Interrupción detectada !!!\n\n    Volviendo al menú principal ...\n\n")
     time.sleep(1.2)
 
-def show_options_menu(title, menu_options):
+def choose_option_in_menu(title, menu_options, clear="clear"):
+    if clear.strip() != "no_clear":
+        subprocess.run(["clear"])
     utils.draw_tittle_border(title)
     for option, description in menu_options.items():
         print(f"  {option}. {description}")
+    return valid.read_options_menu(min(menu_options.keys()), max(menu_options.keys()))
 
 def show_products_summary(conn, table_products):
     drop_view_query = "DROP VIEW IF EXISTS summary_products;"
@@ -92,8 +95,7 @@ def handle_product_deletion_menu(conn, table_products):
             2: "Todos con el NOMBRE",
             3: "Todos con la FECHA",
         }
-        show_options_menu("Eliminar un producto", menu_options)
-        option = valid.read_options_menu(0, 3)
+        option = choose_option_in_menu("Eliminar un producto", menu_options, "no_clear")
         if(option == 0):
             break
         elif(option == 1):
@@ -161,9 +163,7 @@ def handle_delete_tables_menu(conn, table_products, table_paths):
         2: "Eliminar datos de rutas",
         3: "Eliminar datos de todas las tablas",
     }
-    subprocess.run(["clear"])
-    show_options_menu("Eliminando datos de tablas", menu_options)
-    option = valid.read_options_menu(0, 3)
+    option = choose_option_in_menu("Eliminando datos de tablas", menu_options)
     if(option != 0):
         if(option == 1):
             c = conn.execute_query(f"DELETE FROM {table_products}")
@@ -195,9 +195,7 @@ def handle_paths_menu(conn, table_paths):
             3: "Actualizar ruta",
             4: "Eliminar una ruta",
         }
-        subprocess.run(["clear"])
-        show_options_menu("Administrar rutas", menu_options)
-        option = valid.read_options_menu(0, 4)
+        option = choose_option_in_menu("Administrar rutas", menu_options)
         if(option == 0):
             break
         elif(option == 1):
@@ -283,10 +281,7 @@ def handle_products_menu(conn, table_products):
             6: "Ver lista de productos ordenada",
             7: "Actualizar el formato de los datos",
         }
-        subprocess.run(["clear"])
-        show_options_menu("Administrar productos", menu_options)
-
-        option = valid.read_options_menu(0, 7)
+        option = choose_option_in_menu("Administrar productos", menu_options)
         if(option == 0):
             break
         elif(option == 1):
@@ -351,10 +346,8 @@ def main():
             3: "Exportar/Importar datos",
             4: "Eliminar datos de tablas",
         }
-        subprocess.run(["clear"])
-        show_options_menu("Administrar datos", menu_options)
         try:
-            option = valid.read_options_menu(0, 4)
+            option = choose_option_in_menu("Administrar datos", menu_options)
             if(option == 0):
                 break
             elif(option == 1):
