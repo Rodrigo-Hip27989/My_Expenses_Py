@@ -21,9 +21,11 @@ def choose_option_in_menu(title, menu_options, clear="clear"):
     if clear.strip() != "no_clear":
         subprocess.run(["clear"])
     utils.draw_tittle_border(title)
-    for option, description in menu_options.items():
+    for option, description in menu_options:
         print(f"  {option}. {description}")
-    return valid.read_options_menu(min(menu_options.keys()), max(menu_options.keys()))
+    min_option = min(menu_options, key=lambda x: x[0])[0]
+    max_option = max(menu_options, key=lambda x: x[0])[0]
+    return valid.read_options_menu(min_option, max_option)
 
 def show_products_summary(conn, table_products):
     drop_view_query = "DROP VIEW IF EXISTS summary_products;"
@@ -89,12 +91,12 @@ def update_product(conn, table_products):
 def handle_product_deletion_menu(conn, table_products):
     while True:
         utils.display_formatted_table(conn, table_products)
-        menu_options = {
-            0: "Regresar",
-            1: "Usando su ID",
-            2: "Todos con el NOMBRE",
-            3: "Todos con la FECHA",
-        }
+        menu_options = (
+            (0, "Regresar"),
+            (1, "Usando su ID"),
+            (2, "Todos con el NOMBRE"),
+            (3, "Todos con la FECHA")
+        )
         option = choose_option_in_menu("Eliminar un producto", menu_options, "no_clear")
         if(option == 0):
             break
@@ -157,12 +159,12 @@ def delete_multiple_paths(conn, table_paths):
             break
 
 def handle_delete_tables_menu(conn, table_products, table_paths):
-    menu_options = {
-        0: "Regresar",
-        1: "Eliminar datos de productos",
-        2: "Eliminar datos de rutas",
-        3: "Eliminar datos de todas las tablas",
-    }
+    menu_options = (
+        (0, "Regresar"),
+        (1, "Eliminar datos de productos"),
+        (2, "Eliminar datos de rutas"),
+        (3, "Eliminar datos de todas las tablas")
+    )
     option = choose_option_in_menu("Eliminando datos de tablas", menu_options)
     if(option != 0):
         if(option == 1):
@@ -188,13 +190,13 @@ def handle_delete_tables_menu(conn, table_products, table_paths):
 
 def handle_paths_menu(conn, table_paths):
     while True:
-        menu_options = {
-            0: "Regresar",
-            1: "Registrar nueva ruta",
-            2: "Visualizar rutas guardadas",
-            3: "Actualizar ruta",
-            4: "Eliminar una ruta",
-        }
+        menu_options = (
+            (0, "Regresar"),
+            (1, "Registrar nueva ruta"),
+            (2, "Visualizar rutas guardadas"),
+            (3, "Actualizar ruta"),
+            (4, "Eliminar una ruta")
+        )
         option = choose_option_in_menu("Administrar rutas", menu_options)
         if(option == 0):
             break
@@ -271,16 +273,16 @@ def view_sorted_product_list(conn, table_products):
 
 def handle_products_menu(conn, table_products):
     while True:
-        menu_options = {
-            0: "Salir",
-            1: "Ver lista de productos",
-            2: "Registrar un producto",
-            3: "Actualizar un producto",
-            4: "Eliminar un producto",
-            5: "Ver resumen de los productos",
-            6: "Ver lista de productos ordenada",
-            7: "Actualizar el formato de los datos",
-        }
+        menu_options = (
+            (0, "Salir"),
+            (1, "Ver lista de productos"),
+            (2, "Registrar un producto"),
+            (3, "Actualizar un producto"),
+            (4, "Eliminar un producto"),
+            (5, "Ver resumen de los productos"),
+            (6, "Ver lista de productos ordenada"),
+            (7, "Actualizar el formato de los datos")
+        )
         option = choose_option_in_menu("Administrar productos", menu_options)
         if(option == 0):
             break
@@ -339,13 +341,13 @@ def main():
     conn = sqlc.Database()
     signal.signal(signal.SIGINT, handle_interrupt)
     while True:
-        menu_options = {
-            0: "Salir",
-            1: "Administrar tabla de productos",
-            2: "Administrar tabla de rutas",
-            3: "Exportar/Importar datos",
-            4: "Eliminar datos de tablas",
-        }
+        menu_options = (
+            (0, "Salir"),
+            (1, "Administrar tabla de productos"),
+            (2, "Administrar tabla de rutas"),
+            (3, "Exportar/Importar datos"),
+            (4, "Eliminar datos de tablas")
+        )
         try:
             option = choose_option_in_menu("Administrar datos", menu_options)
             if(option == 0):
