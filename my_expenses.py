@@ -12,6 +12,16 @@ from models.path import Path
 def handle_interrupt(sig, frame):
     raise KeyboardInterrupt
 
+def warning_interrupt():
+    subprocess.run(["clear"])
+    print("\n\n\n\n    Interrupción detectada !!!\n\n    Volviendo al menú principal ...\n\n")
+    time.sleep(1.2)
+
+def show_options_menu(title, menu_options):
+    utils.draw_tittle_border(title)
+    for option, description in menu_options.items():
+        print(f"  {option}. {description}")
+
 def show_products_summary(conn, table_products):
     drop_view_query = "DROP VIEW IF EXISTS summary_products;"
     conn.execute_query(drop_view_query)
@@ -72,16 +82,17 @@ def update_product(conn, table_products):
         print(prod_obj.__str__())
         print(f"\n  [ NUEVOS DATOS ]\n")
         conn.update_product(table_products, id_prod, ask_for_product_details(prod_obj.date, prod_obj.category), True)
-    input("\n   >>> Presione ENTER para continuar <<<")
 
 def handle_product_deletion_menu(conn, table_products):
     while True:
         utils.display_formatted_table(conn, table_products)
-        utils.draw_tittle_border("Eliminar un producto")
-        print("  0. Regresar")
-        print("  1. Usando su ID")
-        print("  2. Todos con el NOMBRE")
-        print("  3. Todos con la FECHA")
+        menu_options = {
+            0: "Regresar",
+            1: "Usando su ID",
+            2: "Todos con el NOMBRE",
+            3: "Todos con la FECHA",
+        }
+        show_options_menu("Eliminar un producto", menu_options)
         option = valid.read_options_menu(0, 3)
         if(option == 0):
             break
@@ -144,12 +155,14 @@ def delete_multiple_paths(conn, table_paths):
             break
 
 def handle_delete_tables_menu(conn, table_products, table_paths):
+    menu_options = {
+        0: "Regresar",
+        1: "Eliminar datos de productos",
+        2: "Eliminar datos de rutas",
+        3: "Eliminar datos de todas las tablas",
+    }
     subprocess.run(["clear"])
-    utils.draw_tittle_border("Eliminando datos de tablas")
-    print("   0. Regresar")
-    print("   1. Eliminar datos de productos")
-    print("   2. Eliminar datos de rutas")
-    print("   3. Eliminar datos de todas las tablas")
+    show_options_menu("Eliminando datos de tablas", menu_options)
     option = valid.read_options_menu(0, 3)
     if(option != 0):
         if(option == 1):
@@ -175,13 +188,15 @@ def handle_delete_tables_menu(conn, table_products, table_paths):
 
 def handle_paths_menu(conn, table_paths):
     while True:
+        menu_options = {
+            0: "Regresar",
+            1: "Registrar nueva ruta",
+            2: "Visualizar rutas guardadas",
+            3: "Actualizar ruta",
+            4: "Eliminar una ruta",
+        }
         subprocess.run(["clear"])
-        utils.draw_tittle_border("Administrar rutas")
-        print("  0. Regresar")
-        print("  1. Registrar nueva ruta")
-        print("  2. Visualizar rutas guardadas")
-        print("  3. Actualizar ruta")
-        print("  4. Eliminar una ruta")
+        show_options_menu("Administrar rutas", menu_options)
         option = valid.read_options_menu(0, 4)
         if(option == 0):
             break
@@ -189,13 +204,10 @@ def handle_paths_menu(conn, table_paths):
             register_multiple_paths(conn, table_paths)
         elif(option == 2):
             conn.validate_table_not_empty("No hay datos para mostrar...", utils.display_formatted_table, table_paths)
-            input("\n  >>> Presione ENTER para continuar <<<")
         elif(option == 3):
             conn.validate_table_not_empty("No hay datos para actualizar...", update_path, table_paths)
         elif(option == 4):
             conn.validate_table_not_empty("No hay datos para eliminar...", delete_multiple_paths, table_paths)
-        if option in range(3,5):
-            time.sleep(1.2)
 
 def update_data_to_correct_format(conn, table_products):
     query = f"SELECT id, name, quantity, unit, price, total, date, category FROM {table_products};"
@@ -258,41 +270,39 @@ def view_sorted_product_list(conn, table_products):
                     input("\n   *** La ordenación no se aplicará correctamente ***\n")
 
         conn.validate_table_not_empty("No hay datos para mostrar...", utils.display_formatted_table, table_products, query)
-        input("\n   >>> Presione ENTER para continuar <<<")
 
 def handle_products_menu(conn, table_products):
     while True:
+        menu_options = {
+            0: "Salir",
+            1: "Ver lista de productos",
+            2: "Registrar un producto",
+            3: "Actualizar un producto",
+            4: "Eliminar un producto",
+            5: "Ver resumen de los productos",
+            6: "Ver lista de productos ordenada",
+            7: "Actualizar el formato de los datos",
+        }
         subprocess.run(["clear"])
-        utils.draw_tittle_border("Tabla productos")
-        print("  0. Salir")
-        print("  1. Ver lista de productos")
-        print("  2. Registrar un producto")
-        print("  3. Actualizar un producto")
-        print("  4. Eliminar un producto")
-        print("  5. Ver resumen de los productos")
-        print("  6. Ver lista de productos ordenada")
-        print("  7. Actualizar el formato de los datos")
+        show_options_menu("Administrar productos", menu_options)
+
         option = valid.read_options_menu(0, 7)
         if(option == 0):
             break
         elif(option == 1):
             conn.validate_table_not_empty("No hay datos para mostrar...", utils.display_formatted_table, table_products)
-            input("\n   >>> Presione ENTER para continuar <<<")
         elif(option == 2):
             register_multiple_products(conn)
         elif(option == 3):
             conn.validate_table_not_empty("No hay datos para actualizar...", update_product, table_products)
         elif(option == 4):
             conn.validate_table_not_empty("No hay datos para eliminar...", handle_product_deletion_menu, table_products)
-            time.sleep(0.7)
         elif(option == 5):
             conn.validate_table_not_empty("No hay productos del cual ver resumen...", show_products_summary, table_products)
-            input("\n   >>> Presione ENTER para continuar <<<")
         elif(option == 6):
             conn.validate_table_not_empty("No hay datos para mostrar...", view_sorted_product_list, table_products)
         elif(option == 7):
             conn.validate_table_not_empty("No hay datos para actualizar...", update_data_to_correct_format, table_products)
-            input("\n   >>> Actualización completada <<<")
 
 def handle_export_import_data_menu(conn, table_names):
     table_paths = table_names[0]
@@ -334,13 +344,15 @@ def main():
     conn = sqlc.Database()
     signal.signal(signal.SIGINT, handle_interrupt)
     while True:
+        menu_options = {
+            0: "Salir",
+            1: "Administrar tabla de productos",
+            2: "Administrar tabla de rutas",
+            3: "Exportar/Importar datos",
+            4: "Eliminar datos de tablas",
+        }
         subprocess.run(["clear"])
-        utils.draw_tittle_border("Resgistrar gastos de productos")
-        print("  0. Salir")
-        print("  1. Administrar tabla de productos")
-        print("  2. Administrar tabla de rutas")
-        print("  3. Exportar/Importar datos")
-        print("  4. Eliminar datos de tablas")
+        show_options_menu("Administrar datos", menu_options)
         try:
             option = valid.read_options_menu(0, 4)
             if(option == 0):
@@ -354,9 +366,7 @@ def main():
             elif(option == 4):
                 conn = handle_delete_tables_menu(conn, table_products, table_paths)
         except (KeyboardInterrupt, EOFError):
-            subprocess.run(["clear"])
-            print("\n\n\n\n    Interrupción detectada !!!\n\n    Volviendo al menú principal ...\n\n")
-            time.sleep(1.3)
+            warning_interrupt()
     conn.disconnect()
 
 if __name__ == "__main__":

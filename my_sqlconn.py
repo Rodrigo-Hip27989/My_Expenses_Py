@@ -2,6 +2,7 @@ import sqlite3
 import os
 import csv
 import re
+import time
 import utils.various as utils
 import utils.input_validations as valid
 from models.product import Product
@@ -121,8 +122,10 @@ class Database:
     def validate_table_not_empty(self, message_if_empty, operation, table_name, *args):
         if self.get_num_rows_table(table_name) > 0:
             operation(self, table_name, *args)
+            input("\n   >>> Presione ENTER para continuar <<<")
         else:
             print(f"\n      {message_if_empty}")
+            time.sleep(1)
 
     def confirm_transaction_database(self, c):
         continuar = valid.read_answer_continue()
