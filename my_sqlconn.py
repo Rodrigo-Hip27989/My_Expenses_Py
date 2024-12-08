@@ -19,6 +19,7 @@ class Database:
     def connect(self):
         try:
             self.conn = sqlite3.connect(self.db_full_path)
+            self.conn.row_factory = sqlite3.Row
         except sqlite3.Error as e:
             print(f"\n   >>> Error al conectar a la base de datos: {e}")
             self.conn = None
@@ -107,10 +108,11 @@ class Database:
                 return []
 
     def get_num_rows_table(self, table_name):
-        c = self.execute_query(f"SELECT COUNT(*) Num FROM {table_name}")
-        numero_columnas = c.fetchone()[0]
-        c.close()
-        return numero_columnas
+        row = self.fetch_one(f"SELECT COUNT(*) as count FROM {table_name}")
+        if row:
+            return row['count']
+        else:
+            return 0
 
     def is_table_empty(self, table_name):
         return (self.get_num_rows_table(table_name) == 0)
@@ -136,7 +138,7 @@ class Database:
 
     def find_item(self, table_name, field, value):
         query_select = f"SELECT * FROM {table_name} WHERE {field}=? LIMIT 1"
-        found_item = self.execute_query(query_select, (value,)).fetchone()
+        found_item = self.fetch_one(query_select, (value,))
         if(found_item is not None and found_item != []):
             return found_item
         else:

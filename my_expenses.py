@@ -34,9 +34,18 @@ def show_products_summary(conn, table_products):
         utils.draw_tittle_border("Resumen de los productos")
 
         for row in result:
-            category, total_products, total_cost, avg_cost, min_cost, max_cost, most_expensive, least_expensive = row
+            category = row['category']
+            total_products = row['total_products']
+            total_cost = row['total_cost']
+            avg_cost = row['avg_cost']
+            min_cost = row['min_cost']
+            max_cost = row['max_cost']
+            most_expensive = row['most_expensive']
+            least_expensive = row['least_expensive']
+
             if(category is None or category.strip() == ""):
                 category = Product.get_unspecified_category()
+
             utils.draw_subtitle_border(f"Categoría: {category}")
             print(f"  - Num. Productos: {total_products}")
             print(f"  - Costo Total: ${total_cost:,.3f}")
@@ -163,7 +172,8 @@ def check_formats_date(conn, table_name):
     rows = conn.fetch_all(f"SELECT id, date FROM {table_name}")
     wrong_rows = []
     for row in rows:
-        id_, date_ = row
+        id_ = row['id']
+        date_ = row['date']
         if not re.match(regex_iso8601, date_):
             wrong_rows.append({'id': id_, 'date': date_})
     return wrong_rows
@@ -235,9 +245,16 @@ def update_data_to_correct_format(conn, table_products):
     query = f"SELECT id, name, quantity, unit, price, total, date, category FROM {table_products};"
     tbl_rows = conn.fetch_all(query)
     for row in tbl_rows:
-        id_, name_, quantity_, unit_, price_, total_, date_, category_ = row
-        product_obj = Product(name=name_, quantity=quantity_, unit=unit_, price=price_, total=total_, date=date_, category=category_)
-        conn.update_product(table_products, id_, product_obj)
+        product_obj = Product(
+            name=row['name'],
+            quantity=row['quantity'],
+            unit=row['unit'],
+            price=row['price'],
+            total=row['total'],
+            date=row['date'],
+            category=row['category']
+        )
+        conn.update_product(table_products, row['id'], product_obj)
     return conn
 
 def view_sorted_product_list(conn, table_products):
