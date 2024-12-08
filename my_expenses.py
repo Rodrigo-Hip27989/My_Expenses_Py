@@ -6,7 +6,6 @@ import my_sqlconn as sqlc
 import utils.various as utils
 import utils.file_operations as fop
 import utils.input_validations as valid
-from models.summary_products import SummaryProducts
 from models.product import Product
 from models.path import Path
 
