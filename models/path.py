@@ -1,33 +1,37 @@
 class Path:
     def __init__(self, path, is_export, is_import):
-        self.path = path
-        self.is_export = is_export
-        self.is_import = is_import
+        self._path = path
+        self._is_export = is_export
+        self._is_import = is_import
 
-    # Getters
-    def get_path(self):
-        return self.path
+    @property
+    def path(self):
+        return self._path
 
-    def get_is_export(self):
-        return self.is_export
+    @property
+    def is_export(self):
+        return self._is_export
 
-    def get_is_import(self):
-        return self.is_import
+    @property
+    def is_import(self):
+        return self._is_import
 
-    # Setters
-    def set_path(self, path):
-        self.path = path
+    @path.setter
+    def path(self, path):
+        self._path = path
 
-    def set_is_export(self, is_export):
-        self.is_export = is_export
+    @is_export.setter
+    def is_export(self, is_export):
+        self._is_export = is_export
 
-    def set_is_import(self, is_import):
-        self.is_import = is_import
+    @is_import.setter
+    def is_import(self, is_import):
+        self._is_import = is_import
 
     def get_db_values(self):
-        return [self.path, self.is_export, self.is_import]
+        return [self._path, self._is_export, self._is_import]
 
     def __str__(self):
-        return (f"Path: {self.get_path()}\n"
-                f"Is Export: {self.get_is_export()}\n"
-                f"Is_Import: {self.get_is_import()}")
+        return (f"Path: {self._path()}\n"
+                f"Is Export: {self._is_export}\n"
+                f"Is_Import: {self._is_import}")

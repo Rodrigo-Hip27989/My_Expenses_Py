@@ -168,9 +168,9 @@ class Database:
 
     def insert_path(self, table_paths, path, is_first_entry):
         if not is_first_entry:
-            if(path.get_is_export()):
+            if(path.is_export):
                 self.execute_query(f"UPDATE {table_paths} SET is_export = 0")
-            if(path.get_is_import()):
+            if(path.is_import):
                 self.execute_query(f"UPDATE {table_paths} SET is_import = 0")
         c = self.execute_query(f"INSERT INTO {table_paths} (path, is_export, is_import) VALUES (?, ?, ?)", path.get_db_values())
         self.confirm_transaction_database(c)
@@ -180,9 +180,9 @@ class Database:
         query = f"UPDATE {table_paths} SET path = ?, is_export = ?, is_import = ? WHERE id = ?;"
 
         if not is_first_entry:
-            if(path_obj.get_is_export()):
+            if(path_obj.is_export):
                 self.execute_query(f"UPDATE {table_paths} SET is_export = 0")
-            if(path_obj.get_is_import()):
+            if(path_obj.is_import):
                 self.execute_query(f"UPDATE {table_paths} SET is_import = 0")
 
         c = self.execute_query(query, params)
