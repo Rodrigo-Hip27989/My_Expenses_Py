@@ -275,8 +275,8 @@ def handle_products_menu(conn, table_products):
     while True:
         menu_options = (
             (0, "Salir"),
-            (1, "Ver lista de productos"),
-            (2, "Registrar un producto"),
+            (1, "Registrar un producto"),
+            (2, "Ver lista de productos"),
             (3, "Actualizar un producto"),
             (4, "Eliminar un producto"),
             (5, "Ver resumen de los productos"),
@@ -287,9 +287,9 @@ def handle_products_menu(conn, table_products):
         if(option == 0):
             break
         elif(option == 1):
-            conn.validate_table_not_empty("No hay datos para mostrar...", utils.display_formatted_table, table_products)
-        elif(option == 2):
             register_multiple_products(conn)
+        elif(option == 2):
+            conn.validate_table_not_empty("No hay datos para mostrar...", utils.display_formatted_table, table_products)
         elif(option == 3):
             conn.validate_table_not_empty("No hay datos para actualizar...", update_product, table_products)
         elif(option == 4):
