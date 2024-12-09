@@ -92,8 +92,9 @@ class Database:
             try:
                 pragma_query = f"PRAGMA table_info({table_name});"
                 columns_info = self.execute_query(pragma_query)
-                if(columns_info is not None):
-                    columns = [column[1] for column in columns_info]
+
+                if columns_info:
+                    columns = [column['name'] for column in columns_info]
                     return columns
             except Exception as e:
                 print(f"Error al obtener las columnas de la tabla con PRAGMA: {e}")
@@ -252,28 +253,42 @@ class Database:
         try:
             query_select = f"SELECT * FROM {table_name}"
             tbl_headers = self.get_headers(f"{table_name}")
+            tbl_headers = tbl_headers[1:]
+
             rows = self.fetch_all(query_select)
+            rows = [row[1:] for row in rows]
+
             with open(f"{file_path}/{file_name}", mode='w', newline='', encoding='utf-8') as csv_file:
                 csv_writer = csv.writer(csv_file)
                 csv_writer.writerow(tbl_headers)
                 csv_writer.writerows(rows)
+
             print(f"\n   >>> Exportación exitosa!!\n")
+            time.sleep(1)
         except Exception as e:
-            print(f"\n   >>> Error durante la exportación!! <<<\n   >>> {e}\n")
+            print(f"\n   >>> Error durante la exportación!!\n   >>> {e}\n")
+            time.sleep(1.5)
 
     def import_table_from_csv(self, table_name, file_name, file_path):
         try:
             tbl_headers = self.get_headers(f"{table_name}")
+            tbl_headers = tbl_headers[1:]
+
             with open(f"{file_path}/{file_name}", mode='r', encoding='utf-8') as csv_file:
                 csv_reader = csv.reader(csv_file)
                 csv_headers = next(csv_reader)
 
-                if len(csv_headers) != len(tbl_headers):
-                    raise ValueError(f"Las cabeceras del archivo CSV y la tabla no coinciden en número. "
-                                     f"\n\n  * Num. cabeceras del archivo: {len(csv_headers)}\n  * Num. cabeceras de la tabla: {len(tbl_headers)}")
-
-                tbl_headers_clean = [header.strip().lower() for header in tbl_headers]
                 csv_headers_clean = [header.strip().lower() for header in csv_headers]
+                tbl_headers_clean = [header.strip().lower() for header in tbl_headers]
+
+                found_csv_id = csv_headers_clean.index('id') if 'id' in csv_headers_clean else None
+                if found_csv_id is not None:
+                    csv_headers_clean = csv_headers_clean[1:]
+
+                if len(csv_headers_clean) != len(tbl_headers_clean):
+                    raise ValueError(f"Las cabeceras del archivo CSV y la tabla no coinciden en número.\n"
+                                     f"\n  * Num. cabeceras del archivo: {len(csv_headers)}"
+                                     f"\n  * Num. cabeceras de la tabla: {len(tbl_headers)}")
 
                 if tbl_headers_clean != csv_headers_clean:
                     raise ValueError(f"Las cabeceras del archivo CSV y la tabla no coinciden"
@@ -281,12 +296,20 @@ class Database:
 
                 for row in csv_reader:
                     row = [cell.strip() for cell in row]
+
                     while len(row) < len(csv_headers):
                         row.append("")
-                    placeholders = ', '.join(['?' for _ in csv_headers])
-                    query_insert = f"INSERT INTO {table_name} ({', '.join(csv_headers_clean)}) VALUES ({placeholders})"
+
+                    if found_csv_id is not None:
+                        del row[found_csv_id]
+
+                    placeholders = ', '.join(['?' for _ in tbl_headers_clean])
+                    query_insert = f"INSERT INTO {table_name} ({', '.join(tbl_headers_clean)}) VALUES ({placeholders})"
                     c = self.execute_query(query_insert, row)
                     self.commit(c)
+
             print("\n   >>> Importación exitosa!!\n")
+            time.sleep(1)
         except Exception as e:
             print(f"\n   >>> Error durante la importación!!\n   >>> {e}\n")
+            time.sleep(1.5)
