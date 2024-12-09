@@ -200,26 +200,18 @@ def handle_delete_tables_menu(conn, table_products, table_paths):
         (3, "Eliminar datos de todas las tablas")
     )
     option = choose_option_in_menu("Eliminando datos de tablas", menu_options)
-    if(option != 0):
+    print("\n  *** Esta acción no puede deshacerse ***\n")
+    confirm_delete = valid.read_answer_continue()
+    if(confirm_delete.lower() in ['si', 's']):
         if(option == 1):
-            c = conn.execute_query(f"DELETE FROM {table_products}")
-            conn.confirm_transaction_database(c)
-            c = conn.execute_query(f"UPDATE sqlite_sequence SET seq = 0 WHERE name = '{table_products}'")
-            conn.commit(c)
+            conn.delete_table(table_products)
         elif(option == 2):
-            c = conn.execute_query(f"DELETE FROM {table_paths}")
-            conn.confirm_transaction_database(c)
-            c = conn.execute_query(f"UPDATE sqlite_sequence SET seq = 0 WHERE name = '{table_paths}'")
-            conn.commit(c)
+            conn.delete_table(table_paths)
         elif(option == 3):
-            print("\n  *** Esta acción no puede deshacerse ***\n")
-            delete_db = valid.read_answer_continue()
-            if(delete_db.lower() in ['si', 's']):
-                conn.disconnect()
-                conn.delete_database()
-                conn = sqlc.Database()
-            else:
-                print("\n   >>> Operacion cancelada")
+            conn.delete_database()
+            conn = sqlc.Database()
+    else:
+        print("\n   *** Operación cancelada ***")
     return conn
 
 def handle_paths_menu(conn, table_paths):

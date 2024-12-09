@@ -228,7 +228,14 @@ class Database:
         """
         return converted_column_template
 
+    def delete_table(self, table_name):
+        c = self.execute_query(f"DELETE FROM {table_name}")
+        self.commit(c)
+        c = self.execute_query(f"UPDATE sqlite_sequence SET seq = 0 WHERE name = '{table_name}'")
+        self.commit(c)
+
     def delete_database(self):
+        self.disconnect()
         try:
             if os.path.exists(self.db_full_path):
                 if os.path.isfile(self.db_full_path):
