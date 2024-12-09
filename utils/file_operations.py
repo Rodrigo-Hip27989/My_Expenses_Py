@@ -22,7 +22,7 @@ def find_files_by_extension(path, extension):
 
 def select_file_from_list(file_list, msg="Seleccione un archivo"):
     subprocess.run(["clear"])
-    utils.draw_tittle_border(msg)
+    utils.draw_title_border(msg)
     print("   0. Regresar")
     for i, file in enumerate(file_list, start=1):
         name_file = os.path.basename(file)
@@ -58,7 +58,7 @@ def create_directory_and_get_expanded_path(path):
 
 def export_table_to_csv_default(conn, table_name, export_path):
     subprocess.run(["clear"])
-    utils.draw_tittle_border(f"Exportando tabla {table_name}")
+    utils.draw_title_border(f"Exportando tabla {table_name}")
     timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
     file_name = f"{table_name.capitalize()}_{timestamp}.csv"
     print(f"\n   [ Ruta del archivo ] \n   > {export_path.path}")

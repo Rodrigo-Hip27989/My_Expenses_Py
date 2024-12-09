@@ -3,13 +3,9 @@ import subprocess
 import csv
 import re
 
-def draw_tittle_border(tittle):
-    border = '=' * (len(tittle) + 7)
-    print(f"\n  {border}\n  |  {tittle.upper()}  |\n  {border}\n")
-
-def draw_subtitle_border(subtittle):
-    border = '-' * (len(subtittle) + 6)
-    print(f"\n  {border}\n  |  {subtittle.title()}  |\n  {border}\n")
+def draw_title_border(title):
+    border = '=' * (len(title) + 7)
+    print(f"\n  {border}\n  |  {title.upper()}  |\n  {border}\n")
 
 def convert_table_to_in_memory_csv(headers, rows):
     output = io.StringIO()

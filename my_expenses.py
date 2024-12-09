@@ -20,7 +20,7 @@ def warning_interrupt():
 def choose_option_in_menu(title, menu_options, clear="clear"):
     if clear.strip() != "no_clear":
         subprocess.run(["clear"])
-    utils.draw_tittle_border(title)
+    utils.draw_title_border(title)
     print("  0. Regresar")
     for idx, description in menu_options:
         print(f"  {idx}. {description}")
@@ -30,7 +30,7 @@ def choose_option_in_menu(title, menu_options, clear="clear"):
 def choose_option_in_menu_import_export(title, menu_options, clear="clear"):
     if clear.strip() != "no_clear":
         subprocess.run(["clear"])
-    utils.draw_tittle_border(title)
+    utils.draw_title_border(title)
     print("  0. Regresar")
     for idx, (description, _, _, _) in enumerate(menu_options, 1):
         print(f"  {idx}. {description}")
@@ -107,7 +107,7 @@ def ask_for_product_details(date_ = "", cat = ""):
 def register_multiple_products(conn):
     while True:
         subprocess.run(["clear"])
-        utils.draw_tittle_border("Registrar nuevo producto")
+        utils.draw_title_border("Registrar nuevo producto")
         conn.insert_product(ask_for_product_details())
         stop = valid.read_short_answer("¿Desea agregar otro producto?")
         if(stop.lower() in ['no', 'n']):
@@ -115,7 +115,7 @@ def register_multiple_products(conn):
 
 def update_product(conn, table_products):
     utils.display_formatted_table(conn, table_products)
-    utils.draw_tittle_border(f"Actualizando detalles del producto")
+    utils.draw_title_border(f"Actualizando detalles del producto")
     id_prod = valid.read_integer("\n  * Ingrese el ID: ")
     prod_obj = conn.find_product(table_products, "ID", id_prod)
     if(prod_obj is not None):
@@ -159,7 +159,7 @@ def ask_for_path_to_insert(is_first_entry):
 def register_multiple_paths(conn, table_paths):
     while True:
         subprocess.run(["clear"])
-        utils.draw_tittle_border("Registrar nueva ruta")
+        utils.draw_title_border("Registrar nueva ruta")
         is_first_entry = conn.is_table_empty(table_paths)
         conn.insert_path(table_paths, ask_for_path_to_insert(is_first_entry), is_first_entry)
         stop = valid.read_short_answer("¿Desea agregar otra ruta?")
@@ -168,7 +168,7 @@ def register_multiple_paths(conn, table_paths):
 
 def update_path(conn, table_paths):
     utils.display_formatted_table(conn, table_paths)
-    utils.draw_tittle_border(f"Actualizando ruta")
+    utils.draw_title_border(f"Actualizando ruta")
     id_path = valid.read_integer("\n  * Ingrese el ID: ")
     path_obj = conn.find_path(table_paths, "ID", id_path)
     if(path_obj is not None):
@@ -178,7 +178,7 @@ def update_path(conn, table_paths):
 def delete_multiple_paths(conn, table_paths):
     while True:
         utils.display_formatted_table(conn, table_paths)
-        utils.draw_tittle_border("Eliminar una ruta")
+        utils.draw_title_border("Eliminar una ruta")
         id_path = valid.read_integer("\n  * Ingrese el ID: ")
         path_obj = conn.find_path(table_paths, "ID", id_path)
         if(path_obj is not None):
