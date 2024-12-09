@@ -263,8 +263,7 @@ class Database:
                 csv_writer.writerow(tbl_headers)
                 csv_writer.writerows(rows)
 
-            print(f"\n   >>> Exportación exitosa!!\n")
-            time.sleep(1)
+            print(f"\n   *** Exportación exitosa ***")
         except Exception as e:
             print(f"\n   >>> Error durante la exportación!!\n   >>> {e}\n")
             time.sleep(1.5)
@@ -308,8 +307,7 @@ class Database:
                     c = self.execute_query(query_insert, row)
                     self.commit(c)
 
-            print("\n   >>> Importación exitosa!!\n")
-            time.sleep(1)
+            print("\n   *** Importación exitosa ***")
         except Exception as e:
             print(f"\n   >>> Error durante la importación!!\n   >>> {e}\n")
             time.sleep(1.5)

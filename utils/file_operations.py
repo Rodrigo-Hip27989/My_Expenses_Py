@@ -69,6 +69,7 @@ def export_table_to_csv_default(conn, table_name, export_path):
         file_name = valid.read_file_name_csv(f"\n   [ Nuevo Nombre ] \n   > ")
     expanded_path = create_directory_and_get_expanded_path(export_path.path)
     conn.export_table_to_csv(table_name, file_name, expanded_path)
+    time.sleep(1)
 
 def import_table_from_csv_default(conn, table_name, import_path):
     file_path = get_expanded_path(import_path.path)
@@ -84,8 +85,6 @@ def import_table_from_csv_default(conn, table_name, import_path):
         return
 
     selected_file = os.path.basename(file_list[option-1])
-    print(f"\n   [ Ruta de Importación ] \n   > {file_path}")
-    print(f"\n   [ Archivo seleccionado ] \n   > {selected_file}")
 
     if not conn.is_table_empty(table_name):
         menu_options = [
@@ -94,7 +93,7 @@ def import_table_from_csv_default(conn, table_name, import_path):
         ]
         option = utils.choose_option_in_menu("Opciones para importar datos", menu_options)
         if (option == 0):
-            print("\n   >>> Operacion cancelada")
+            print("\n   *** Operacion cancelada ***")
             time.sleep(1)
             return
         if (option == 1):
@@ -102,5 +101,9 @@ def import_table_from_csv_default(conn, table_name, import_path):
             conn.import_table_from_csv(table_name, selected_file, file_path)
         elif(option == 2):
             conn.import_table_from_csv(table_name, selected_file, file_path)
+        if (option in [1,2]):
+            print(f"\n   [ Ruta de Importación ] \n   > {file_path}")
+            print(f"\n   [ Archivo seleccionado ] \n   > {selected_file}\n")
+            time.sleep(3)
     else:
         conn.import_table_from_csv(table_name, selected_file, file_path)
