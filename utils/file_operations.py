@@ -20,13 +20,15 @@ def find_files_by_extension(path, extension):
     file_list_sorted = sorted(file_list, key=lambda x: os.path.basename(x).lower())
     return file_list_sorted
 
-def select_file_from_list(file_list):
+def select_file_from_list(file_list, msg="Seleccione un archivo"):
     subprocess.run(["clear"])
-    utils.draw_tittle_border("Seleccione un archivo para importar")
+    utils.draw_tittle_border(msg)
+    print("   0. Regresar")
     for i, file in enumerate(file_list, start=1):
         name_file = os.path.basename(file)
         print(f"   {i}. {name_file}")
-    option = valid.read_options_menu(1, (len(file_list)))
+    max_option = len(file_list)
+    option = valid.read_options_menu(0, max_option)
     return option
 
 def get_expanded_path(path):
@@ -75,7 +77,11 @@ def import_table_from_csv_default(conn, table_name, import_path):
         print(f"\n   >>> No se encontraron archivos: *.csv")
         return
 
-    option = select_file_from_list(file_list)
+    option = select_file_from_list(file_list, f"Importando datos para la tabla {table_name}")
+
+    if option == 0:
+        return
+
     selected_file = os.path.basename(file_list[option-1])
     print(f"\n   [ Ruta de Importación ] \n   > {file_path}")
     print(f"\n   [ Archivo seleccionado ] \n   > {selected_file}")
