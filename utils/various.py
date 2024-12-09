@@ -2,6 +2,7 @@ import io
 import subprocess
 import csv
 import re
+import utils.input_validations as valid
 
 def draw_title_border(title):
     border = '=' * (len(title) + 7)
@@ -78,3 +79,23 @@ def check_formats_date(rows):
         if not re.match(regex_iso8601, date_):
             wrong_rows.append({'id': id_, 'date': date_})
     return wrong_rows
+
+def choose_option_in_menu(title, menu_options, clear="clear"):
+    if clear.strip() != "no_clear":
+        subprocess.run(["clear"])
+    draw_title_border(title)
+    print("  0. Regresar")
+    for idx, description in menu_options:
+        print(f"  {idx}. {description}")
+    max_option = len(menu_options)
+    return valid.read_options_menu(0, max_option)
+
+def choose_option_in_menu_import_export(title, menu_options, clear="clear"):
+    if clear.strip() != "no_clear":
+        subprocess.run(["clear"])
+    draw_title_border(title)
+    print("  0. Regresar")
+    for idx, (description, _, _, _) in enumerate(menu_options, 1):
+        print(f"  {idx}. {description}")
+    max_option = len(menu_options)
+    return valid.read_options_menu(0, max_option)

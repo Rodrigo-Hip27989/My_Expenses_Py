@@ -17,26 +17,6 @@ def warning_interrupt():
     print("\n\n\n\n    Interrupción detectada !!!\n\n    Volviendo al menú principal ...\n\n")
     time.sleep(1.2)
 
-def choose_option_in_menu(title, menu_options, clear="clear"):
-    if clear.strip() != "no_clear":
-        subprocess.run(["clear"])
-    utils.draw_title_border(title)
-    print("  0. Regresar")
-    for idx, description in menu_options:
-        print(f"  {idx}. {description}")
-    max_option = len(menu_options)
-    return valid.read_options_menu(0, max_option)
-
-def choose_option_in_menu_import_export(title, menu_options, clear="clear"):
-    if clear.strip() != "no_clear":
-        subprocess.run(["clear"])
-    utils.draw_title_border(title)
-    print("  0. Regresar")
-    for idx, (description, _, _, _) in enumerate(menu_options, 1):
-        print(f"  {idx}. {description}")
-    max_option = len(menu_options)
-    return valid.read_options_menu(0, max_option)
-
 def check_and_update_date_format(conn, table_products):
     rows = conn.fetch_all(f"SELECT id, date FROM {table_products}")
     found_wrong_rows = utils.check_formats_date(rows)
@@ -132,7 +112,7 @@ def handle_product_deletion_menu(conn, table_products):
             (2, "Todos con el NOMBRE"),
             (3, "Todos con la FECHA")
         )
-        option = choose_option_in_menu("Eliminar un producto", menu_options, "no_clear")
+        option = utils.choose_option_in_menu("Eliminar un producto", menu_options, "no_clear")
         if(option == 0):
             break
         elif(option == 1):
@@ -199,7 +179,7 @@ def handle_delete_tables_menu(conn, table_products, table_paths):
         (2, "Eliminar datos de rutas"),
         (3, "Eliminar datos de todas las tablas")
     )
-    option = choose_option_in_menu("Eliminando datos de tablas", menu_options)
+    option = utils.choose_option_in_menu("Eliminando datos de tablas", menu_options)
     print("\n  *** Esta acción no puede deshacerse ***\n")
     confirm_delete = valid.read_answer_continue()
     if(confirm_delete.lower() in ['si', 's']):
@@ -222,7 +202,7 @@ def handle_paths_menu(conn, table_paths):
             (3, "Actualizar ruta"),
             (4, "Eliminar una ruta")
         )
-        option = choose_option_in_menu("Administrar rutas", menu_options)
+        option = utils.choose_option_in_menu("Administrar rutas", menu_options)
         if(option == 0):
             break
         elif(option == 1):
@@ -258,7 +238,7 @@ def view_sorted_product_list(conn, table_products):
     menu_options.extend((i + 8, f"Ordenar por CATEGORY y {columns[i].upper()}") for i in range(len(columns) - 1))
 
     while True:
-        option = choose_option_in_menu("Ordenamiento de productos", menu_options)
+        option = utils.choose_option_in_menu("Ordenamiento de productos", menu_options)
         if option == 0:
             break
         query = create_query_for_sorting_products(option, columns, table_products)
@@ -278,7 +258,7 @@ def handle_products_menu(conn, table_products):
             (6, "Ver lista de productos ordenada"),
             (7, "Actualizar el formato de los datos")
         )
-        option = choose_option_in_menu("Administrar productos", menu_options)
+        option = utils.choose_option_in_menu("Administrar productos", menu_options)
         if(option == 0):
             break
         elif(option == 1):
@@ -311,7 +291,7 @@ def handle_export_import_data_menu(conn, table_paths, table_names):
     total_options = len(menu_options)
 
     while True:
-        option = choose_option_in_menu_import_export("Opciones de exportación e importación", menu_options)
+        option = utils.choose_option_in_menu_import_export("Opciones de exportación e importación", menu_options)
         if option == 0:
             break
         elif 1 <= option <= total_options:
@@ -331,7 +311,7 @@ def main():
             (4, "Eliminar datos de tablas")
         )
         try:
-            option = choose_option_in_menu("Administrar datos", menu_options)
+            option = utils.choose_option_in_menu("Administrar datos", menu_options)
             if(option == 0):
                 break
             elif(option == 1):
