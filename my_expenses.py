@@ -341,7 +341,7 @@ def main():
             elif(option == 3):
                 conn.validate_table_not_empty("No hay rutas guardadas", handle_export_import_data_menu, table_paths, [table_paths, table_products])
             elif(option == 4):
-                handle_delete_tables_menu(conn, table_products, table_paths)
+                conn = handle_delete_tables_menu(conn, table_products, table_paths)
         except (KeyboardInterrupt, EOFError):
             warning_interrupt()
     conn.disconnect()
