@@ -21,11 +21,49 @@ def choose_option_in_menu(title, menu_options, clear="clear"):
     if clear.strip() != "no_clear":
         subprocess.run(["clear"])
     utils.draw_tittle_border(title)
-    for option, description in menu_options:
-        print(f"  {option}. {description}")
-    min_option = min(menu_options, key=lambda x: x[0])[0]
-    max_option = max(menu_options, key=lambda x: x[0])[0]
+    print("  0. Regresar")
+    for idx, description in menu_options:
+        print(f"  {idx}. {description}")
+    min_option = 0
+    max_option = len(menu_options)
     return valid.read_options_menu(min_option, max_option)
+
+def choose_option_in_menu_import_export(title, menu_options, clear="clear"):
+    if clear.strip() != "no_clear":
+        subprocess.run(["clear"])
+    utils.draw_tittle_border(title)
+    print("  0. Regresar")
+    for idx, (description, _, _, _) in enumerate(menu_options, 1):
+        print(f"  {idx}. {description}")
+    min_option = 0
+    max_option = len(menu_options)
+    return valid.read_options_menu(min_option, max_option)
+
+def check_and_update_date_format(conn, table_products):
+    rows = conn.fetch_all(f"SELECT id, date FROM {table_products}")
+    found_wrong_rows = utils.check_formats_date(rows)
+    if found_wrong_rows:
+        update_wrong_date = valid.read_short_answer("¿Su tabla contiene fechas en formato incorrecto desea actualizarlas ahora?")
+        if update_wrong_date.lower() in ['si', 's']:
+            conn.update_formats_date(table_products, found_wrong_rows)
+        else:
+            input("\n   *** La ordenación no se aplicará correctamente ***\n")
+
+def adjust_quantity_column(column):
+    if column == "quantity":
+        return sqlc.Database.convert_column_sql_quantity_to_float(column)
+    return column
+
+def create_query_for_sorting_products(option, columns, table_products):
+    if option in range(1, 8):
+        column = columns[option - 1]
+        column = adjust_quantity_column(column)
+        return f"SELECT * FROM {table_products} ORDER BY {column} ASC;"
+    elif option in range(8, 14):
+        column = columns[option - 8]
+        column = adjust_quantity_column(column)
+        return f"SELECT * FROM {table_products} ORDER BY category ASC, {column} ASC;"
+    return None
 
 def show_products_summary(conn, table_products):
     drop_view_query = "DROP VIEW IF EXISTS summary_products;"
@@ -92,7 +130,6 @@ def handle_product_deletion_menu(conn, table_products):
     while True:
         utils.display_formatted_table(conn, table_products)
         menu_options = (
-            (0, "Regresar"),
             (1, "Usando su ID"),
             (2, "Todos con el NOMBRE"),
             (3, "Todos con la FECHA")
@@ -160,7 +197,6 @@ def delete_multiple_paths(conn, table_paths):
 
 def handle_delete_tables_menu(conn, table_products, table_paths):
     menu_options = (
-        (0, "Regresar"),
         (1, "Eliminar datos de productos"),
         (2, "Eliminar datos de rutas"),
         (3, "Eliminar datos de todas las tablas")
@@ -191,7 +227,6 @@ def handle_delete_tables_menu(conn, table_products, table_paths):
 def handle_paths_menu(conn, table_paths):
     while True:
         menu_options = (
-            (0, "Regresar"),
             (1, "Registrar nueva ruta"),
             (2, "Visualizar rutas guardadas"),
             (3, "Actualizar ruta"),
@@ -227,54 +262,24 @@ def update_data_to_correct_format(conn, table_products):
 
 def view_sorted_product_list(conn, table_products):
     columns = conn.get_headers(table_products)[1:]
-    menu_options = [(0, "Regresar")]
 
-    for index, column in enumerate(columns, start=1):
-        menu_options.append((index, f"Ver lista en orden por {column.upper()}"))
-
-    for i, column in enumerate(columns[:-1]):
-        menu_options.append((i + 8, f"Ver lista en orden por CATEGORY y {columns[i].upper()}"))
+    menu_options = []
+    menu_options.extend((i + 1, f"Ordenar por {column.upper()}") for i, column in enumerate(columns))
+    menu_options.extend((i + 8, f"Ordenar por CATEGORY y {columns[i].upper()}") for i in range(len(columns) - 1))
 
     while True:
-        subprocess.run(["clear"])
-        utils.draw_tittle_border("Ordenamiento de productos")
-
-        for option, description in menu_options:
-            print(f"  {option}. {description}")
-
-        option = valid.read_options_menu(0, 13)
-
+        option = choose_option_in_menu("Ordenamiento de productos", menu_options)
         if option == 0:
             break
-
-        if option in range(1, 8):
-            column = columns[option - 1]
-            if column == "quantity":
-                column = sqlc.Database.convert_column_sql_quantity_to_float(column)
-            query = f"SELECT * FROM {table_products} ORDER BY {column} ASC;"
-
-        elif option in range(8, 14):
-            column = columns[option - 8]
-            if column == "quantity":
-                column = sqlc.Database.convert_column_sql_quantity_to_float(column)
-            query = f"SELECT * FROM {table_products} ORDER BY category ASC, {column} ASC;"
-
-        if option in [6, 13]:
-            rows = conn.fetch_all(f"SELECT id, date FROM {table_products}")
-            found_wrong_rows = utils.check_formats_date(rows)
-            if found_wrong_rows:
-                update_wrong_date = valid.read_short_answer("¿Su tabla contiene fechas en formato incorrecto desea actualizarlas ahora?")
-                if update_wrong_date.lower() in ['si', 's']:
-                    conn.update_formats_date(conn, table_products, found_wrong_rows)
-                else:
-                    input("\n   *** La ordenación no se aplicará correctamente ***\n")
-
-        conn.validate_table_not_empty("No hay datos para mostrar...", utils.display_formatted_table, table_products, query)
+        query = create_query_for_sorting_products(option, columns, table_products)
+        if query:
+            if option in [6, 13]:
+                check_and_update_date_format(conn, table_products)
+            conn.validate_table_not_empty("No hay datos para mostrar...", utils.display_formatted_table, table_products, query)
 
 def handle_products_menu(conn, table_products):
     while True:
         menu_options = (
-            (0, "Salir"),
             (1, "Registrar un producto"),
             (2, "Ver lista de productos"),
             (3, "Actualizar un producto"),
@@ -310,28 +315,24 @@ def handle_export_import_data_menu(conn, table_names):
 
     export_path = conn.find_path(table_paths, "is_export", 1)
     import_path = conn.find_path(table_paths, "is_import", 1)
+
     if(export_path is None or import_path is None):
         print(f"\n      No hay rutas de exportación y/o importación configuradas!!")
         input("\n   >>> Presione ENTER para continuar <<<")
         return
 
     menu_options = []
-    for table in (t.upper() for t in table_names):
-        menu_options.append((f"Exportar {table} como CSV", fop.export_table_to_csv_default, table, export_path))
-        menu_options.append((f"Importar {table} desde CSV", fop.import_table_from_csv_default, table, import_path))
+    menu_options.extend((f"Exportar {table} como CSV", fop.export_table_to_csv_default, table, export_path) for table in table_names)
+    menu_options.extend((f"Importar {table} desde CSV", fop.import_table_from_csv_default, table, import_path) for table in table_names)
+
     total_options = len(menu_options)
 
     while True:
-        subprocess.run(["clear"])
-        utils.draw_tittle_border("Opciones de exportacion/importación")
-        print("  0. Salir")
-        for idx, (description, _, _, _) in enumerate(menu_options, 1):
-            print(f"  {idx}. {description}")
-        option = valid.read_options_menu(0, total_options)
+        option = choose_option_in_menu_import_export("Opciones de exportación e importación", menu_options)
         if option == 0:
             break
         elif 1 <= option <= total_options:
-            description, action, table, path = menu_options[option - 1]
+            _, action, table, path = menu_options[option - 1]
             action(conn, table, path)
         input("\n   >>> Presione ENTER para continuar <<<")
 
@@ -342,7 +343,6 @@ def main():
     signal.signal(signal.SIGINT, handle_interrupt)
     while True:
         menu_options = (
-            (0, "Salir"),
             (1, "Administrar tabla de productos"),
             (2, "Administrar tabla de rutas"),
             (3, "Exportar/Importar datos"),
