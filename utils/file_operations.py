@@ -1,5 +1,6 @@
 import os
 import glob
+import time
 import subprocess
 import utils.various as utils
 import utils.input_validations as valid
@@ -87,13 +88,19 @@ def import_table_from_csv_default(conn, table_name, import_path):
     print(f"\n   [ Archivo seleccionado ] \n   > {selected_file}")
 
     if not conn.is_table_empty(table_name):
-        print("   *** SU TABLA NO ESTA VACIA ***")
-        confirm_clear_table = valid.read_short_answer("¿Desea reemplazar los datos existentes?")
-        if(confirm_clear_table.lower() in ['si', 's']):
-            c = conn.execute_query(f"DELETE FROM {table_name}")
-            conn.commit(c)
-            conn.import_table_from_csv(table_name, selected_file, file_path)
-        else:
+        menu_options = [
+            (1, "Reemplazar datos"),
+            (2, "Unir datos datos")
+        ]
+        option = utils.choose_option_in_menu("Opciones para importar datos", menu_options)
+        if (option == 0):
             print("\n   >>> Operacion cancelada")
+            time.sleep(1)
+            return
+        if (option == 1):
+            conn.delete_table(table_name)
+            conn.import_table_from_csv(table_name, selected_file, file_path)
+        elif(option == 2):
+            conn.import_table_from_csv(table_name, selected_file, file_path)
     else:
         conn.import_table_from_csv(table_name, selected_file, file_path)
