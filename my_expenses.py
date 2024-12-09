@@ -24,9 +24,8 @@ def choose_option_in_menu(title, menu_options, clear="clear"):
     print("  0. Regresar")
     for idx, description in menu_options:
         print(f"  {idx}. {description}")
-    min_option = 0
     max_option = len(menu_options)
-    return valid.read_options_menu(min_option, max_option)
+    return valid.read_options_menu(0, max_option)
 
 def choose_option_in_menu_import_export(title, menu_options, clear="clear"):
     if clear.strip() != "no_clear":
@@ -35,9 +34,8 @@ def choose_option_in_menu_import_export(title, menu_options, clear="clear"):
     print("  0. Regresar")
     for idx, (description, _, _, _) in enumerate(menu_options, 1):
         print(f"  {idx}. {description}")
-    min_option = 0
     max_option = len(menu_options)
-    return valid.read_options_menu(min_option, max_option)
+    return valid.read_options_menu(0, max_option)
 
 def check_and_update_date_format(conn, table_products):
     rows = conn.fetch_all(f"SELECT id, date FROM {table_products}")
@@ -306,24 +304,17 @@ def handle_products_menu(conn, table_products):
         elif(option == 7):
             conn.validate_table_not_empty("No hay datos para actualizar...", update_data_to_correct_format, table_products)
 
-def handle_export_import_data_menu(conn, table_names):
-    table_paths = table_names[0]
-    if(conn.is_table_empty(table_paths)):
-        print(f"\n      No hay rutas guardas!!")
-        input("\n   >>> Presione ENTER para continuar <<<")
-        return
-
+def handle_export_import_data_menu(conn, table_paths, table_names):
     export_path = conn.find_path(table_paths, "is_export", 1)
     import_path = conn.find_path(table_paths, "is_import", 1)
 
-    if(export_path is None or import_path is None):
-        print(f"\n      No hay rutas de exportación y/o importación configuradas!!")
-        input("\n   >>> Presione ENTER para continuar <<<")
-        return
-
     menu_options = []
-    menu_options.extend((f"Exportar {table} como CSV", fop.export_table_to_csv_default, table, export_path) for table in table_names)
-    menu_options.extend((f"Importar {table} desde CSV", fop.import_table_from_csv_default, table, import_path) for table in table_names)
+
+    if export_path is not None:
+        menu_options.extend((f"Exportar {table} como CSV", fop.export_table_to_csv_default, table, export_path) for table in table_names)
+
+    if import_path is not None:
+        menu_options.extend((f"Importar {table} desde CSV", fop.import_table_from_csv_default, table, import_path) for table in table_names)
 
     total_options = len(menu_options)
 
@@ -334,7 +325,6 @@ def handle_export_import_data_menu(conn, table_names):
         elif 1 <= option <= total_options:
             _, action, table, path = menu_options[option - 1]
             action(conn, table, path)
-        input("\n   >>> Presione ENTER para continuar <<<")
 
 def main():
     table_products = "products"
@@ -357,9 +347,9 @@ def main():
             elif(option == 2):
                 handle_paths_menu(conn, table_paths)
             elif(option == 3):
-                handle_export_import_data_menu(conn, [table_paths, table_products])
+                conn.validate_table_not_empty("No hay rutas guardadas", handle_export_import_data_menu, table_paths, [table_paths, table_products])
             elif(option == 4):
-                conn = handle_delete_tables_menu(conn, table_products, table_paths)
+                handle_delete_tables_menu(conn, table_products, table_paths)
         except (KeyboardInterrupt, EOFError):
             warning_interrupt()
     conn.disconnect()

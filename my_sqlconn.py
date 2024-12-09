@@ -140,17 +140,19 @@ class Database:
         c = self.execute_query(query_delete, (value,))
         self.confirm_transaction_database(c)
 
-    def find_item(self, table_name, field, value):
+    def find_item(self, table_name, field, value, msg=""):
         query_select = f"SELECT * FROM {table_name} WHERE {field}=? LIMIT 1"
         found_item = self.fetch_one(query_select, (value,))
         if(found_item is not None and found_item != []):
             return found_item
         else:
-            print(f"\n   *** Ningun elemento con el {field} = {value} fue encontrado ***")
+            if msg.strip() != "":
+                print(f"\n   *** {msg} ***")
         return None
 
     def find_path(self, table_name, field, value):
-        found_item = self.find_item(table_name, field, value)
+        msg = f"La ruta con el campo {field.upper()} = {bool(value)} no se recupero"
+        found_item = self.find_item(table_name, field, value, msg)
         if(found_item is not None and found_item != []):
             _, *found_path = found_item
             return Path(*found_path)
@@ -158,7 +160,8 @@ class Database:
             return None
 
     def find_product(self, table_name, field, value):
-        found_item = self.find_item(table_name, field, value)
+        msg = f"El producto con el campo {field.upper()} = {value} no se recupero"
+        found_item = self.find_item(table_name, field, value, msg)
         if(found_item is not None and found_item != []):
             _, name, qty, unit, _, total, date_, cat = found_item
             return Product(name=name, quantity=qty, unit=unit, total=total, date=date_, category=cat)
