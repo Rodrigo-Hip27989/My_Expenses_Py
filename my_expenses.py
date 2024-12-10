@@ -1,3 +1,4 @@
+import os
 import subprocess
 import signal
 import time
@@ -11,6 +12,10 @@ from models.path import Path
 
 def handle_interrupt(sig, frame):
     raise KeyboardInterrupt
+
+def get_terminal_size():
+    size = os.get_terminal_size()
+    return size.columns, size.lines
 
 def warning_interrupt():
     subprocess.run(["clear"])
@@ -45,6 +50,8 @@ def create_query_for_sorting_products(option, columns, table_products):
 
 def show_products_summary(conn, products):
     conn.execute_query("DROP VIEW IF EXISTS summary_products;")
+    width_terminal, _ = get_terminal_size()
+    max_chars = round(width_terminal/6)
 
     query_create_view = f"""
         CREATE VIEW summary_products AS
@@ -66,17 +73,17 @@ def show_products_summary(conn, products):
         category_summary AS (
             SELECT
                 COUNT(*) AS items,
-                category,
+                SUBSTR(category, 1, {max_chars}) as category,
                 ROUND(MAX(total_formatted_null), 1) AS max_cost,
-                (SELECT name
+                SUBSTR((SELECT name
                  FROM formatted_totals
                  WHERE category = p.category AND total_formatted_null IS NOT NULL
-                 ORDER BY total_formatted_null DESC LIMIT 1) AS most_expensive,
+                 ORDER BY total_formatted_null DESC LIMIT 1), 1, {max_chars}) AS most_expensive,
                 ROUND(MIN(total_formatted_null), 1) AS min_cost,
-                (SELECT name
+                SUBSTR((SELECT name
                  FROM formatted_totals
                  WHERE category = p.category AND total_formatted_null IS NOT NULL
-                 ORDER BY total_formatted_null ASC LIMIT 1) AS least_expensive,
+                 ORDER BY total_formatted_null ASC LIMIT 1), 1, {max_chars}) AS least_expensive,
                 ROUND(AVG(total_formatted_null), 1) AS avg_cost,
                 ROUND(SUM(total_formatted_0), 2) AS subtotal,
                 printf("%.1f %%",
@@ -93,15 +100,15 @@ def show_products_summary(conn, products):
             SUM(CASE WHEN total_formatted_null IS NOT NULL THEN 1 ELSE 0 END) AS items,
             'Total' AS category,
             ROUND(MAX(total_formatted_null), 1) AS max_cost,
-            (SELECT name
+            SUBSTR((SELECT name
              FROM formatted_totals
              WHERE total_formatted_null IS NOT NULL
-             ORDER BY total_formatted_null DESC LIMIT 1) AS most_expensive,
+             ORDER BY total_formatted_null DESC LIMIT 1), 1, {max_chars}) AS most_expensive,
             ROUND(MIN(total_formatted_null), 1) AS min_cost,
-            (SELECT name
+            SUBSTR((SELECT name
              FROM formatted_totals
              WHERE total_formatted_null IS NOT NULL
-             ORDER BY total_formatted_null ASC LIMIT 1) AS least_expensive,
+             ORDER BY total_formatted_null ASC LIMIT 1), 1, {max_chars}) AS least_expensive,
             ROUND(AVG(total_formatted_null), 1) AS avg_cost,
             ROUND(SUM(total_formatted_0), 2) AS subtotal,
             '100 %' AS percent
