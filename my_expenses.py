@@ -43,45 +43,70 @@ def create_query_for_sorting_products(option, columns, table_products):
         return f"SELECT * FROM {table_products} ORDER BY category ASC, {column} ASC;"
     return None
 
-def show_products_summary(conn, table_products):
-    drop_view_query = "DROP VIEW IF EXISTS summary_products;"
-    conn.execute_query(drop_view_query)
+def show_products_summary(conn, products):
+    conn.execute_query("DROP VIEW IF EXISTS summary_products;")
 
     query_create_view = f"""
         CREATE VIEW summary_products AS
-        WITH total_summary AS (
+        WITH
+        -- Subtabla: Total global
+        formatted_totals AS (
             SELECT
-                ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost_all
-            FROM {table_products}
+                *,
+                CASE WHEN total IS NOT NULL AND total != '' THEN CAST(total AS REAL) ELSE 0 END AS total_formatted_0,
+                CASE WHEN total IS NOT NULL AND total != '' THEN CAST(total AS REAL) ELSE NULL END AS total_formatted_null
+            FROM {products}
+        ),
+        -- Subtabla: Total global
+        total_summary AS (
+            SELECT ROUND(SUM(total_formatted_0), 2) AS total_cost_all
+            FROM formatted_totals
+        ),
+        -- Subtabla: Resumen por categoría
+        category_summary AS (
+            SELECT
+                COUNT(*) AS items,
+                category,
+                ROUND(MAX(total_formatted_null), 1) AS max_cost,
+                (SELECT name
+                 FROM formatted_totals
+                 WHERE category = p.category AND total_formatted_null IS NOT NULL
+                 ORDER BY total_formatted_null DESC LIMIT 1) AS most_expensive,
+                ROUND(MIN(total_formatted_null), 1) AS min_cost,
+                (SELECT name
+                 FROM formatted_totals
+                 WHERE category = p.category AND total_formatted_null IS NOT NULL
+                 ORDER BY total_formatted_null ASC LIMIT 1) AS least_expensive,
+                ROUND(AVG(total_formatted_null), 1) AS avg_cost,
+                ROUND(SUM(total_formatted_0), 2) AS subtotal,
+                printf("%.1f %%",
+                    (SUM(total_formatted_0) * 100.0) /
+                    (SELECT total_cost_all FROM total_summary)
+                ) AS percent
+            FROM formatted_totals p
+            GROUP BY category
         )
-        SELECT
-            COUNT(*) AS items,
-            category,
-            ROUND(MAX(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS max_cost,
-            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' AND category = p.category ORDER BY total DESC LIMIT 1) AS most_expensive,
-            ROUND(MIN(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS min_cost,
-            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' AND category = p.category ORDER BY total ASC LIMIT 1) AS least_expensive,
-            ROUND(AVG(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS avg_cost,
-            ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost,
-            printf("%.1f %%",
-                (SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END) * 100.0) /
-                (SELECT total_cost_all FROM total_summary)
-            ) AS percent
-        FROM {table_products} p
-        GROUP BY category
+        -- Combinar resumen por categoría y total general
+        SELECT * FROM category_summary
         UNION ALL
         SELECT
-            SUM(CASE WHEN total IS NOT NULL AND total != '' THEN 1 ELSE 0 END) AS items,
+            SUM(CASE WHEN total_formatted_null IS NOT NULL THEN 1 ELSE 0 END) AS items,
             'Total' AS category,
-            ROUND(MAX(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS max_cost,
-            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' ORDER BY total DESC LIMIT 1) AS most_expensive,
-            ROUND(MIN(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS min_cost,
-            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' ORDER BY total ASC LIMIT 1) AS least_expensive,
-            ROUND(AVG(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS avg_cost,
-            ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost,
+            ROUND(MAX(total_formatted_null), 1) AS max_cost,
+            (SELECT name
+             FROM formatted_totals
+             WHERE total_formatted_null IS NOT NULL
+             ORDER BY total_formatted_null DESC LIMIT 1) AS most_expensive,
+            ROUND(MIN(total_formatted_null), 1) AS min_cost,
+            (SELECT name
+             FROM formatted_totals
+             WHERE total_formatted_null IS NOT NULL
+             ORDER BY total_formatted_null ASC LIMIT 1) AS least_expensive,
+            ROUND(AVG(total_formatted_null), 1) AS avg_cost,
+            ROUND(SUM(total_formatted_0), 2) AS subtotal,
             '100 %' AS percent
-        FROM {table_products}
-        ORDER BY total_cost;
+        FROM formatted_totals
+        ORDER BY subtotal;
     """
     conn.execute_query(query_create_view)
     utils.display_formatted_table(conn, "summary_products")
