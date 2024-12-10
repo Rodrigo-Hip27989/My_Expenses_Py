@@ -190,11 +190,10 @@ def handle_delete_tables_menu(conn, table_products, table_paths):
         elif(option == 2):
             conn.delete_table(table_paths)
         elif(option == 3):
-            conn.delete_database()
-            conn = sqlc.Database()
+            conn.disconnect()
+            sqlc.Database.delete_database(conn.db_full_path)
     else:
         print("\n   *** Operación cancelada ***")
-    return conn
 
 def handle_paths_menu(conn, table_paths):
     while True:
@@ -323,7 +322,8 @@ def main():
             elif(option == 3):
                 conn.validate_table_not_empty("No hay rutas guardadas", handle_export_import_data_menu, table_paths, [table_paths, table_products])
             elif(option == 4):
-                conn = handle_delete_tables_menu(conn, table_products, table_paths)
+                handle_delete_tables_menu(conn, table_products, table_paths)
+                conn = sqlc.Database()
         except (KeyboardInterrupt, EOFError):
             warning_interrupt()
     conn.disconnect()

@@ -235,17 +235,17 @@ class Database:
         c = self.execute_query(f"UPDATE sqlite_sequence SET seq = 0 WHERE name = '{table_name}'")
         self.commit(c)
 
-    def delete_database(self):
-        self.disconnect()
+    @staticmethod
+    def delete_database(db_full_path):
         try:
-            if os.path.exists(self.db_full_path):
-                if os.path.isfile(self.db_full_path):
-                    os.remove(self.db_full_path)
+            if os.path.exists(db_full_path):
+                if os.path.isfile(db_full_path):
+                    os.remove(db_full_path)
                     print(f"\n   >>> La base de datos ha sido eliminada!")
                 else:
                     print("\n   >>> La ruta proporcionada no es un archivo válido!")
             else:
-                print(f"\n   >>> No se encontró el archivo de base de datos en la ruta: {self.db_dir}")
+                print(f"\n   >>> No se encontró el archivo de base de datos en la ruta: {os.path.dirname(db_full_path)}")
         except Exception as e:
             print(f"\n   >>> Hubo un error al eliminar la base de datos: {e}")
 
