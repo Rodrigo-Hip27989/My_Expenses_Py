@@ -46,8 +46,14 @@ def create_query_for_sorting_products(option, columns, table_products):
 def show_products_summary(conn, table_products):
     drop_view_query = "DROP VIEW IF EXISTS summary_products;"
     conn.execute_query(drop_view_query)
+
     query_create_view = f"""
         CREATE VIEW summary_products AS
+        WITH total_summary AS (
+            SELECT
+                ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost_all
+            FROM {table_products}
+        )
         SELECT
             COUNT(*) AS items,
             category,
@@ -56,11 +62,14 @@ def show_products_summary(conn, table_products):
             ROUND(MIN(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS min_cost,
             (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' AND category = p.category ORDER BY total ASC LIMIT 1) AS least_expensive,
             ROUND(AVG(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS avg_cost,
-            ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost
+            ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost,
+            printf("%.1f %%",
+                (SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END) * 100.0) /
+                (SELECT total_cost_all FROM total_summary)
+            ) AS percent
         FROM {table_products} p
         GROUP BY category
         UNION ALL
-        -- Fila de Totales
         SELECT
             SUM(CASE WHEN total IS NOT NULL AND total != '' THEN 1 ELSE 0 END) AS items,
             'Total' AS category,
@@ -69,7 +78,8 @@ def show_products_summary(conn, table_products):
             ROUND(MIN(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS min_cost,
             (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' ORDER BY total ASC LIMIT 1) AS least_expensive,
             ROUND(AVG(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS avg_cost,
-            ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost
+            ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost,
+            '100 %' AS percent
         FROM {table_products}
         ORDER BY total_cost;
     """
