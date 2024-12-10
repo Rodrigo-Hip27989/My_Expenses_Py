@@ -180,6 +180,8 @@ def handle_delete_tables_menu(conn, table_products, table_paths):
         (3, "Eliminar datos de todas las tablas")
     )
     option = utils.choose_option_in_menu("Eliminando datos de tablas", menu_options)
+    if option == 0:
+        return
     print("\n  *** Esta acción no puede deshacerse ***\n")
     confirm_delete = valid.read_answer_continue()
     if(confirm_delete.lower() in ['si', 's']):
