@@ -49,17 +49,17 @@ def show_products_summary(conn, table_products):
     query_create_view = f"""
         CREATE VIEW summary_products AS
         SELECT
+            COUNT(*) AS items,
             category,
-            COUNT(*) AS num_items,
-            ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost,
-            ROUND(AVG(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS avg_cost,
-            ROUND(MIN(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS min_cost,
             ROUND(MAX(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS max_cost,
             (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' AND category = p.category ORDER BY total DESC LIMIT 1) AS most_expensive,
-            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' AND category = p.category ORDER BY total ASC LIMIT 1) AS least_expensive
+            ROUND(MIN(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS min_cost,
+            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' AND category = p.category ORDER BY total ASC LIMIT 1) AS least_expensive,
+            ROUND(AVG(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS avg_cost,
+            ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost
         FROM {table_products} p
         GROUP BY category
-        ORDER BY category;
+        ORDER BY total_cost DESC;
     """
     conn.execute_query(query_create_view)
     utils.display_formatted_table(conn, "summary_products")
