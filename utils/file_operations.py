@@ -11,10 +11,12 @@ def find_files_by_extension(path, extension):
     expanded_path = os.path.expanduser(expanded_path)
     final_expanded_path = os.path.abspath(expanded_path)
     if not os.path.exists(final_expanded_path):
-        print(f"Error: La ruta '{path}' no existe.")
+        print(f"\n   >>> Error: La ruta '{path}' no existe.")
+        time.sleep(1.3)
         return []
     if not os.path.isdir(final_expanded_path):
-        print(f"Error: '{path}' no es un directorio válido.")
+        print(f"\n   >>> Error: '{path}' no es un directorio válido.")
+        time.sleep(1.3)
         return []
     pattern = os.path.join(final_expanded_path, f"*.{extension}")
     file_list = glob.glob(pattern)
@@ -107,3 +109,4 @@ def import_table_from_csv_default(conn, table_name, import_path):
             time.sleep(3)
     else:
         conn.import_table_from_csv(table_name, selected_file, file_path)
+        time.sleep(1.3)
