@@ -59,7 +59,19 @@ def show_products_summary(conn, table_products):
             ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost
         FROM {table_products} p
         GROUP BY category
-        ORDER BY total_cost DESC;
+        UNION ALL
+        -- Fila de Totales
+        SELECT
+            SUM(CASE WHEN total IS NOT NULL AND total != '' THEN 1 ELSE 0 END) AS items,
+            'Total' AS category,
+            ROUND(MAX(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS max_cost,
+            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' ORDER BY total DESC LIMIT 1) AS most_expensive,
+            ROUND(MIN(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS min_cost,
+            (SELECT name FROM {table_products} WHERE total IS NOT NULL AND total != '' ORDER BY total ASC LIMIT 1) AS least_expensive,
+            ROUND(AVG(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE NULL END), 3) AS avg_cost,
+            ROUND(SUM(CASE WHEN total IS NOT NULL AND total != '' THEN total ELSE 0 END), 3) AS total_cost
+        FROM {table_products}
+        ORDER BY total_cost;
     """
     conn.execute_query(query_create_view)
     utils.display_formatted_table(conn, "summary_products")
