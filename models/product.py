@@ -8,16 +8,16 @@ class Product:
         self.unit = unit
         self.date = date
         self.category = category
-        if (price is not None) and isinstance(price, float):
-            self._price = price
-            self._total = self.calculate_total(self._quantity, price)
-        elif (total is not None) and isinstance(total, float):
+        if (total is not None) and isinstance(total, float):
             self._total = total
             self._price = self.calculate_price(self._quantity, total)
+        elif (price is not None) and isinstance(price, float):
+            self._price = price
+            self._total = self.calculate_total(self._quantity, price)
         else:
             self.quantity = Product.get_unspecified_quantity()
-            self._price = Product.get_unspecified_price()
             self._total = Product.get_unspecified_total()
+            self._price = Product.get_unspecified_price()
 
     @property
     def name(self):
