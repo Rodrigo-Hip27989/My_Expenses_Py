@@ -2,6 +2,15 @@ import re
 from fractions import Fraction
 from datetime import datetime
 
+def validate_float_fraction_str(number_str):
+    try:
+        regex_float = r'^(0(\.\d+)?|([1-9]\d*)(\.\d+)?)$'
+        regex_fraction = r'^(?!0\/)(?!.*\/0)[1-9]\d*\/[1-9]\d*$'
+        regex_complete = f'({regex_float})|({regex_fraction})'
+        return (re.fullmatch(regex_complete, number_str) is not None)
+    except re.error as regex_error:
+        raise ValueError(f"\n   Expresión regular inválido:\n   {regex_error}")
+
 def convert_to_number(input_string):
     try:
         return Fraction(input_string)

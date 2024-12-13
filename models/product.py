@@ -1,6 +1,7 @@
 import utils.various as utils
 from fractions import Fraction
 from utils.input_validations import convert_to_number as str_to_num
+from utils.input_validations import validate_float_fraction_str as validate_float_fraction
 
 class Product:
     def __init__(self, name="", quantity="", unit="", price=None, total=None, date="", category=""):
@@ -11,10 +12,10 @@ class Product:
         self.category = category
         if (total is not None) and isinstance(total, float):
             self._total = total
-            self._price = self.calculate_price(self._quantity, total)
+            self._price = self.calculate_price(self.quantity, total)
         elif (price is not None) and isinstance(price, float):
             self._price = price
-            self._total = self.calculate_total(self._quantity, price)
+            self._total = self.calculate_total(self.quantity, price)
         else:
             self.quantity = Product.get_unspecified_quantity()
             self._total = Product.get_unspecified_total()
@@ -54,7 +55,7 @@ class Product:
 
     @staticmethod
     def get_unspecified_quantity():
-        return "1"
+        return "0"
 
     @staticmethod
     def get_unspecified_unit():
@@ -77,8 +78,8 @@ class Product:
         return "Unspecified"
 
     @staticmethod
-    def calculate_price(quantity, total):
-        return round(float(str_to_num(total))/float(str_to_num(quantity)), 7)
+    def calculate_price(qty, total):
+        return round(float(str_to_num(total))/float(str_to_num(qty)), 7) if float(str_to_num(qty)) != 0 else 0
 
     @staticmethod
     def calculate_total(quantity, price):
@@ -92,7 +93,7 @@ class Product:
     def quantity(self, quantity=""):
         quantity = str(quantity).strip()
         if quantity:
-            try:
+            if (validate_float_fraction(quantity)):
                 converted_quantity = str_to_num(quantity)
 
                 if isinstance(converted_quantity, Fraction):
@@ -101,8 +102,8 @@ class Product:
                     self._quantity = f"{int(converted_quantity)}"
                 else:
                     self._quantity = f"{converted_quantity}"
-            except ValueError as e:
-                self._quantity = None
+            else:
+                self._quantity = Product.get_unspecified_quantity()
         else:
             self._quantity = Product.get_unspecified_quantity()
 
