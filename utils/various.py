@@ -1,3 +1,4 @@
+import os
 import io
 import subprocess
 import csv
@@ -8,11 +9,27 @@ def draw_title_border(title):
     border = '=' * (len(title) + 7)
     print(f"\n  {border}\n  |  {title.upper()}  |\n  {border}\n")
 
+def get_terminal_size():
+    size = os.get_terminal_size()
+    return size.columns, size.lines
+
+def truncate_value(value, max_length):
+    if len(str(value)) > max_length:
+        return str(value)[:max_length]
+    return str(value)
+
 def convert_table_to_in_memory_csv(headers, rows):
+    width_terminal, _ = get_terminal_size()
+    max_length = round(width_terminal/(len(headers)-3))
+    formatted_rows = []
+    for row in rows:
+        formatted_row = [truncate_value(value, max_length) for value in row]
+        formatted_rows.append(formatted_row)
+
     output = io.StringIO()
     csv_writer = csv.writer(output)
     csv_writer.writerow(headers)
-    csv_writer.writerows(rows)
+    csv_writer.writerows(formatted_rows)
     return output.getvalue()
 
 def format_csv_using_column_command(csv_data):
