@@ -109,7 +109,7 @@ class Product:
 
     @unit.setter
     def unit(self, unit):
-        self._unit = f"{unit.strip()}" if unit.strip() else Product.get_unspecified_unit()
+        self._unit = f"{unit.strip().lower()}" if unit.strip() else Product.get_unspecified_unit()
 
     @price.setter
     def price(self, price):
