@@ -175,7 +175,7 @@ def handle_product_deletion_menu(conn, table_products):
             break
 
 def ask_for_path_to_insert(is_first_entry):
-    new_path = valid.read_paths_linux("\n  * Ruta: ")
+    new_path = valid.read_paths_linux("\n   [ Nueva Ruta ]\n   > ")
     if(is_first_entry):
         return Path(path=new_path, is_export=1, is_import=1)
     else:
@@ -199,6 +199,7 @@ def update_path(conn, table_paths):
     id_path = valid.read_integer("\n  * Ingrese el ID: ")
     path_obj = conn.find_path(table_paths, "ID", id_path)
     if(path_obj is not None):
+        print(f"\n   [ Ruta Actual ]\n   {path_obj.path}")
         is_first_entry = conn.get_num_rows_table(table_paths) == 1
         conn.update_path(table_paths, id_path, ask_for_path_to_insert(is_first_entry), is_first_entry, True)
 
