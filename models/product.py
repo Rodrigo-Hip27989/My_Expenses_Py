@@ -1,5 +1,6 @@
 import utils.various as utils
-from utils.input_validations import convert_to_float
+from fractions import Fraction
+from utils.input_validations import convert_to_number as str_to_num
 
 class Product:
     def __init__(self, name="", quantity="", unit="", price=None, total=None, date="", category=""):
@@ -49,15 +50,15 @@ class Product:
 
     @staticmethod
     def get_unspecified_name():
-        return "ITEM"
+        return "Item"
 
     @staticmethod
     def get_unspecified_quantity():
-        return "1.0"
+        return "1"
 
     @staticmethod
     def get_unspecified_unit():
-        return "UNITS"
+        return "Units"
 
     @staticmethod
     def get_unspecified_price():
@@ -77,23 +78,37 @@ class Product:
 
     @staticmethod
     def calculate_price(quantity, total):
-        return round(convert_to_float(total)/convert_to_float(quantity), 7)
+        return round(float(str_to_num(total))/float(str_to_num(quantity)), 7)
 
     @staticmethod
     def calculate_total(quantity, price):
-        return round(convert_to_float(quantity)*convert_to_float(price), 7)
+        return round(float(str_to_num(quantity))*float(str_to_num(price)), 7)
 
     @name.setter
     def name(self, name):
         self._name = f"{name.strip().title()}" if name.strip() else Product.get_unspecified_name()
 
     @quantity.setter
-    def quantity(self, quantity):
-        self._quantity = f"{quantity.strip()}" if quantity.strip() else Product.get_unspecified_quantity()
+    def quantity(self, quantity=""):
+        quantity = str(quantity).strip()
+        if quantity:
+            try:
+                converted_quantity = str_to_num(quantity)
+
+                if isinstance(converted_quantity, Fraction):
+                    self._quantity = str(converted_quantity)
+                elif isinstance(converted_quantity, float) and converted_quantity.is_integer():
+                    self._quantity = f"{int(converted_quantity)}"
+                else:
+                    self._quantity = f"{converted_quantity}"
+            except ValueError as e:
+                self._quantity = None
+        else:
+            self._quantity = Product.get_unspecified_quantity()
 
     @unit.setter
     def unit(self, unit):
-        self._unit = f"{unit.strip().upper()}" if unit.strip() else Product.get_unspecified_unit()
+        self._unit = f"{unit.strip()}" if unit.strip() else Product.get_unspecified_unit()
 
     @price.setter
     def price(self, price):

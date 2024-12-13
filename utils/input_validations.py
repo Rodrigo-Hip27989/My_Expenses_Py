@@ -2,11 +2,14 @@ import re
 from fractions import Fraction
 from datetime import datetime
 
-def convert_to_float(input_string):
+def convert_to_number(input_string):
     try:
-        return float(Fraction(input_string))
-    except ValueError:
-        return float(input_string)
+        return Fraction(input_string)
+    except (ValueError, ZeroDivisionError):
+        try:
+            return float(input_string)
+        except ValueError:
+            raise ValueError(f"Cannot convert '{input_string}' to a number.")
 
 def read_input_regex(pattern, message):
     try:
