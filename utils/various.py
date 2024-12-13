@@ -20,7 +20,7 @@ def truncate_value(value, max_length):
 
 def convert_table_to_in_memory_csv(headers, rows):
     width_terminal, _ = get_terminal_size()
-    max_length = round(width_terminal/(len(headers)-3))
+    max_length = round(width_terminal/(len(headers)/1.2))
     formatted_rows = []
     for row in rows:
         formatted_row = [truncate_value(value, max_length) for value in row]
