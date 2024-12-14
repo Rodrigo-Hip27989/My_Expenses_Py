@@ -20,8 +20,10 @@ def truncate_value(value, max_length):
 
 def convert_table_to_in_memory_csv(headers, rows):
     width_terminal, _ = get_terminal_size()
-    max_length = round(width_terminal/(len(headers)/1.2))
+    len_hdrs = len(headers)
+    max_length = round(width_terminal/(len_hdrs-2))-1 if (len_hdrs > 2) else round(width_terminal/len_hdrs)
     formatted_rows = []
+
     for row in rows:
         formatted_row = [truncate_value(value, max_length) for value in row]
         formatted_rows.append(formatted_row)
@@ -49,7 +51,9 @@ def format_csv_using_column_command(csv_data):
         print(f"Error al formatear con 'column': {e}")
         return ""
 
-def add_borders_and_margins_to_table(formatted_data, margin=4):
+def add_borders_and_margins_to_table(formatted_data):
+    width_terminal, _ = get_terminal_size()
+    margin = (width_terminal//70) if (width_terminal < 500) else 4
     if not formatted_data:
         return ""
 
