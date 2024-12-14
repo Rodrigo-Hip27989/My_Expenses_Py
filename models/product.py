@@ -11,10 +11,10 @@ class Product:
         self.date = date
         self.category = category
         if (total is not None) and isinstance(total, float):
-            self._total = total
+            self.total = total
             self._price = self.calculate_price(self.quantity, total)
         elif (price is not None) and isinstance(price, float):
-            self._price = price
+            self.price = price
             self._total = self.calculate_total(self.quantity, price)
         else:
             self.quantity = Product.get_unspecified_quantity()
@@ -79,11 +79,11 @@ class Product:
 
     @staticmethod
     def calculate_price(qty, total):
-        return round(float(str_to_num(total))/float(str_to_num(qty)), 7) if float(str_to_num(qty)) != 0 else 0
+        return round(float(str_to_num(total))/float(str_to_num(qty)), 2) if float(str_to_num(qty)) != 0 else 0
 
     @staticmethod
-    def calculate_total(quantity, price):
-        return round(float(str_to_num(quantity))*float(str_to_num(price)), 7)
+    def calculate_total(qty, price):
+        return round(float(str_to_num(price))*float(str_to_num(qty)), 2)
 
     @name.setter
     def name(self, name):
@@ -115,13 +115,13 @@ class Product:
     def price(self, price):
         if price < 0:
             raise ValueError("El precio no puede ser negativo.")
-        self._price = price
+        self._price = round(price, 2)
 
     @total.setter
     def total(self, total):
         if total < 0:
             raise ValueError("El total no puede ser negativo.")
-        self._total = total
+        self._total = round(total, 2)
 
     @date.setter
     def date(self, date):
