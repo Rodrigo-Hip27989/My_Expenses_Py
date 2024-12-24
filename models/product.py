@@ -17,7 +17,6 @@ class Product:
             self.price = price
             self._total = self.calculate_total(self.quantity, price)
         else:
-            self.quantity = Product.get_unspecified_quantity()
             self._total = Product.get_unspecified_total()
             self._price = Product.get_unspecified_price()
 
@@ -108,27 +107,27 @@ class Product:
             self._quantity = Product.get_unspecified_quantity()
 
     @unit.setter
-    def unit(self, unit):
+    def unit(self, unit=""):
         self._unit = f"{unit.strip().lower()}" if unit.strip() else Product.get_unspecified_unit()
 
     @price.setter
     def price(self, price):
-        if price < 0:
+        if (price != None) and (price < 0):
             raise ValueError("El precio no puede ser negativo.")
         self._price = round(price, 2)
 
     @total.setter
     def total(self, total):
-        if total < 0:
+        if (total != None) and (total < 0):
             raise ValueError("El total no puede ser negativo.")
         self._total = round(total, 2)
 
     @date.setter
-    def date(self, date):
+    def date(self, date=""):
         self._date = utils.convert_ddmmyyyy_to_iso8601(date.strip()) if date.strip() else Product.get_unspecified_date()
 
     @category.setter
-    def category(self, category):
+    def category(self, category=""):
         self._category = f"{category.strip().title()}" if category.strip() else Product.get_unspecified_category()
 
     def get_db_values(self):
